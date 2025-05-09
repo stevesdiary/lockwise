@@ -36,11 +36,19 @@ export class Estate extends Model<Estate> {
     allowNull: false,
   })
   declare address: string;
+
+  @Column({
+    type: DataType.ENUM('residential', 'mixed', 'other', 'commercial'),
+    allowNull: false,
+  })
+  declare type: string;
+
   @Column({
     type: DataType.STRING,
     allowNull: false,
   })
   declare city: string;
+
   @Column({
     type: DataType.STRING,
     allowNull: false,
@@ -52,6 +60,44 @@ export class Estate extends Model<Estate> {
     allowNull: false
   })
   declare country: string;
+
+  @Column({
+    type: DataType.NUMBER,
+    allowNull: false,
+  })
+  declare total_number_of_apartments: number;
+
+  @Column({
+    type: DataType.NUMBER
+  })
+  declare total_floors: number;
+
+  @Column({
+    type: DataType.NUMBER
+  })
+  declare total_parking_spaces: number;
+
+  @Column({
+    type: DataType.NUMBER
+  })
+  declare total_number_of_staff: number;
+
+  @Column({
+    type: DataType.ENUM('active', 'inactive', 'under_maintenance', 'suspended', 'pending'),
+  })
+  declare status: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  declare contact: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  declare estate_approval_status: string;
 
   @HasMany(() => Resident, {
     foreignKey: 'estate_id',
