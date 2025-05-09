@@ -1,5 +1,5 @@
 import { Table, Model, Column, DataType, Index, Default, HasMany } from 'sequelize-typescript';
-
+import { Resident } from '../resident/resident.model';
 
 @Table ({
   tableName: 'estates',
@@ -52,6 +52,15 @@ export class Estate extends Model<Estate> {
     allowNull: false
   })
   declare country: string;
+
+  @HasMany(() => Resident, {
+    foreignKey: 'estate_id',
+  })
+  declare residents: Resident[];
+
+  @Column({
+    type: DataType.STRING
+  })
+  declare zip_code: string;
 }
 
-// @HasMany( Residents )
