@@ -1,5 +1,6 @@
 import { Table, Model, Column, DataType, BelongsTo, ForeignKey } from 'sequelize-typescript';
 import { Estate } from '../estate/estate.model';
+import { Address } from '../estate/address.model';
 
 @Table
 export class Resident extends Model<Resident> {
@@ -9,6 +10,11 @@ export class Resident extends Model<Resident> {
     defaultValue: DataType.UUIDV4,
   })
   declare id: number;
+
+  @Column({
+    type: DataType.STRING
+  })
+  declare title: string;
 
   @Column({
     type: DataType.STRING,
@@ -21,13 +27,6 @@ export class Resident extends Model<Resident> {
     allowNull: false,
   })
   declare last_name: string;
-
-  @ForeignKey(() => Estate)
-  @Column({
-    type: DataType.STRING(8),
-    allowNull: false,
-  })
-  declare estate_id: string;
 
   @Column({
     type: DataType.STRING,
@@ -47,12 +46,28 @@ export class Resident extends Model<Resident> {
   declare verified: boolean;
 
   @Column({
-    type: DataType.BOOLEAN,
+    type: DataType.BOOLEAN
   })
   declare subscribed: boolean;
+
+  @ForeignKey(() => Estate)
+  @Column({
+    type: DataType.UUID,
+    allowNull: false,
+  })
+  declare estate_id: string;
 
   @BelongsTo(() => Estate)
   declare estate: Estate;
 
+  @ForeignKey(() => Address)
+  @Column({
+    type: DataType.UUID,
+    allowNull: false,
+  })
+  declare address_id: string;
+
+  @BelongsTo(() => Address)
+  declare address: Address;
 
 }
