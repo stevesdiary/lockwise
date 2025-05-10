@@ -94,10 +94,16 @@ export class Estate extends Model<Estate> {
   declare contact: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.ENUM('approved', 'pending', 'declined'),
     allowNull: false,
+    defaultValue: 'pending'
   })
   declare estate_approval_status: string;
+
+  @Column({
+    type: DataType.DATE
+  })
+  declare estate_approved_on: Date;
 
   @HasMany(() => Resident, {
     foreignKey: 'estate_id',
