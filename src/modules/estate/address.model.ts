@@ -43,7 +43,7 @@ export class Address extends Model<Address> {
     type: DataType.STRING,
     allowNull: false
   })
-  declare apartment: string;
+  declare apartment_number: string;
 
   @Column({
     type: DataType.STRING
