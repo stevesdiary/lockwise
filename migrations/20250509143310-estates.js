@@ -37,7 +37,7 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true
       },
-      estate_approval_status_at: {
+      estate_approved_on: {
         type: Sequelize.DATE,
         allowNull: true
       },
