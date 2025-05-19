@@ -8,8 +8,21 @@ export class UserRepository implements IUserRepository {
     return User.findOne({
       where: {
         email: {
+          [Op.eq]: email
+        }
+      }
+    });
+  }
+
+  async findUserByEmail(email: string, estate_id: string): Promise<User | null> {
+    return User.findOne({
+      where: {
+        email: {
           [Op.eq]: email,
         },
+        estate_id: {
+          [Op.eq]: estate_id
+        }
       },
     });
   }
