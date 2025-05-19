@@ -93,6 +93,10 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: true
       },
+      active: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: true
+      },
       subscription_type: {
         type: Sequelize.STRING
       },
