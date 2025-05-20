@@ -11,3 +11,4 @@ build
 build/src
 dist/
 
+build/src/core/index.js
