@@ -9,7 +9,7 @@ export class Resident extends Model<Resident> {
     primaryKey: true,
     defaultValue: DataType.UUIDV4,
   })
-  declare id: number;
+  declare id: string;
 
   @Column({
     type: DataType.STRING
@@ -60,14 +60,14 @@ export class Resident extends Model<Resident> {
   @BelongsTo(() => Estate)
   declare estate: Estate;
 
-  @ForeignKey(() => Address)
-  @Column({
-    type: DataType.UUID,
-    allowNull: false,
-  })
-  declare address_id: string;
+  // @ForeignKey(() => Address)
+  // @Column({
+  //   type: DataType.UUID,
+  //   allowNull: false,
+  // })
+  // declare address_id: string;
 
-  @BelongsTo(() => Address)
-  declare address: Address;
+  // @BelongsTo(() => Address)
+  // declare address: Address;
 
 }
