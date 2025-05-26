@@ -1,7 +1,6 @@
 import { Table, Model, Column, DataType, BelongsTo, ForeignKey } from 'sequelize-typescript';
 import { Estate } from '../estate/estate.model';
 import { Role } from '../role/role.model';
-import { generateId } from '../../utils/idGenerator';
 
 @Table
 export class User extends Model<User> {
