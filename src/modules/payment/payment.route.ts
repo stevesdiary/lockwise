@@ -2,7 +2,7 @@ import express from 'express';
 const paymentRouter = express.Router();
 
 import { Router, Request as ExpressRequest, Response } from 'express';
-import paymentController from '../payment/payment.controller';
+import paymentController from './payment.controller';
 
 paymentRouter.post("/initiate", async (req: ExpressRequest, res: Response) => {
   await paymentController.initiatePayment(req, res);
