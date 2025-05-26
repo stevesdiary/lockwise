@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const estate_repository_1 = require("./estate.repository");
+const estate_repository_1 = require("../repositories/estate.repository");
 class EstateController {
     constructor() {
         this.estateRepository = new estate_repository_1.EstateRepository();

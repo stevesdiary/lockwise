@@ -6,7 +6,7 @@ import { Resident } from '../resident/resident.model';
   indexes: [
     {
       name: 'estate_id_index',
-      fields: ['estate_id'],
+      fields: ['estate_id', 'invitation_code'],
       using: 'BTREE',
       unique: true,
     },
@@ -30,6 +30,12 @@ export class Estate extends Model<Estate> {
     allowNull: false,
   })
   declare name: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false
+  })
+  declare invitation_code: string;
 
   @Column({
     type: DataType.STRING,

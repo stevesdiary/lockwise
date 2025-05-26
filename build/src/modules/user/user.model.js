@@ -13,7 +13,6 @@ exports.User = void 0;
 const sequelize_typescript_1 = require("sequelize-typescript");
 const estate_model_1 = require("../estate/estate.model");
 const role_model_1 = require("../role/role.model");
-const idGenerator_1 = require("../../utils/idGenerator");
 let User = class User extends sequelize_typescript_1.Model {
 };
 exports.User = User;
@@ -21,9 +20,9 @@ __decorate([
     (0, sequelize_typescript_1.Column)({
         type: sequelize_typescript_1.DataType.UUID,
         primaryKey: true,
-        defaultValue: (0, idGenerator_1.generateId)(),
+        defaultValue: sequelize_typescript_1.DataType.UUIDV4,
     }),
-    __metadata("design:type", String)
+    __metadata("design:type", Number)
 ], User.prototype, "id", void 0);
 __decorate([
     (0, sequelize_typescript_1.Column)({
@@ -31,7 +30,14 @@ __decorate([
         allowNull: false,
     }),
     __metadata("design:type", String)
-], User.prototype, "name", void 0);
+], User.prototype, "first_name", void 0);
+__decorate([
+    (0, sequelize_typescript_1.Column)({
+        type: sequelize_typescript_1.DataType.STRING,
+        allowNull: false,
+    }),
+    __metadata("design:type", String)
+], User.prototype, "last_name", void 0);
 __decorate([
     (0, sequelize_typescript_1.ForeignKey)(() => estate_model_1.Estate),
     (0, sequelize_typescript_1.Column)({
@@ -39,7 +45,28 @@ __decorate([
         allowNull: false,
     }),
     __metadata("design:type", String)
-], User.prototype, "estateId", void 0);
+], User.prototype, "estate_id", void 0);
+__decorate([
+    (0, sequelize_typescript_1.Column)({
+        type: sequelize_typescript_1.DataType.STRING,
+        allowNull: false,
+    }),
+    __metadata("design:type", String)
+], User.prototype, "email", void 0);
+__decorate([
+    (0, sequelize_typescript_1.Column)({
+        type: sequelize_typescript_1.DataType.STRING,
+        allowNull: false,
+    }),
+    __metadata("design:type", String)
+], User.prototype, "password", void 0);
+__decorate([
+    (0, sequelize_typescript_1.Column)({
+        type: sequelize_typescript_1.DataType.BOOLEAN,
+        allowNull: false
+    }),
+    __metadata("design:type", Boolean)
+], User.prototype, "verified", void 0);
 __decorate([
     (0, sequelize_typescript_1.BelongsTo)(() => estate_model_1.Estate),
     __metadata("design:type", estate_model_1.Estate)

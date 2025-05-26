@@ -54,22 +54,22 @@ var __rest = (this && this.__rest) || function (s, e) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const yup = __importStar(require("yup"));
-const user_service_1 = require("./services/user.service");
-const validator_1 = require("../../utils/validator");
+const validation_schema_1 = require("../../schemas/validation.schema");
 const error_handler_1 = require("../../middlewares/error.handler");
-const user_registration_1 = require("./services/user.registration");
-const validator_2 = require("../../utils/validator");
+const user_repository_1 = require("../repositories/user.repository");
 const UserController = {
     register: (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const validatedData = yield validator_2.userRegistrationSchema.validate(req.body, {
+            const validatedData = yield validation_schema_1.userRegistrationSchema.validate(req.body, {
                 abortEarly: false
             });
+            const estate_id = yield validation_schema_1.idSchema.validate(req.query.estate_id, { abortEarly: false });
             const { confirm_password } = validatedData, userData = __rest(validatedData, ["confirm_password"]);
-            const user = yield (0, user_registration_1.registerUser)(userData);
+            const userCreationData = Object.assign(Object.assign({}, userData), { verified: false, estate_id: estate_id, role: "resident", _creationAttributes: {}, id: undefined });
+            const user = yield new user_repository_1.UserRepository().create(userCreationData);
             return res.status(user.statusCode).send({
                 status: user.status,
-                message: user.message + (user.statusCode === 201 ? ' Check your email for verification code' : ''),
+                message: user.message,
                 data: user.data
             });
         }
@@ -96,9 +96,9 @@ const UserController = {
     }),
     verifyUser: (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const validatedData = yield validator_2.userVerificationSchema.validate(req.body, { abortEarly: false });
+            const validatedData = yield validation_schema_1.userVerificationSchema.validate(req.body, { abortEarly: false });
             const { email, code } = validatedData;
-            const verificationResult = yield (0, user_registration_1.verifyUser)({ email, code });
+            const verificationResult = yield verifyUser({ email, code });
             return res.status(verificationResult.statusCode).json(verificationResult);
         }
         catch (error) {
@@ -121,8 +121,8 @@ const UserController = {
     }),
     resendCode: (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const emailPayload = yield validator_2.emailSchema.validate(req.body, { abortEarly: false });
-            const resend = yield (0, user_registration_1.resendCode)(emailPayload.email);
+            const emailPayload = yield validation_schema_1.emailSchema.validate(req.body, { abortEarly: false });
+            const resend = yield resendCode(emailPayload.email);
             return res.status(resend.statusCode).send({
                 status: 'success',
                 message: 'Verification code resent',
@@ -145,7 +145,7 @@ const UserController = {
     }),
     getAllUsers: (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const users = yield (0, user_service_1.getAllUsers)();
+            const users = yield getAllUsers();
             return res.status(users.statusCode).send({
                 status: users.status,
                 message: users.message,
@@ -160,7 +160,7 @@ const UserController = {
     }),
     getOneUser: (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const user = yield (0, user_service_1.getOneUser)(req.params.id);
+            const user = yield getOneUser(req.params.id);
             return res.status(user.statusCode).send({
                 status: (user.status),
                 message: (user.message),
@@ -177,8 +177,8 @@ const UserController = {
     updateUser: (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const id = req.params.id;
-            const validatedData = yield validator_1.userUpdateSchema.validate(req.body, req.params);
-            const update = yield (0, user_service_1.updateUser)(id, validatedData);
+            const validatedData = yield validation_schema_1.userUpdateSchema.validate(req.body, req.params);
+            const update = yield updateUser(id, validatedData);
             return res.status(update.statusCode).send({ status: (update.status), message: (update.message), data: (update.data) });
         }
         catch (error) {
@@ -189,8 +189,8 @@ const UserController = {
     }),
     deleteUser: (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const payload = yield validator_1.idSchema.validate(req.params.id);
-            const deleteUserById = yield (0, user_service_1.deleteUser)(payload);
+            const payload = yield validation_schema_1.idSchema.validate(req.params.id);
+            const deleteUserById = yield deleteUser(payload);
             return res.status(deleteUserById.statusCode).send({
                 status: deleteUserById.status,
                 message: deleteUserById.message,

@@ -26,8 +26,8 @@ const limiter = (0, express_rate_limit_1.default)({
     legacyHeaders: false,
     message: 'Too many request from this IP, try again after 10 minutes'
 });
-server.get("/", (req, res) => {
-    res.json({ message: "Hello, welcome to LockWise!" });
+server.get("/home", (req, res) => {
+    res.json({ message: "Hello, World of tech." });
 });
 server.use(limiter);
 server.use('/api/v1', router_1.default);

@@ -10,11 +10,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.logout = exports.login = void 0;
-const login_service_1 = require("../services/login.service");
-const validator_1 = require("../../utils/validator");
+const login_service_1 = require("../../services/login.service");
+const validation_schema_1 = require("../../schemas/validation.schema");
 const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const validateLogin = yield validator_1.loginSchema.validate(req.body, { abortEarly: false });
+        const validateLogin = yield validation_schema_1.loginSchema.validate(req.body, { abortEarly: false });
         const { email, password } = validateLogin;
         const user = yield (0, login_service_1.loginUser)(email, password, res);
         return res.status(user.statusCode).send({

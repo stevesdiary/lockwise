@@ -1,5 +1,4 @@
-import UserRepository from '../repositories/UserRepository';
-import User from '../models/User';
+import UserRepository from '../repositories/user.repository';
 
 class UserService {
   async getUsersByEstate(estateId: string): Promise<User[]> {
