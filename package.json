@@ -15,7 +15,7 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "start": "tsc && node /dist/main.js"
+    "start": "tsc && node /build/main.js"
   },
   "dependencies": {
     "@types/bcrypt": "^5.0.2",
