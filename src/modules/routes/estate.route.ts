@@ -1,5 +1,5 @@
 import { Router, Request as ExpressRequest, Response } from 'express';
-import estateController from './estate.controller';
+import estateController from '../estate/estate.controller';
 
 const estateRouter = Router();
 
@@ -9,23 +9,23 @@ estateRouter.get('/health', (req: ExpressRequest, res: Response) => {
 });
 
 // Estate routes
-estateRouter.post('/', async (req: ExpressRequest, res: Response) => {
+estateRouter.post('/register', async (req: ExpressRequest, res: Response) => {
   await estateController.createEstate(req, res);
 });
 
-estateRouter.get('/', async (req: ExpressRequest, res: Response) => {
+estateRouter.get('/estates', async (req: ExpressRequest, res: Response) => {
   await estateController.getAllEstates(req, res);
 });
 
-estateRouter.get('/:estateId', async (req: ExpressRequest, res: Response) => {
+estateRouter.get('/one/:estateId', async (req: ExpressRequest, res: Response) => {
   await estateController.getEstateById(req, res);
 });
 
-estateRouter.put('/:estateId', async (req: ExpressRequest, res: Response) => {
+estateRouter.put('/update/:estateId', async (req: ExpressRequest, res: Response) => {
   await estateController.updateEstate(req, res);
 });
 
-estateRouter.delete('/:estateId', async (req: ExpressRequest, res: Response) => {
+estateRouter.delete('/delete/:estateId', async (req: ExpressRequest, res: Response) => {
   await estateController.deleteEstate(req, res);
 });
 
