@@ -1,17 +1,13 @@
 import Redis from 'ioredis';
 
 const MAX_RETRIES = 3;
-const RETRY_BASE_DELAY = 1000; // 1 second
+const RETRY_BASE_DELAY = 2000; // 2 seconds
 
-let redisClient: Redis | null = null;
+let redisClient: Redis | null;
 
 async function initializeRedisConnection(): Promise<Redis> {
   if (!redisClient) {
-    redisClient = new Redis({
-      host: 'localhost',
-      port: 6379,
-      // password: process.env.REDIS_PASSWORD || 'password',
-      db: 0,
+    redisClient = new Redis(process.env.REDIS_URL, {
       maxRetriesPerRequest: MAX_RETRIES,
       retryStrategy(times: number) {
         if (times > MAX_RETRIES) {
@@ -119,3 +115,9 @@ initializeRedisConnection().catch(err => {
 });
 
 export { getFromRedis, saveToRedis, initializeRedisConnection };
+
+
+// import Redis from "ioredis"
+
+// const client = new Redis("rediss://default:AWcLAAIjcDFiZmMxOGQ3N2FiYjQ0ZTAyOTE2MzZmMGVkY2ZkMTc1M3AxMA@immune-duck-26379.upstash.io:6379");
+// await client.set('foo', 'bar');

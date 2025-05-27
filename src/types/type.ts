@@ -134,8 +134,15 @@ export interface ValidationErrorResponse {
 //     role: UserRole;
 //   };
 // }
+export interface AuthenticatedRequest extends Request {
+  user?: {
+    id: string;
+    email: string;
+    role: string[];
+  };
+}
 
-export interface ApiResponse<T> {
+export interface ApiResponse<T = any> {
   statusCode: number;
   status: 'success' | 'error' | 'fail';
   message: string;

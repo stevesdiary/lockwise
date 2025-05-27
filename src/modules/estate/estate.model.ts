@@ -1,5 +1,7 @@
 import { Table, Model, Column, DataType, Index, Default, HasMany } from 'sequelize-typescript';
 import { Resident } from '../resident/resident.model';
+import { EstateAttributes, EstateCreationAttributes } from '../../types/estate.type';
+
 
 @Table ({
   tableName: 'estates',
@@ -17,13 +19,20 @@ import { Resident } from '../resident/resident.model';
   paranoid: true,
 })
 
-export class Estate extends Model<Estate> {
+export class Estate extends Model<EstateAttributes, EstateCreationAttributes> {
   @Column({
     type: DataType.UUID,
     primaryKey: true,
     defaultValue: DataType.UUIDV4,
   })
   declare estate_id: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    unique: true,
+  })
+  declare estate_code: string;
 
   @Column({
     type: DataType.STRING,
@@ -86,7 +95,7 @@ export class Estate extends Model<Estate> {
   @Column({
     type: DataType.NUMBER
   })
-  declare total_number_of_staff: number;
+  declare number_of_staff: number;
 
   @Column({
     type: DataType.ENUM('active', 'inactive', 'under_maintenance', 'suspended', 'pending'),
@@ -97,19 +106,36 @@ export class Estate extends Model<Estate> {
     type: DataType.STRING,
     allowNull: false,
   })
-  declare contact: string;
+  declare contact_phone: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  declare contact_email: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  declare contact_address: string;
 
   @Column({
     type: DataType.ENUM('approved', 'pending', 'declined'),
     allowNull: false,
     defaultValue: 'pending'
   })
-  declare estate_approval_status: string;
+  declare approval_status: string;
 
   @Column({
     type: DataType.DATE
   })
-  declare estate_approved_on: Date;
+  declare approved_on: Date;
+
+  @Column({
+    type: DataType.STRING
+  })
+  declare approved_by: string;
 
   @HasMany(() => Resident, {
     foreignKey: 'estate_id',

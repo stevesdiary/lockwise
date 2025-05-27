@@ -54,6 +54,11 @@ module.exports = {
       name: {
         type: Sequelize.STRING
       },
+      estate_code: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true
+      },
       address: {
         type: Sequelize.STRING
       },
