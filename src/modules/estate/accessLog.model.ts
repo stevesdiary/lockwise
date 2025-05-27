@@ -38,12 +38,14 @@ export class AccessLog extends Model<AccessLog> {
 	@Column({
 		type: DataType.ENUM("guest", "resident", "staff", "delivery", "maintenance", "security", "others"),
 		allowNull: false,
+		defaultValue: "guest"
 	})
 	declare access_type: string;
 
 	@Column({
-		type: DataType.ENUM("RFID", "QR code", "access code", "manual approval"),
+		type: DataType.ENUM("RFID", "QR_code", "access_code", "manual_approval"),
 		allowNull: false,
+		defaultValue: "access_code"
 	})
 	declare verification_method: string;
 
