@@ -1,33 +1,64 @@
-import yup from 'yup';
+import { Request, Response, NextFunction } from 'express';
+import { ValidationError, AggregateError } from '../types/validation.type';
 
-interface ErrorResponse {
-  statusCode: number;
-  status: string;
-  message: string;
-  data: {
-    errors?: string[];
-    error?: string;
-  } | null;
-}
 
-export const handleError = (error: unknown): ErrorResponse => {
-  if (error instanceof yup.ValidationError) {
-    return {
-      statusCode: 400,
+export const errorHandler = (
+  error: unknown,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  console.error('Error:', error);
+
+  if (error instanceof Error) {
+    switch (error.name) {
+      case 'ValidationError':
+        return res.status(400).send({
+          status: 'error',
+          message: 'Validation failed',
+          errors: (error as ValidationError).errors
+        });
+      // Add other error types as needed
+      default:
+        return res.status(500).send({
+          status: 'error',
+          message: 'Internal server error'
+        });
+    }
+  }
+
+  next(error);
+};
+
+export const handleControllerError = (error: unknown, res: Response): Response => {
+  console.error('Controller error:', error);
+  
+  if (error instanceof Error) {
+    if (error.name === 'ValidationError') {
+      return res.status(400).send({
+        status: 'error',
+        message: 'Validation failed',
+        errors: (error as ValidationError).errors
+      });
+    }
+    if (error.name === 'AggregateError') {
+    return res.status(400).send({
       status: 'error',
-      message: 'Validation failed',
-      data: {
-        errors: (error as yup.ValidationError).errors
-      }
-    };
+      message: 'Aggregate error occurred',
+      errors: (error as AggregateError).errors
+    })
+  }
+    if (error.name === 'SequelizeValidationError') {
+      return res.status(400).send({
+        status: 'error',
+        message: 'Database validation failed',
+        errors: error.message
+      });
+    }
   }
   
-  return {
-    statusCode: 500,
+  return res.status(500).send({
     status: 'error',
-    message: 'Internal server error',
-    data: {
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
-    }
-  };
+    message: 'Internal server error'
+  });
 };
