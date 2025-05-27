@@ -44,7 +44,8 @@ export class User extends Model<User> {
 
   @Column({
     type: DataType.BOOLEAN,
-    allowNull: false
+    allowNull: false,
+    defaultValue: false
   })
   declare verified: boolean;
 
