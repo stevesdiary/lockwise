@@ -64,6 +64,18 @@ class RedisConnection {
       throw err;
     }
   }
+
+  static async deleteFromRedis(key: string): Promise<void> {
+    const redis = await this.getInstance();
+    
+    try {
+      await redis.del(key);
+      console.log(`Successfully deleted ${key} from Redis`);
+    } catch (err) {
+      console.error('Error deleting from Redis:', err);
+      throw err;
+    }
+  }
 }
 
 export default RedisConnection;
