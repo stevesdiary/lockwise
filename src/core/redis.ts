@@ -37,6 +37,33 @@ class RedisConnection {
 
     return this.instance;
   }
+
+    static async saveToRedis(key: string, value: string, expirationInSeconds: number): Promise<void> {
+    const redis = await this.getInstance();
+    
+    try {
+      await redis.set(key, value, 'EX', expirationInSeconds);
+      console.log(`Successfully saved ${key} to Redis`);
+    } catch (err) {
+      console.error('Error saving to Redis:', err);
+      throw err;
+    }
+  }
+
+  static async getFromRedis(key: string): Promise<string | null> {
+    const redis = await this.getInstance();
+    
+    try {
+      const value = await redis.get(key);
+      if (value) {
+        console.log(`Successfully retrieved ${key} from Redis`);
+      }
+      return value;
+    } catch (err) {
+      console.error('Error retrieving from Redis:', err);
+      throw err;
+    }
+  }
 }
 
 export default RedisConnection;
