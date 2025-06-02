@@ -2,7 +2,7 @@ import { Router, Request as ExpressRequest, Response } from 'express';
 
 import userController from './user.controller';
 import { TypedRequest } from '../types/type';
-import { checkRole } from '../../middlewares/authorisation';
+import { checkRole } from '../../middlewares/authorizeRoles';
 import authentication from '../../middlewares/authentication';
 
 const userRouter = Router();
