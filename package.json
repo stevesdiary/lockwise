@@ -15,10 +15,11 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "start": "tsc && node /build/main.js"
+    "start": "tsc && node ./build/src/main.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.817.0",
+    "@types/axios": "^0.9.36",
     "@types/bcrypt": "^5.0.2",
     "@types/bull": "^3.15.9",
     "@types/cookie-parser": "^1.4.8",
@@ -28,6 +29,7 @@
     "@types/jsonwebtoken": "^9.0.9",
     "@types/nanoid": "^2.1.0",
     "@types/yup": "^0.29.14",
+    "axios": "^1.9.0",
     "bcrypt": "^5.1.1",
     "bull": "^4.16.5",
     "cookie-parser": "^1.4.7",
