@@ -160,38 +160,6 @@ export const estateSearchSchema = yup.object().shape({
   state: yup.string().optional(),
   country: yup.string().optional(),
 });
-// export const doctorRegistrationSchema = yup.object().shape({
-//   first_name: yup.string()
-//     .min(3, 'First name must be at least 3 characters')
-//     .required('First name is required'),
-//   last_name: yup.string()
-//     .min(3, 'Last name must be at least 3 characters')
-//     .required('Last name is required'),
-//   email: yup.string()
-//     .email('Invalid email format')
-//     .required('Email is required'),
-//   phone: yup.string().optional(),
-//   specialty: yup.string()
-//     .required('Specialty is required'),
-//   hospital_email: yup.string()
-//     .required('Hospital email is required'),
-// });
-// export const doctorUpdateSchema = yup.object().shape({
-//   first_name: yup.string()
-//     .min(3, 'First name must be at least 3 characters')
-//     .required('First name is required'),
-//   last_name: yup.string()
-//     .min(3, 'Last name must be at least 3 characters')
-//     .required('Last name is required'),
-//   email: yup.string()
-//     .email('Invalid email format')
-//     .required('Email is required'),
-//   phone: yup.string().optional(),
-//   specialty: yup.string()
-//     .required('Specialty is required'),
-//   hospital_email: yup.string()
-//     .required('Hospital email is required'),
-// });
 
 // export const paymentInitiationSchema = yup.object().shape({
 //   amount: yup.number().positive().required('Amount is required'),
@@ -207,50 +175,10 @@ export const estateSearchSchema = yup.object().shape({
 
 // export const appointmentStatusSchema = yup.string().required('Status is required');
 
-// export const patientUpdateSchema = yup.object().shape({
-//   user_id: yup.number(),
-//   date_of_birth: yup.date(),
-//   blood_type: yup.string()
-//     .matches(/^(A|B|AB|O)[+-]$/, 'Invalid blood type format'),
-//   allergies: yup.string(),
-//   medical_history: yup.string(),
-//   emergency_contact: yup.string()
-//     .min(2, 'Emergency contact name must be at least 2 characters')
-//     .max(100, 'Emergency contact name must not exceed 100 characters'),
-//   emergency_contact_phone: yup.string()
-//     .matches(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number format'),
-//   insurance_provider: yup.string()
-//     .max(100, 'Insurance provider name must not exceed 100 characters'),
-//   insurance_number: yup.string()
-//     .max(50, 'Insurance number must not exceed 50 characters')
-// }).noUnknown(true);
-
-// export const patientSchema = yup.object().shape({
-//   user_id: yup.string()
-//     .optional(),
-//   date_of_birth: yup.date()
-//     .required('Date of birth is required')
-//     .max(new Date(), 'Date of birth cannot be in the future'),
-//   blood_type: yup.string()
-//     .required('Blood type is required')
-//     .matches(/^(A|B|AB|O)[+-]$/, 'Invalid blood type format'),
-//   allergies: yup.string()
-//     .optional()
-//     .nullable(),
-//   medical_history: yup.string()
-//     .optional()
-//     .nullable(),
-//   emergency_contact: yup.string()
-//     .required('Emergency contact name is required')
-//     .min(2, 'Emergency contact name must be at least 2 characters')
-//     .max(100, 'Emergency contact name must not exceed 100 characters'),
-//   emergency_contact_phone: yup.string()
-//     .required('Emergency contact phone is required')
-//     .matches(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number format'),
-//   insurance_provider: yup.string()
-//     .optional()
-//     .max(100, 'Insurance provider name must not exceed 100 characters'),
-//   insurance_number: yup.string()
-//     .optional()
-//     .max(50, 'Insurance number must not exceed 50 characters')
-// }).noUnknown(true);
+export const createPermissionSchema = yup.object().shape({
+  user_id: yup.string().optional(),
+})
+export const updatePermissionSchema = yup.object().shape({
+  user_id: yup.string().optional(),
+  permission: yup.string().required('Permission is required')
+});
