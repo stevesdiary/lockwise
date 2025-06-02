@@ -9,8 +9,8 @@ import {
   UpdatedAt,
   PrimaryKey,
 } from 'sequelize-typescript';
-import { Appointment } from '../appointment/appointment.model';
-import { Patient } from '../patient/patient.model';
+import {  Plan} from '../payment/plan.model';
+import { Estate } from '../estate/estate.model';
 
 type PaymentStatus = 'pending' | 'completed' | 'failed' | 'refunded';
 type PaymentMethod = 'credit_card' | 'debit_card' | 'bank_transfer' | 'cash' | 'POS';
@@ -30,40 +30,27 @@ export class Payment extends Model {
     defaultValue: DataType.UUIDV4,
     allowNull: false
   })
-  id!: string;
+  declare id: string;
 
-  @ForeignKey(() => Patient)
+  @ForeignKey(() => Estate)
   @Column({
     type: DataType.UUID,
     allowNull: false,
   })
-  patient_id!: string;
-
-  @BelongsTo(() => Patient)
-  patient?: Patient;
-
-  @ForeignKey(() => Appointment)
-  @Column({
-    type: DataType.UUID,
-    allowNull: false
-  })
-  appointment_id!: number;
-
-  @BelongsTo(() => Appointment)
-  appointment?: Appointment;
+  declare estate_id: string;
 
   @Column({
     type: DataType.DECIMAL(10, 2),
     allowNull: false,
   })
-  amount!: number;
+  declare amount: number;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
     defaultValue: 'NGN',
   })
-  currency!: Currency;
+  declare currency: Currency;
 
   @Column({
     type: DataType.ENUM('pending', 'completed', 'failed', 'refunded'),
@@ -110,8 +97,8 @@ export class Payment extends Model {
   refund_date?: Date;
 
   @CreatedAt
-  createdAt!: Date;
+  declare createdAt: Date;
 
   @UpdatedAt
-  updatedAt!: Date;
+  declare updatedAt: Date;
 }
