@@ -1,11 +1,12 @@
 import nodemailer, { SendMailOptions, Transporter, TransportOptions } from 'nodemailer';
 import { EmailPayload, EmailResponse } from '../types/type';
+import { handleControllerError } from '../middlewares/error.handler';
 
 
 export async function sendEmail(emailPayload: EmailPayload): Promise<EmailResponse> {
   const transporter: Transporter = nodemailer.createTransport({
     host: process.env.SMTP_SERVER,
-    port: 587,
+    port: process.env.SMTP_PORT ||587,
     // secure: false,
     auth: {
       user: process.env.SMTP_USER,
