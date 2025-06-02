@@ -1,7 +1,9 @@
 import { Table, Model, Column, DataType, Index, Default, HasMany } from 'sequelize-typescript';
 import { Resident } from '../resident/resident.model';
 import { EstateAttributes, EstateCreationAttributes } from '../../types/estate.type';
-
+import { Street } from './street.model';
+import { User } from '../user/user.model';
+import { AccessLog } from './accessLog.model';
 
 @Table ({
   tableName: 'estates',
@@ -135,16 +137,14 @@ export class Estate extends Model<EstateAttributes, EstateCreationAttributes> {
   @Column({
     type: DataType.STRING
   })
-  declare approved_by: string;
-
-  @HasMany(() => Resident, {
-    foreignKey: 'estate_id',
-  })
-  declare residents: Resident[];
-
-  @Column({
-    type: DataType.STRING
-  })
   declare zip_code: string;
+  @HasMany(() => User)
+  declare users: User[];
+
+  @HasMany(() => Street)
+  declare streets: Street[];
+
+  @HasMany(() => AccessLog)
+  declare accessLogs: AccessLog[];
 }
 
