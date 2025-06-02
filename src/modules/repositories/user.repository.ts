@@ -1,63 +1,32 @@
-import { Op } from "sequelize";
-import { User } from "../user/user.model";
-import { IUserRepository } from "./user.repository.interface";
-import { CreationAttributes } from "sequelize";
+// src/repositories/user.repository.ts
+import { User } from '../user/user.model';
+import { CreationAttributes } from 'sequelize';
 
-export class UserRepository implements IUserRepository {
-  async findByEmail(email: string): Promise<User | null> {
-    return User.findOne({
-      where: {
-        email: {
-          [Op.eq]: email
-        }
-      }
-    });
-  }
-
-  async findUserByEmail(email: string, estate_id: string): Promise<User | null> {
-    return User.findOne({
-      where: {
-        email: {
-          [Op.eq]: email,
-        },
-        estate_id: {
-          [Op.eq]: estate_id
-        }
-      },
-    });
+export class UserRepository {
+  async findAllByEstate(estateId: string): Promise<User[]> {
+    return await User.findAll({ where: { estate_id: estateId } });
   }
 
   async findById(id: string): Promise<User | null> {
-    return User.findByPk(id);
+    return await User.findByPk(id);
   }
 
-  async create(userData: CreationAttributes<User>): Promise<User> {
-    const defaultValues = {
-      estate_id: userData.estate_id,
-      role: "resident",
-      verified: false
-    };
-
-    return User.create({
-      ...defaultValues,
-      ...userData,
-    });
+  async create(data: CreationAttributes<User>): Promise<User> {
+    return await User.create(data);
   }
 
-  async update(id: string, userData: Partial<User>): Promise<User | null> {
+  async update(id: string, data: Partial<CreationAttributes<User>>): Promise<User | null> {
     const user = await this.findById(id);
     if (!user) return null;
-    return user.update(userData);
+    return await user.update(data);
   }
 
   async delete(id: string): Promise<boolean> {
-    const deleted = await User.destroy({
-      where: { id },
-    });
+    const deleted = await User.destroy({ where: { id } });
     return deleted > 0;
   }
 
-  async findAll(): Promise<User[]> {
-    return User.findAll();
+  async findUserByEmail(email: string, estateId: string): Promise<User | null> {
+    return await User.findOne({ where: { email, estate_id: estateId } });
   }
 }
