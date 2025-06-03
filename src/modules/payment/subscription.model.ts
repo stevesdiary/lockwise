@@ -48,6 +48,11 @@ export class Subscription extends Model {
   })
   declare status: string;
 
+  @Column({
+    type: DataType.STRING
+  })
+  declare cancel_reason: string;
+
   @BelongsTo(() => Plan)
   declare plan: Plan;
 
@@ -56,4 +61,10 @@ export class Subscription extends Model {
 
   @Column({ type: DataType.BOOLEAN, defaultValue: true })
   declare auto_renew: boolean;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: false
+  })
+  declare paid_on: Date;
 }
