@@ -20,7 +20,7 @@ import { Estate } from '../estate/estate.model';
   paranoid: true
 })
 
-export default class AccessLog extends Model {
+export class AccessLog extends Model {
   @PrimaryKey
   @Column({ 
     type: DataType.UUID,
@@ -67,9 +67,6 @@ export default class AccessLog extends Model {
   })
   declare exit_time: string;
 
-  @HasMany(() => Estate)
-  declare estates: Estate[];
-
   @ForeignKey(() => Estate)
   @Column({
     allowNull: false,
@@ -77,14 +74,13 @@ export default class AccessLog extends Model {
   })
   declare estate_id: string;
 
-  @BelongsTo(() => Estate)
-  declare estate: Estate;
   @Column({
     type: DataType.ENUM('guest', 'resident', 'staff', 'delivery', 'maintenance', 'security', 'others'),
     allowNull: false,
     defaultValue: 'guest'
   })
   declare access_type: string;
+
   @Column({
     type: DataType.ENUM('RFID', 'QR_code', 'access_code', 'manual_approval'),
     allowNull: false,
@@ -96,6 +92,7 @@ export default class AccessLog extends Model {
     type: DataType.STRING
   })
   declare vehicle_number: string;
+
   @Column({
     type: DataType.ENUM('approved', 'pending', 'denied'),
     allowNull: false,
@@ -106,15 +103,14 @@ export default class AccessLog extends Model {
     type: DataType.TEXT
   })
   declare remarks: string;
+  
   @Column({
     type: DataType.STRING,
     allowNull: false,
   })
   declare resident_id: string;
-  @BelongsTo(() => User, {
-    foreignKey: 'resident_id',
-    targetKey: 'id',
-  })
+
+  @BelongsTo(() => User, {as: 'residents'})
   declare resident: User;
 
   @Column({
@@ -122,4 +118,9 @@ export default class AccessLog extends Model {
     allowNull: false,
   })
   declare created_by: string;
+
+  @BelongsTo(() => Estate, {
+    foreignKey: 'estate_id'
+  })
+  declare estate: Estate;
 }
