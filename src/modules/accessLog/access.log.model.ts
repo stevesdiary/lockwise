@@ -46,12 +46,14 @@ export class AccessLog extends Model {
   declare access_code: string;
 
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
+    allowNull: false
   })
   declare date_in: Date;
 
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
+    allowNull: false
   })
   declare date_out: Date;
 
@@ -94,7 +96,7 @@ export class AccessLog extends Model {
   declare vehicle_number: string;
 
   @Column({
-    type: DataType.ENUM('approved', 'pending', 'denied'),
+    type: DataType.ENUM('approved', 'pending', 'denied', 'cancelled', 'expired'),
     allowNull: false,
   })
   declare status: string;
