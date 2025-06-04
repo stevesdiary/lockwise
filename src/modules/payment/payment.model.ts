@@ -11,6 +11,8 @@ import {
 } from 'sequelize-typescript';
 import {  Plan} from '../payment/plan.model';
 import { Estate } from '../estate/estate.model';
+import { User } from '../user/user.model';
+import { Subscription } from './subscription.model';
 
 type PaymentStatus = 'pending' | 'completed' | 'failed' | 'refunded';
 type PaymentMethod = 'credit_card' | 'debit_card' | 'bank_transfer' | 'cash' | 'POS';
@@ -96,9 +98,14 @@ export class Payment extends Model {
   @Column(DataType.DATE)
   refund_date?: Date;
 
-  @CreatedAt
-  declare createdAt: Date;
+  @ForeignKey(() => User)
+  @Column({
+    type: DataType.UUID,
+    allowNull: false,
+  })
+  declare user_id: string;
 
-  @UpdatedAt
-  declare updatedAt: Date;
+  @ForeignKey(() => Subscription)
+  @Column(DataType.UUID)
+  declare subscription_id: string;
 }
