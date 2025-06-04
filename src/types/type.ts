@@ -56,7 +56,7 @@ export interface UserResponseData {
   statusCode: number;
   status: string, // 'success' | 'fail' | 'error';
   message: string;
-  data: unknown | null;
+  data: string[] | null;
 }
 
 export interface EmailPayload {

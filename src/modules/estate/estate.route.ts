@@ -1,5 +1,5 @@
 import { Router, Request as ExpressRequest, Response } from 'express';
-import estateController from '../estate/estate.controller';
+import estateController from './estate.controller';
 
 const estateRouter = Router();
 

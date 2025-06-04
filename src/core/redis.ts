@@ -1,123 +1,81 @@
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 
-const MAX_RETRIES = 3;
-const RETRY_BASE_DELAY = 2000; // 2 seconds
+class RedisConnection {
+  private static instance: Redis | null = null;
+  private static readonly MAX_RETRIES = 3;
+  private static readonly RETRY_DELAY = 1000;
 
-let redisClient: Redis | null;
+  static async getInstance(): Promise<Redis> {
+    if (!process.env.REDIS_URL) {
+      throw new Error('REDIS_URL environment variable is required');
+    }
 
-async function initializeRedisConnection(): Promise<Redis> {
-  if (!redisClient) {
-    redisClient = new Redis(process.env.REDIS_URL, {
-      maxRetriesPerRequest: MAX_RETRIES,
-      retryStrategy(times: number) {
-        if (times > MAX_RETRIES) {
-          console.error('Max redis connection retries reached. Giving up.');
-          return null;
+    if (!this.instance) {
+      this.instance = new Redis(process.env.REDIS_URL, {
+        maxRetriesPerRequest: this.MAX_RETRIES,
+        retryStrategy: (times: number) => {
+          if (times > this.MAX_RETRIES) {
+            return null; // stop retrying
+          }
+          return Math.min(times * this.RETRY_DELAY, 3000);
+        },
+        reconnectOnError: (err: Error) => {
+          const targetError = 'READONLY';
+          return err.message.includes(targetError);
         }
-        
-        const delay = Math.min(times * RETRY_BASE_DELAY, 3000);
-        console.log(`Retrying redis connection in ${delay}ms... (Attempt ${times}/${MAX_RETRIES})`);
-        return delay;
-      },
-      reconnectOnError(err) {
-        const targetError = 'READONLY';
-        if (err.message.includes(targetError)) {
-          return true;
-        }
-        return false;
-      }
-    });
-
-    // Connection event handlers
-    redisClient.on('connect', () => {
-      console.log('Redis connected successfully');
-    });
-
-    // redisClient.on('ready', () => {
-      
-    // });
-
-    redisClient.on('error', (err) => {
-      console.error('Redis client error:', err);
-    });
-
-    redisClient.on('close', () => {
-      console.log('Redis connection closed');
-    });
-
-    redisClient.on('reconnecting', (delay: number) => {
-      console.log(`Redis client reconnecting in ${delay}ms`);
-    });
-
-    const shutdownSignals: NodeJS.Signals[] = ['SIGTERM', 'SIGINT', 'SIGUSR2'];
-    shutdownSignals.forEach(signal => {
-      process.once(signal, async () => {
-        console.log(`Received ${signal}, initiating graceful shutdown...`);
-        await gracefulShutdown();
       });
-    });
-  }
 
-  return redisClient;
-}
+      // Handle connection events
+      this.instance.on('connect', () => {
+        console.log('Successfully connected to Redis');
+      });
 
-async function saveToRedis(key: string, value: string, expirationInSeconds: number): Promise<void> {
-  if (!redisClient) {
-    throw new Error('Redis client not initialized');
-  }
-
-  try {
-    await redisClient.set(key, value, 'EX', expirationInSeconds);
-    console.log(`Successfully saved ${key} to Redis`);
-  } catch (err) {
-    console.error('Error saving to Redis:', err);
-    throw err;
-  }
-}
-
-async function getFromRedis(key: string): Promise<string | null> {
-  if (!redisClient) {
-    throw new Error('Redis client not initialized');
-  }
-
-  try {
-    const value = await redisClient.get(key);
-    if (value) {
-      console.log(`Successfully retrieved ${key} from Redis`);
+      this.instance.on('error', (err: Error) => {
+        console.error('Redis connection error:', err);
+      });
     }
-    return value;
-  } catch (err) {
-    console.error('Error retrieving from Redis:', err);
-    throw err;
-  }
-}
 
-async function gracefulShutdown(): Promise<void> {
-  if (redisClient) {
+    return this.instance;
+  }
+
+    static async saveToRedis(key: string, value: string, expirationInSeconds: number): Promise<void> {
+    const redis = await this.getInstance();
+    
     try {
-      console.log('Closing Redis connection...');
-      await redisClient.quit();
-      console.log('Redis connection closed successfully');
+      await redis.set(key, value, 'EX', expirationInSeconds);
+      console.log(`Successfully saved ${key} to Redis`);
     } catch (err) {
-      console.error('Error closing Redis connection:', err);
-      await redisClient.disconnect();
-    } finally {
-      redisClient = null;
-      process.exit(0);
+      console.error('Error saving to Redis:', err);
+      throw err;
+    }
+  }
+
+  static async getFromRedis(key: string): Promise<string | null> {
+    const redis = await this.getInstance();
+    
+    try {
+      const value = await redis.get(key);
+      if (value) {
+        console.log(`Successfully retrieved ${key} from Redis`);
+      }
+      return value;
+    } catch (err) {
+      console.error('Error retrieving from Redis:', err);
+      throw err;
+    }
+  }
+
+  static async deleteFromRedis(key: string): Promise<void> {
+    const redis = await this.getInstance();
+    
+    try {
+      await redis.del(key);
+      console.log(`Successfully deleted ${key} from Redis`);
+    } catch (err) {
+      console.error('Error deleting from Redis:', err);
+      throw err;
     }
   }
 }
 
-// Initialize the connection when the module is imported
-initializeRedisConnection().catch(err => {
-  console.error('Failed to initialize Redis connection:', err);
-  process.exit(1);
-});
-
-export { getFromRedis, saveToRedis, initializeRedisConnection };
-
-
-// import Redis from "ioredis"
-
-// const client = new Redis("rediss://default:AWcLAAIjcDFiZmMxOGQ3N2FiYjQ0ZTAyOTE2MzZmMGVkY2ZkMTc1M3AxMA@immune-duck-26379.upstash.io:6379");
-// await client.set('foo', 'bar');
+export default RedisConnection;

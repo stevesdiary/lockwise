@@ -1,7 +1,14 @@
-import { AutoIncrement, Column, DataType, Table, Model, BelongsTo } from "sequelize-typescript";
+import { Column, DataType, Table, Model, BelongsTo } from "sequelize-typescript";
 import { Resident } from "../resident/resident.model";
 import { Estate } from "./estate.model";
 
+@Table({
+	tableName: 'access_logs',
+	timestamps: true,
+	underscored: true,
+	freezeTableName: true,
+	paranoid: true
+})
 export class AccessLog extends Model<AccessLog> {
 	@Column({
 		type: DataType.NUMBER,

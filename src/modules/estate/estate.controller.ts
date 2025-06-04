@@ -2,6 +2,7 @@ import { Request as ExpressRequest, Response } from 'express';
 import { createEstateSchema } from '../../utils/validator';
 import estateService from './estate.service';
 import { errorHandler, handleControllerError } from '../../middlewares/error.handler';
+import { idSchema } from '../../schemas/validation.schema';
 
 class EstateController {
   async createEstate(req: ExpressRequest, res: Response) {
@@ -29,7 +30,7 @@ class EstateController {
     }
   }
 
-  async getEstateById(req: ExpressRequest, res: Response) {
+  async getEstateById(req: ExpressRequest, res: Response): Promise<Response> {
     try {
       const { estateId, estate_code } = req.params;
       if (!req.params.estateId || !req.params.estate_code) {
@@ -49,7 +50,15 @@ class EstateController {
     }
   }
 
-  async updateEstate(req: ExpressRequest, res: Response) {
+  async updateEstate(req: ExpressRequest, res: Response): Promise<Response> {
+    // const estateId = await idSchema.validate(req.params.estate_id)
+    const estateId = req.user?.estateId
+    if (!estateId) {
+      return res.status(400).json({
+        status: 'fail',
+        message: 'Estate ID is required'
+      });
+    }
     try {
       const estate = await estateService.updateEstate(req.params.estateId, req.body);
       if (!estate) {
@@ -58,11 +67,7 @@ class EstateController {
           message: 'Estate not found'
         });
       }
-      return res.status(200).json({
-        status: 'success',
-        message: 'Estate updated successfully',
-        data: estate
-      });
+      return res.json( estate );
     } catch (error) {
       return handleControllerError(error, res);
     }
