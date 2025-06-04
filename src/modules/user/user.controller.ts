@@ -1,70 +1,36 @@
-import { UserRepository } from '../repositories/user.repository';
-import { User } from '../user/user.model';
-import { ApiResponse } from '../../types/api.type';
-import { UserUpdateAttributes, UserCreationAttributes } from '../../types/user.type';
+import { Request, Response } from 'express';
+import { userService } from './user.service';
 
-class UserService {
-  private userRepository = new UserRepository();
+export const userController = {
+  getUsersByEstate: async (req: Request, res: Response): Promise<Response> => {
+    const estateId = req.user?.estate_id || req.query.estate_id as string;
+    const response = await userService.getUsersByEstate(estateId);
+    return res.status(response.statusCode).json(response);
+  },
 
-  async getUsersByEstate(estateId: string): Promise<ApiResponse<User[]>> {
-    const users = await this.userRepository.findAllByEstate(estateId);
-    return {
-      status: 'success',
-      statusCode: 200,
-      message: 'Users retrieved successfully',
-      data: users
-    };
+  getOneUser: async (req: Request, res: Response): Promise<Response> => {
+    const response = await userService.getUserById(req.params.id);
+    return res.status(response.statusCode).json(response);
+  },
+
+  register: async (req: Request, res: Response): Promise<Response> => {
+    const response = await userService.createUser(req.body);
+    return res.status(response.statusCode).json(response);
+  },
+
+  updateUser: async (req: Request, res: Response): Promise<Response> => {
+    const response = await userService.updateUser(req.params.id, req.body);
+    return res.status(response.statusCode).json(response);
+  },
+
+  deleteUser: async (req: Request, res: Response): Promise<Response> => {
+    const response = await userService.deleteUser(req.params.id);
+    return res.status(response.statusCode).json(response);
+  },
+
+  verifyUser: async (req: Request, res: Response): Promise<Response> => {
+    const { email, code } = req.body;
+    const response = await userService.verifyUser({ email, code });
+    return res.status(response.statusCode).json(response);
   }
-
-  async getUserById(userId: string): Promise<ApiResponse<User | null>> {
-    const user = await this.userRepository.findById(userId);
-    return {
-      status: user ? 'success' : 'fail',
-      statusCode: user ? 200 : 404,
-      message: user ? 'User retrieved successfully' : 'User not found',
-      data: user
-    };
-  }
-
-  async createUser(data: UserCreationAttributes): Promise<ApiResponse<User>> {
-    const user = await this.userRepository.create(data);
-    return {
-      status: 'success',
-      statusCode: 201,
-      message: 'User created successfully',
-      data: user
-    };
-  }
-
-  async verifyUser(payload: { email: string; code: string }): Promise<ApiResponse<null>> {
-    // Example placeholder
-    return {
-      status: 'success',
-      statusCode: 200,
-      message: 'User verified successfully',
-      data: null
-    };
-  }
-
-  async updateUser(id: string, data: UserUpdateAttributes): Promise<ApiResponse<User | null>> {
-    const user = await this.userRepository.update(id, data);
-    return {
-      status: user ? 'success' : 'fail',
-      statusCode: user ? 200 : 404,
-      message: user ? 'User updated successfully' : 'User not found',
-      data: user
-    };
-  }
-
-  async deleteUser(id: string): Promise<ApiResponse<null>> {
-    const success = await this.userRepository.delete(id);
-    return {
-      status: success ? 'success' : 'fail',
-      statusCode: success ? 200 : 404,
-      message: success ? 'User deleted successfully' : 'User not found',
-      data: null
-    };
-  }
-}
-
-export const userService = new UserService();
+};
