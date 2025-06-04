@@ -144,7 +144,12 @@ export class Estate extends Model<EstateAttributes, EstateCreationAttributes> {
   @HasMany(() => Street)
   declare streets: Street[];
 
-  @HasMany(() => AccessLog)
+  @HasMany(() => AccessLog, {
+    foreignKey: 'estate_id'
+  })
   declare accessLogs: AccessLog[];
+
+  @HasMany(() => User, { as: 'estateResidents' })
+  declare estateResidents: User[];
 }
 
