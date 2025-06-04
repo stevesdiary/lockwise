@@ -30,17 +30,22 @@ export class Plan extends Model {
   declare description: string;
 
   @Column({
-    type: DataType.ENUM('biannually', 'quarterly', 'annually'),
+    type: DataType.ENUM('monthly','biannually', 'quarterly', 'annually'),
     allowNull: false
   })
   declare billing_cycle: string;
 
-  @Column(DataType.ENUM('regular', 'premium'))
-  declare category: 'regular' | 'premium';
+  @Column({
+    type: DataType.ENUM('basic', 'standard', 'premium'),
+    allowNull: false,
+    defaultValue: 'basic',
+  })
+  declare category: string;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
+    defaultValue: 1,
     comment: 'Duration in days'
   })
   declare duration: number;
@@ -48,20 +53,23 @@ export class Plan extends Model {
   @BeforeCreate
     static setDuration(plan: Plan) {
       const cycleToDays: Record<string, number> = {
+        annually: 365,
         biannually: 182,
         quarterly: 91,
-        annually: 365
+        monthly: 30
       };
-      plan.duration = cycleToDays[plan.billing_cycle] || 0;
+      plan.duration = cycleToDays[plan.billing_cycle] || 1;
     }
 
-
   @Column({
-    type: DataType.DECIMAL,
+    type: DataType.DECIMAL(10, 2),
     allowNull: false
   })
   declare price: number;
   
-
-  // @BelongsTo(() => Subscription)
+  @Column({
+    type: DataType.STRING,
+    allowNull: true
+  })
+  declare currency: string; 
 }
