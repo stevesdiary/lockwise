@@ -1,6 +1,10 @@
-import { Table, Model, Column, DataType, BelongsTo, ForeignKey } from 'sequelize-typescript';
+import { Table, Model, Column, DataType, BelongsTo, HasMany, ForeignKey, HasOne } from 'sequelize-typescript';
 import { Estate } from '../estate/estate.model';
 import { Role } from '../role/role.model';
+import { Resident } from '../resident/resident.model';
+import { AccessLog } from '../accessLog/access.log.model';
+import { Payment } from '../payment/payment.model';
+import { Unit } from '../estate/unit.model';
 
 @Table
 export class User extends Model<User> {
@@ -28,7 +32,7 @@ export class User extends Model<User> {
     type: DataType.STRING(8),
     allowNull: false,
   })
-  declare estate_id: string;
+  declare estate_code: string;
 
   @Column({
     type: DataType.STRING,
@@ -48,17 +52,37 @@ export class User extends Model<User> {
     defaultValue: false
   })
   declare verified: boolean;
+  @ForeignKey(() => Role)
+  @Column(DataType.UUID)
+  declare role_id: string;
+
+  @BelongsTo(() => Role)
+  declare role: Role;
+
+  @ForeignKey(() => Estate)
+  @Column(DataType.UUID)
+  declare estate_id: string;
 
   @BelongsTo(() => Estate)
   declare estate: Estate;
 
-  @ForeignKey(() => Role)
-  @Column({
-    type: DataType.UUID,
-    allowNull: false,
-  })
-  declare roleId: string;
+  // @HasOne(() => Resident, { foreignKey: 'user_id' })
+  // declare residentProfile: Resident;
 
-  @BelongsTo(() => Role)
-  declare role: Role;
+  @HasOne(() => Resident, { 
+    foreignKey: 'user_id', 
+    as: 'residentProfile' 
+  })
+  declare residentProfile: Resident;
+
+
+  @HasMany(() => AccessLog)
+  declare accessLogs: AccessLog[];
+
+  @HasMany(() => Payment)
+  declare payments: Payment[];
+
+  // @ForeignKey(() => Unit)
+  // @Column(DataType.UUID)
+  // declare unit_id: string;
 }
