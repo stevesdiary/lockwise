@@ -1,7 +1,7 @@
 import { User } from '../modules/user/user.model';
 import { Estate } from '../modules/estate/estate.model';
 import { Resident } from '../modules/resident/resident.model';
-import AccessLog from '../modules/accessLog/access.log.model';
+import { AccessLog }from '../modules/accessLog/access.log.model';
 
 export interface IBaseRepository<T> {
   create(data: Partial<T>): Promise<T>;
