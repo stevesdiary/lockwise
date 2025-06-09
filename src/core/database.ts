@@ -8,7 +8,7 @@ import { Role } from '../modules/role/role.model';
 import { Street } from '../modules/estate/street.model';
 import { Permission } from '../modules/permission/permission.model';
 import { Unit } from '../modules/estate/unit.model';
-import { AccessLog } from '../modules/estate/accessLog.model';
+import { AccessLog } from '../modules/accessLog/accessLog.model';
 import { RolePermission } from '../modules/permission/role.permission.model';
 import { Resident } from '../modules/resident/resident.model';
 
