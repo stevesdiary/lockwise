@@ -1,5 +1,5 @@
 import { Resident } from '../resident/resident.model';
-import { AccessLog } from '../estate/accessLog.model';
+import { AccessLog } from '../accessLog/access.log.model';
 import { Op } from 'sequelize';
 import { LogCreationAttributes, LogUpdateAttributes } from '../../types/log.type';
 
