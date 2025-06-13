@@ -8,7 +8,7 @@ import { Role } from '../modules/role/role.model';
 import { Street } from '../modules/estate/street.model';
 import { Permission } from '../modules/permission/permission.model';
 import { Unit } from '../modules/estate/unit.model';
-import { AccessLog } from '../modules/estate/accessLog.model';
+import { Access } from '../modules/estate/access.model';
 import { RolePermission } from '../modules/permission/role.permission.model';
 import { Resident } from '../modules/resident/resident.model';
 
@@ -20,7 +20,7 @@ const sequelize = new Sequelize({
   username: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
   database: process.env.DB_NAME || 'your_database',
-  models: [User, Estate, Resident, Role, Payment, Street, Permission, Unit, AccessLog, RolePermission, Unit],
+  models: [User, Estate, Resident, Role, Payment, Street, Permission, Unit, Access, RolePermission, Unit],
   ssl: true,
   dialectOptions: {
     ssl: {
