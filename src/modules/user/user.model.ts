@@ -2,7 +2,7 @@ import { Table, Model, Column, DataType, BelongsTo, HasMany, ForeignKey, HasOne 
 import { Estate } from '../estate/estate.model';
 import { Role } from '../role/role.model';
 import { Resident } from '../resident/resident.model';
-import { AccessLog } from '../accessLog/access.log.model';
+import { Access } from '../access/access.model';
 import { Payment } from '../payment/payment.model';
 import { Unit } from '../estate/unit.model';
 
@@ -76,8 +76,8 @@ export class User extends Model<User> {
   declare residentProfile: Resident;
 
 
-  @HasMany(() => AccessLog)
-  declare accessLogs: AccessLog[];
+  @HasMany(() => Access)
+  declare Accesss: Access[];
 
   @HasMany(() => Payment)
   declare payments: Payment[];
