@@ -25,7 +25,6 @@ class RedisConnection {
         }
       });
 
-      // Handle connection events
       this.instance.on('connect', () => {
         console.log('Successfully connected to Redis');
       });
