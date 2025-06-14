@@ -1,5 +1,5 @@
 import { Optional } from "sequelize";
-import { AccessLog } from "../modules/estate/accessLog.model";
+import { Access } from "../modules/estate/access.model";
 
 export interface LogAttributes {
   log_id: string;
@@ -22,7 +22,7 @@ export interface LogAttributes {
   user?: string;
 }
 
-export type LogCreationAttributes = Optional<LogAttributes, "log_id" | "created_at" | "updated_at">;
+export type AccessCreationAttributes = Optional<LogAttributes, "log_id" | "created_at" | "updated_at">;
 
 export type LogUpdateAttributes = Partial<Omit<LogAttributes, "log_id" | "created_at" | "updated_at">>;
 
