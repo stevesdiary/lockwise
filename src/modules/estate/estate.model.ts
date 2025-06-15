@@ -3,7 +3,7 @@ import { Resident } from '../resident/resident.model';
 import { EstateAttributes, EstateCreationAttributes } from '../../types/estate.type';
 import { Street } from './street.model';
 import { User } from '../user/user.model';
-import { Access } from './access.model';
+import { Access } from '../access/access.model';
 
 @Table ({
   tableName: 'estates',

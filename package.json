@@ -43,6 +43,7 @@
     "nodemailer": "^7.0.3",
     "pg": "^8.15.6",
     "pg-hstore": "^2.3.4",
+    "reflect-metadata": "^0.2.2",
     "sequelize": "^6.37.7",
     "sequelize-typescript": "^2.1.6",
     "uuid": "^11.1.0",

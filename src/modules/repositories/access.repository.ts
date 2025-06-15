@@ -1,5 +1,5 @@
 import { Resident } from '../resident/resident.model';
-import { Access } from '../estate/access.model';
+import { Access } from '../access/access.model';
 import { Op, Transaction } from 'sequelize';
 import { AccessCreationAttributes } from '../../types/access.type';
 import { Estate } from '../estate/estate.model';
@@ -58,7 +58,7 @@ export class AccessRepository {
       throw new Error('Access not found nor updated')
     }
     access.entry_time = checkInData.entry_time;
-    access.verified_by = checkInData.verified_by;
+    // access.verified_by = checkInData.verified_by;
     return access;
   }
 
