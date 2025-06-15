@@ -68,7 +68,7 @@ export class Payment extends Model {
   payment_provider!: string;
 
   @Column({
-    type: DataType.ENUM('credit_card', 'debit_card', 'bank_transfer', 'cash', 'USSD', 'paypal'),
+    type: DataType.ENUM('credit_card', 'debit_card', 'bank_transfer', 'cash', 'stripe', 'paypal'),
     allowNull: false,
   })
   payment_method!: PaymentMethod;
