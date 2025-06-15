@@ -53,7 +53,7 @@ export class AccessLog extends Model {
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: true
   })
   declare date_out: Date;
 
