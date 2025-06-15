@@ -8,7 +8,6 @@ class EstateService {
   constructor() {
     this.estateRepository = new EstateRepository();
   }
-
   async createEstate(data: EstateCreationAttributes): Promise<ApiResponse> {
     const estate = await this.estateRepository.create(data);
     if (!estate) {
