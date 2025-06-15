@@ -31,7 +31,8 @@ export class Plan extends Model {
 
   @Column({
     type: DataType.ENUM('monthly','biannually', 'quarterly', 'annually'),
-    allowNull: false
+    allowNull: false,
+    defaultValue: 'monthly'
   })
   declare billing_cycle: string;
 
@@ -45,7 +46,7 @@ export class Plan extends Model {
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 1,
+    defaultValue: 30,
     comment: 'Duration in days'
   })
   declare duration: number;
