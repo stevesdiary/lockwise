@@ -57,7 +57,7 @@ export class Access extends Model {
 
   @Column({
     type: DataType.DATE,
-    allowNull: true
+    allowNull: false
   })
   declare entry_date: Date;
 
@@ -119,7 +119,7 @@ export class Access extends Model {
   declare vehicle_number: string;
 
   @Column({
-    type: DataType.ENUM('approved', 'pending', 'denied'),
+    type: DataType.ENUM('approved', 'pending', 'denied', 'cancelled', 'expired'),
     allowNull: false,
     defaultValue: 'pending'
   })

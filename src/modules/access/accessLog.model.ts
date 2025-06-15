@@ -1,12 +1,7 @@
 import { Column, DataType, Table, Model, BelongsTo } from "sequelize-typescript";
 import { Resident } from "../resident/resident.model";
-<<<<<<<< HEAD:src/modules/estate/access.model.ts
-import { Estate } from "./estate.model";
-import { AccessAttributes, AccessCreationAttributes, AccessStatus } from "../../types/access.type";
-========
 import { Estate } from "../estate/estate.model";
->>>>>>>> 09cc973c764ac68b1aa72357e24e0bf2dd4cca42:src/modules/access/accessLog.model.ts
-
+import { AccessAttributes, AccessCreationAttributes, AccessStatus } from "../../types/access.type";
 @Table({
 	tableName: 'access_logs',
 	timestamps: true,
