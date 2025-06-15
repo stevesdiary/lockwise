@@ -1,5 +1,6 @@
 import * as yup from 'yup';
 import { ValidationError, ValidationErrorResponse } from '../types/validation.type';
+import { Optional } from 'sequelize';
 
 export const userRegistrationSchema = yup.object().shape({
   first_name: yup
@@ -182,3 +183,13 @@ export const updatePermissionSchema = yup.object().shape({
   user_id: yup.string().optional(),
   permission: yup.string().required('Permission is required')
 });
+
+export const createAccessSchema = yup.object().shape({
+  vehicle_number: yup.string().optional(),
+  remarks: yup.string().optional(),
+  schedule_enrty_date: yup.string().optional(),
+  schedule_exit_date: yup.string().optional(),
+  schedule_entry_time: yup.string().required(),
+  schedule_exit_time: yup.string().required(),
+  verification_method: yup.string().optional()
+})
