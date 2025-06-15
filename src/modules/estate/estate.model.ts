@@ -3,7 +3,7 @@ import { Resident } from '../resident/resident.model';
 import { EstateAttributes, EstateCreationAttributes } from '../../types/estate.type';
 import { Street } from './street.model';
 import { User } from '../user/user.model';
-import { AccessLog } from './accessLog.model';
+import { Access } from './access.model';
 
 @Table ({
   tableName: 'estates',
@@ -144,10 +144,10 @@ export class Estate extends Model<EstateAttributes, EstateCreationAttributes> {
   @HasMany(() => Street)
   declare streets: Street[];
 
-  @HasMany(() => AccessLog, {
+  @HasMany(() => Access, {
     foreignKey: 'estate_id'
   })
-  declare accessLogs: AccessLog[];
+  declare Accesss: Access[];
 
   @HasMany(() => User, { as: 'estateResidents' })
   declare estateResidents: User[];
