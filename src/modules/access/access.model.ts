@@ -64,6 +64,7 @@ export class Access extends Model {
   @Column({
     type: DataType.DATE,
     allowNull: true
+    allowNull: true
   })
   declare exit_date: Date;
 
