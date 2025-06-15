@@ -66,15 +66,11 @@ export class User extends Model<User> {
   @BelongsTo(() => Estate)
   declare estate: Estate;
 
-  // @HasOne(() => Resident, { foreignKey: 'user_id' })
-  // declare residentProfile: Resident;
-
   @HasOne(() => Resident, { 
     foreignKey: 'user_id', 
     as: 'residentProfile' 
   })
   declare residentProfile: Resident;
-
 
   @HasMany(() => Access)
   declare Accesss: Access[];
@@ -82,7 +78,6 @@ export class User extends Model<User> {
   @HasMany(() => Payment)
   declare payments: Payment[];
 
-  // @ForeignKey(() => Unit)
-  // @Column(DataType.UUID)
-  // declare unit_id: string;
+  // @HasOne(() => Resident)
+  // declare resident: Resident;
 }
