@@ -1,5 +1,5 @@
 import { Optional } from "sequelize";
-import { Access } from "../modules/estate/access.model";
+import { Access } from "../modules/access/access.model";
 
 export interface LogAttributes {
   log_id: string;
