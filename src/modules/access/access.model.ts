@@ -64,7 +64,6 @@ export class Access extends Model {
   @Column({
     type: DataType.DATE,
     allowNull: true
-    allowNull: true
   })
   declare exit_date: Date;
 
@@ -97,9 +96,6 @@ export class Access extends Model {
     allowNull: true
   })
   declare exit_code: string;
-
-  @BelongsTo(() => User, 'resident_id')
-  declare resident?: User;
 
   @BelongsTo(() => User, 'user_id')
   declare user?: User;
