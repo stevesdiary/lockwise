@@ -29,26 +29,47 @@ class AccessService {
   }
 
   async checkInVisitor(access_id: string, approver_id: string, remarks?: string): Promise<ApiResponse<AccessAttributes>> {
-  const now = new Date();
+    const now = new Date();
 
-  const updateData = {
-    entry_time: now,
-    status: 'approved',
-    remarks,
-    verified_by: approver_id,
-  };
+    const updateData = {
+      entry_time: now,
+      status: 'approved',
+      remarks,
+      verified_by: approver_id,
+    };
 
-  const accessUpdate = await this.accessRepository.updateAccess(access_id, updateData);
+    const accessUpdate = await this.accessRepository.updateAccess(access_id, updateData);
 
-  if (!accessUpdate) throw new Error('Check-in failed');
+    if (!accessUpdate) throw new Error('Check-in failed');
 
-  return {
-    statusCode: 200,
-    status: 'success',
-    message: 'Visitor checked in successfully',
-    data: accessUpdate as any,
-  };
-}
+    return {
+      statusCode: 200,
+      status: 'success',
+      message: 'Visitor checked in successfully',
+      data: accessUpdate as any,
+    };
+  }
+
+  async checkOutVisitor(access_id: string, approver_id: string ): Promise<ApiResponse<AccessAttributes>> {
+    const now = new Date();
+
+    const updateData = {
+      exit_time: now,
+      status: 'approved',
+      verified_by: approver_id,
+    };
+
+    const accessUpdate = await this.accessRepository.updateAccess(access_id, updateData);
+
+    if (!accessUpdate) throw new Error('Check-out failed');
+
+    return {
+      statusCode: 200,
+      status: 'success',
+      message: 'Visitor checked out successfully',
+      data: accessUpdate as any,
+    };
+  }
 
   async updateAccess(access_id: string, accessData: any): Promise<ApiResponse<AccessAttributes>> {
     const moment = dayjs();
