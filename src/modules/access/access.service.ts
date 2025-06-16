@@ -24,7 +24,7 @@ class AccessService {
       statusCode: 201,
       status: 'success',
       message: 'Access created successfully',
-      data: access
+      data: accessData
     };
   }
 
@@ -46,7 +46,7 @@ class AccessService {
     statusCode: 200,
     status: 'success',
     message: 'Visitor checked in successfully',
-    data: accessUpdate,
+    data: accessUpdate as any,
   };
 }
 
@@ -71,7 +71,7 @@ class AccessService {
       statusCode: 200,
       status: 'success',
       message: "Access updated SUccessfully",
-      data: accessUpdate
+      data: accessUpdate as any
     }
   }
   async getAccesss(estate_id: string): Promise<ApiResponse<AccessAttributes[]>> {
@@ -88,7 +88,7 @@ class AccessService {
       statusCode: 200,
       status: 'success',
       message: 'Access found successfully',
-      data: accesses
+      data: accesses as any
     };
   }
 
@@ -106,7 +106,7 @@ class AccessService {
       statusCode: 200,
       status: 'success',
       message: 'Access found successfully',
-      data: access
+      data: access as any
     };
   }
 }
