@@ -14,22 +14,23 @@ export interface AccessAttributes {
   exit_time?: Date;
   estate_id: string;
   resident_id: string;
-  verified_by: string;
+  approved_by: string;
 }
 
 export type AccessCreationAttributes = Omit<AccessAttributes, 'log_id'>;
-// const payload: AccessCreationAttributes = {
-//   visitor_name: 'Visitor from app', // default or mapped from user input
-//   schedule_in: new Date(userInput.set_date_in + 'T' + userInput.set_time_in),
-//   schedule_out: new Date(userInput.set_date_out + 'T' + userInput.set_time_out),
-//   entry_time: undefined, // or set default
-//   access_type: 'guest',
-//   verification_method: userInput.verification_method || 'access_code',
-//   vehicle_number: userInput.vehicle_number,
-//   status: 'pending',
-//   remarks: userInput.remarks || '',
-//   exit_time: undefined,
-//   estate_id: req.user?.estate_id ?? 'fallback-id',
-//   resident_id: req.user?.resident_id ?? 'fallback-id',
-//   verified_by: req.user?.user_id ?? 'system',
-// };
+
+export interface AccessAttributes {
+  id: string;
+  visitor_name: string;
+  schedule_in: Date;
+  schedule_out: Date;
+  verified_by: string;
+  estate_id: string;
+  resident_id: string;
+  status: AccessStatus;
+  entry_time?: Date;
+  exit_time?: Date;
+  remarks?: string;
+}
+
+// export type AccessCreationAttributes = Omit<AccessAttributes, 'id'>;
