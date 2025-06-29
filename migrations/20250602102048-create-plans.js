@@ -1,5 +1,7 @@
 'use strict';
 
+const { access } = require('fs');
+
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
@@ -30,6 +32,9 @@ module.exports = {
       currency: {
         type: Sequelize.STRING,
         defaultValue: 'NGN'
+      },
+      features: {
+        type: Sequelize.JSONB
       },
       billing_cycle: {
         type: Sequelize.ENUM('monthly', 'quarterly', 'biannually', 'annually'),
