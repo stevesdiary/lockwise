@@ -28,6 +28,7 @@
     "@types/ioredis": "^4.28.10",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/nanoid": "^2.1.0",
+    "@types/xlsx": "^0.0.35",
     "@types/yup": "^0.29.14",
     "axios": "^1.9.0",
     "bcrypt": "^5.1.1",
@@ -39,6 +40,7 @@
     "express-rate-limit": "^7.5.0",
     "ioredis": "^5.6.1",
     "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.1",
     "nanoid": "^5.1.5",
     "nodemailer": "^7.0.3",
     "pg": "^8.15.6",
@@ -47,6 +49,7 @@
     "sequelize": "^6.37.7",
     "sequelize-typescript": "^2.1.6",
     "uuid": "^11.1.0",
+    "xlsx": "^0.18.5",
     "yup": "^1.6.1"
   },
   "devDependencies": {
