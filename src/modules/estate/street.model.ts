@@ -2,12 +2,20 @@ import { Column, HasMany, ForeignKey, Table, DataType, PrimaryKey, Model, Defaul
 import { Estate } from "./estate.model";
 import { Unit } from "./unit.model";
 
-@Table({ tableName: 'streets' })
+@Table({
+  tableName: 'streets',
+  timestamps: true,
+  underscored: true,
+})
+
 export class Street extends Model {
-  @PrimaryKey
-  @Default(DataType.UUIDV4)
-  @Column(DataType.UUID)
-  declare id: string;
+  @Column({
+    type: DataType.UUID,
+    primaryKey: true,
+    defaultValue: DataType.UUIDV4,
+    allowNull: false
+  })
+  declare street_id: string;
 
   @ForeignKey(() => Estate)
   @Column({
