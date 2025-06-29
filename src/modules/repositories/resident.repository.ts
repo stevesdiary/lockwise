@@ -1,5 +1,8 @@
+import { Model } from "sequelize-typescript";
 import { ResidentCreationAttributes } from "../../types/resident.type";
 import { Resident } from "../resident/resident.model";
+import { User } from "../user/user.model";
+import { Unit } from "../estate/unit.model";
 
 export class ResidentRepository {
   async findById(id: string): Promise<Resident | null> {
@@ -10,12 +13,25 @@ export class ResidentRepository {
     return Resident.create(residentData as any);
   }
 
-  async findByEmail(email: string, estateId: string): Promise<Resident | null> {
-    return Resident.findOne({
+  async findByEmail(email: string, estateId: string): Promise<User | null> {
+    return User.findOne({
       where: {
         email,
         estate_id: estateId,
       },
+      include:
+        {
+          model: Resident,
+          as: 'estateResidents',
+          where: { estate_id: estateId },
+          required: false,
+          attributes: ['subscribed'],
+          // include: {
+          //   Model: Unit,
+          //   as: 'unit'
+          // }
+        },
+        
     });
   }
   
