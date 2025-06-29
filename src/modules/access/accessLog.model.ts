@@ -9,7 +9,7 @@ import { AccessAttributes, AccessCreationAttributes, AccessStatus } from "../../
 	freezeTableName: true,
 	paranoid: true
 })
-export class Access extends Model<AccessAttributes, AccessCreationAttributes> {
+export class AccessEntries extends Model<AccessAttributes, AccessCreationAttributes> {
 	@Column({
 		type: DataType.NUMBER,
 		primaryKey: true,
@@ -17,7 +17,7 @@ export class Access extends Model<AccessAttributes, AccessCreationAttributes> {
 		allowNull: false,
 		autoIncrement: true
 	})
-	declare log_id: string;
+	declare id: string;
 
 	@Column({
 		type: DataType.STRING,
