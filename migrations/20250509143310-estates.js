@@ -16,16 +16,26 @@ module.exports = {
         allowNull: false,
         primaryKey: true
       },
-      resident_id: {
-        type: Sequelize.UUID,
-        allowNull: false,
-        references: {
-          model: 'residents',
-          key: 'resident_id'
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'SET NULL'
-      },
+      // resident_id: {
+      //   type: Sequelize.UUID,
+      //   allowNull: false,
+      //   references: {
+      //     model: 'residents',
+      //     key: 'resident_id'
+      //   },
+      //   onUpdate: 'CASCADE',
+      //   onDelete: 'SET NULL'
+      // },
+      // user_id: {
+      //   type: Sequelize.UUID,
+      //   allowNull: false,
+      //   references: {
+      //     model: 'users',
+      //     key: 'user_id'
+      //   },
+      //   onUpdate: 'CASCADE',
+      //   onDelete: 'SET NULL'
+      // },
       status: {
         type: Sequelize.STRING
       },
@@ -37,19 +47,11 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true
       },
-      estate_approved_on: {
-        type: Sequelize.DATE,
-        allowNull: true
+      approved_on: {
+        type: Sequelize.DATE
       },
-      estate_approval_status_by: {
-        type: Sequelize.UUID,
-        allowNull: true,
-        references: {
-          model: 'users',
-          key: 'user_id'
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'SET NULL'
+      approved_by: {
+        type: Sequelize.STRING
       },
       name: {
         type: Sequelize.STRING
@@ -60,6 +62,12 @@ module.exports = {
         unique: true
       },
       address: {
+        type: Sequelize.STRING
+      },
+      contact_phone: {
+        type: Sequelize.STRING
+      },
+      contact_email: {
         type: Sequelize.STRING
       },
       type: {
@@ -94,9 +102,8 @@ module.exports = {
         type: Sequelize.BOOLEAN,
         defaultValue: false
       },
-      subscribed_at: {
-        type: Sequelize.DATE,
-        allowNull: true
+      subscribed_on: {
+        type: Sequelize.DATE
       },
       active: {
         type: Sequelize.BOOLEAN,
@@ -107,11 +114,13 @@ module.exports = {
       },
       created_at: {
         type: Sequelize.DATE,
-        allowNull: false
+        allowNull: false,
+        defaultValue: Sequelize.fn('NOW')
       },
       updated_at: {
         type: Sequelize.DATE,
-        allowNull: false
+        allowNull: false,
+        defaultValue: Sequelize.fn('NOW')
       },
       deleted_at: {
         type: Sequelize.DATE,
