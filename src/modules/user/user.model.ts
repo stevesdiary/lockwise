@@ -4,7 +4,6 @@ import { Role } from '../role/role.model';
 import { Resident } from '../resident/resident.model';
 import { Access } from '../access/access.model';
 import { Payment } from '../payment/payment.model';
-import { Unit } from '../estate/unit.model';
 
 @Table
 export class User extends Model<User> {
@@ -19,6 +18,12 @@ export class User extends Model<User> {
     type: DataType.STRING,
     allowNull: false,
   })
+  declare title: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
   declare first_name: string;
   
   @Column({
@@ -27,12 +32,11 @@ export class User extends Model<User> {
   })
   declare last_name: string;
 
-  @ForeignKey(() => Estate)
   @Column({
-    type: DataType.STRING(8),
+    type: DataType.STRING,
     allowNull: false,
   })
-  declare estate_code: string;
+  declare phone: string;
 
   @Column({
     type: DataType.STRING,
@@ -52,6 +56,7 @@ export class User extends Model<User> {
     defaultValue: false
   })
   declare verified: boolean;
+
   @ForeignKey(() => Role)
   @Column(DataType.UUID)
   declare role_id: string;
@@ -67,7 +72,7 @@ export class User extends Model<User> {
   declare estate: Estate;
 
   @HasOne(() => Resident, { 
-    foreignKey: 'user_id', 
+    foreignKey: 'id', 
     as: 'residentProfile' 
   })
   declare residentProfile: Resident;
@@ -77,7 +82,4 @@ export class User extends Model<User> {
 
   @HasMany(() => Payment)
   declare payments: Payment[];
-
-  // @HasOne(() => Resident)
-  // declare resident: Resident;
 }
