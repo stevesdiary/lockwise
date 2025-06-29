@@ -39,7 +39,7 @@ export const userRegistrationSchema = yup.object().shape({
   phone: yup
     .string()
     .trim()
-  //  .required('Phone number is required')
+    .required('Phone number is required')
     .matches(
       /^(0[7-9]\d{9}|\+234[7-9]\d{9})$/,
       'Invalid Nigerian phone number'
