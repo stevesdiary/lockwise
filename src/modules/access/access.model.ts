@@ -26,7 +26,7 @@ export class Access extends Model {
     primaryKey: true,
     defaultValue: DataType.UUIDV4
   })
-  declare log_id: string;
+  declare id: string;
 
   @ForeignKey(() => Estate)
   @Column({
