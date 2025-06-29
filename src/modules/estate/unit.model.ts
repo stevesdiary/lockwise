@@ -10,11 +10,11 @@ import { User } from "../user/user.model";
   paranoid: true,
 })
 export class Unit extends Model {
-  @PrimaryKey
   @Column({
     type: DataType.UUID,
     defaultValue: DataType.UUIDV4,
-    allowNull: false
+    allowNull: false,
+    primaryKey: true
   })
   declare id: string;
 
@@ -22,10 +22,11 @@ export class Unit extends Model {
   @Column(DataType.UUID)
   declare street_id: string;
 
+
   @Column({
     type: DataType.STRING,
     allowNull: false,
-    unique: true // Ensures uniqueness of number and block within the same street e.g. 12, 4B, A-1
+    unique: true
   }) 
   declare number: string;
 
@@ -40,12 +41,12 @@ export class Unit extends Model {
   declare floor: number;
 
   @Column({
-    type: DataType.ENUM('flat', 'duplex', 'chalet', 'other'),
+    type: DataType.ENUM('flat', 'duplex', 'chalet', 'terrace', 'other'),
     allowNull: true
   })
   declare unit_type: string;
 
-  // @HasMany(() => Resident, { as: 'unitResidents' }) // renamed alias
-  // declare unitResidents: Resident[];
+  @HasMany(() => Resident, { as: 'residentsInUnit' })
+  declare residentsInUnit: Resident[];
 
 }
