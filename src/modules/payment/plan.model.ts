@@ -44,6 +44,17 @@ export class Plan extends Model {
   declare category: string;
 
   @Column({
+    type: DataType.JSONB,
+    allowNull: true,
+    defaultValue: {
+      access: ['access_code'], 
+      amenities: [], 
+      services: ['customer_support']
+    }
+  })
+  declare features: string;
+
+  @Column({
     type: DataType.INTEGER,
     allowNull: false,
     defaultValue: 30,
