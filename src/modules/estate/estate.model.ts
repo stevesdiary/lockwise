@@ -1,9 +1,9 @@
 import { Table, Model, Column, DataType, Index, Default, HasMany } from 'sequelize-typescript';
-import { Resident } from '../resident/resident.model';
 import { EstateAttributes, EstateCreationAttributes } from '../../types/estate.type';
 import { Street } from './street.model';
 import { User } from '../user/user.model';
 import { Access } from '../access/access.model';
+import { all } from 'axios';
 
 @Table ({
   tableName: 'estates',
@@ -26,6 +26,7 @@ export class Estate extends Model<EstateAttributes, EstateCreationAttributes> {
     type: DataType.UUID,
     primaryKey: true,
     defaultValue: DataType.UUIDV4,
+    allowNull: false,
   })
   declare estate_id: string;
 
@@ -133,6 +134,11 @@ export class Estate extends Model<EstateAttributes, EstateCreationAttributes> {
     type: DataType.DATE
   })
   declare approved_on: Date;
+
+  @Column({
+    type: DataType.STRING
+  })
+  declare approved_by: string;
 
   @Column({
     type: DataType.STRING
