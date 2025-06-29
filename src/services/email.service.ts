@@ -1,6 +1,5 @@
 import nodemailer, { SendMailOptions, Transporter, TransportOptions } from 'nodemailer';
 import { EmailPayload, EmailResponse } from '../types/type';
-import { handleControllerError } from '../middlewares/error.handler';
 
 
 export async function sendEmail(emailPayload: EmailPayload): Promise<EmailResponse> {
