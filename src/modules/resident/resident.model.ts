@@ -15,36 +15,7 @@ export class Resident extends Model<Resident> {
   @Column({
     type: DataType.STRING
   })
-  declare title: string;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-  })
-  declare first_name: string;
-  
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-  })
-  declare last_name: string;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-  })
-  declare email: string;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-  })
-  declare password: string;
-
-  @Column({
-    type: DataType.BOOLEAN
-  })
-  declare verified: boolean;
+  declare title: string; 
 
   @Column({
     type: DataType.BOOLEAN
@@ -64,7 +35,7 @@ export class Resident extends Model<Resident> {
   @ForeignKey(() => Unit)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: false
   })
   declare unit_id: string;
 
