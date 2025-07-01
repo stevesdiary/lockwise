@@ -1,9 +1,10 @@
-import { Table, Model, Column, DataType, Index, Default, HasMany } from 'sequelize-typescript';
+import { Table, Model, Column, DataType, Index, BelongsTo, HasMany, ForeignKey } from 'sequelize-typescript';
 import { EstateAttributes, EstateCreationAttributes } from '../../types/estate.type';
 import { Street } from './street.model';
 import { User } from '../user/user.model';
 import { Access } from '../access/access.model';
 import { all } from 'axios';
+import { Plan } from '../payment/plan.model';
 
 @Table ({
   tableName: 'estates',
@@ -157,5 +158,13 @@ export class Estate extends Model<EstateAttributes, EstateCreationAttributes> {
 
   @HasMany(() => User, { as: 'estateResidents' })
   declare estateResidents: User[];
+
+  @ForeignKey(() => Plan)
+  @Column(DataType.UUID)
+  declare plan_id: string;
+
+  @BelongsTo(() => Plan)
+  declare plan: Plan;
+
 }
 
