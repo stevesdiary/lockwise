@@ -11,6 +11,7 @@ import { Unit } from '../modules/estate/unit.model';
 import { Access } from '../modules/access/access.model';
 import { RolePermission } from '../modules/permission/role.permission.model';
 import { Resident } from '../modules/resident/resident.model';
+import { Plan } from '../modules/payment/plan.model';
 
 const sequelize = new Sequelize({
   dialect: 'postgres',
@@ -20,7 +21,7 @@ const sequelize = new Sequelize({
   username: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
   database: process.env.DB_NAME || 'your_database',
-  models: [User, Estate, Resident, Role, Payment, Street, Permission, Unit, Access, RolePermission],
+  models: [User, Estate, Resident, Role, Payment, Street, Permission, Unit, Access, RolePermission, Plan],
   ssl: true,
   dialectOptions: {
     ssl: {
