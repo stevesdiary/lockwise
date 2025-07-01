@@ -1,5 +1,6 @@
 import { Column, Table, BeforeCreate, Model, DataType, BelongsTo } from 'sequelize-typescript';
 import { Subscription } from './subscription.model';
+import { PlanFeatures } from '../../types/plan.features';
 
 @Table({
   tableName: 'plans',
@@ -52,7 +53,8 @@ export class Plan extends Model {
       services: ['customer_support']
     }
   })
-  declare features: string;
+  declare features: PlanFeatures;
+
 
   @Column({
     type: DataType.INTEGER,

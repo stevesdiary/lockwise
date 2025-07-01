@@ -3,7 +3,7 @@ import { EstateRepository } from '../modules/repositories/estate.repository';
 import sendEmail from './email.service';
 import { ResidentRepository } from '../modules/repositories/resident.repository';
 import { ApiResponse } from "../types/estate.type";
-import RedisConnection from '../core/redis';
+import { getFromRedis, saveToRedis, deleteFromRedis} from '../core/redis';
 import { nanoid } from "nanoid";
 
 
@@ -29,7 +29,7 @@ export class VerifyService {
       };
     }
     const key = `verify:${email}`
-    const verify = await RedisConnection.getFromRedis(key);
+    const verify = await getFromRedis(key);
     if (!verify || verify !== code) {
       return {
         statusCode: 400,
@@ -48,18 +48,9 @@ export class VerifyService {
       };
     }
 
-    // if (user. !== code) {
-    //   return {
-    //     statusCode: 400,
-    //     status: 'fail',
-    //     message: 'Invalid verification code',
-    //     data: null
-    //   };
-    // }
-
     user.verified = true;
     await user.save();
-
+    await deleteFromRedis(key);
     return {
       statusCode: 200,
       status: 'success',
@@ -79,13 +70,8 @@ export class VerifyService {
       };
     }
     const key = `verify:${email}`;
-    const verification_code =  nanoid(6) 
-    console.log('New verification code:', verification_code)
-    //Math.floor(100000 + Math.random() * 900000).toString();
-    // await user.save();
-    const savecode = await RedisConnection.saveToRedis(key, verification_code, 15 * 60);
-
-    // Send the new verification code via email
+    const verification_code =  nanoid(6);
+    await saveToRedis(key, verification_code, 15 * 60);
     
     await sendEmail({
       to: user.email,

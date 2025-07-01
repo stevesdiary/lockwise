@@ -7,7 +7,7 @@
 //   AllPaymentsResponse,
 //   FetchPaymentsRequestData
 // } from '../types/payment.types';
-// import RedisConnection from '../../core/redis';
+// import {getFromRedis, saveToRedis, deleteFromRedis} from '../../core/redis';
 // import { v4 as uuidv4 } from 'uuid';
 // import { Payment } from './payment.model';
 // import { User } from '../user/user.model';
