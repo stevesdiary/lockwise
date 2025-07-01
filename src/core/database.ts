@@ -20,7 +20,7 @@ const sequelize = new Sequelize({
   username: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
   database: process.env.DB_NAME || 'your_database',
-  models: [User, Estate, Resident, Role, Payment, Street, Permission, Unit, Access, RolePermission, Unit],
+  models: [User, Estate, Resident, Role, Payment, Street, Permission, Unit, Access, RolePermission],
   ssl: true,
   dialectOptions: {
     ssl: {
