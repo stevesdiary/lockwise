@@ -144,7 +144,8 @@ export class Estate extends Model<EstateAttributes, EstateCreationAttributes> {
     type: DataType.STRING
   })
   declare zip_code: string;
-  @HasMany(() => User)
+
+  @HasMany(() => User, {as: 'users'})
   declare users: User[];
 
   @HasMany(() => Street)
