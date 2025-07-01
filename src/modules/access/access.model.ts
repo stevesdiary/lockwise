@@ -21,6 +21,7 @@ import { Estate } from '../estate/estate.model';
 })
 
 export class Access extends Model {
+  @PrimaryKey
   @Column({ 
     type: DataType.UUID,
     primaryKey: true,
@@ -28,80 +29,59 @@ export class Access extends Model {
   })
   declare id: string;
 
-  @ForeignKey(() => Estate)
-  @Column({
-    type: DataType.UUID,
-    allowNull: false
-  })
-  declare estate_id: string;
-
   @ForeignKey(() => User)
-  @Column({
-    type: DataType.UUID,
-    allowNull: false
-  })
-  declare resident_id: string;
-
-  @ForeignKey(() => User)
-  @Column({
-    type: DataType.UUID,
-    allowNull: false
+  @Column({ 
+    allowNull: false, 
+    type: DataType.UUID 
   })
   declare user_id: string;
 
-  @Column({
-    type: DataType.ENUM('entry', 'exit'),
-    allowNull: false
-  })
-  declare access_type: 'entry' | 'exit';
+  @BelongsTo(() => User)
+  declare user: User;
 
-  @Column({
-    type: DataType.DATE,
-    allowNull: false
-  })
-  declare entry_date: Date;
-
-  @Column({
-    type: DataType.DATE,
-    allowNull: true
-  })
-  declare exit_date: Date;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: true
-  })
-  declare entry_time: string;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: true
-  })
-  declare exit_time: string;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: true
-  })
-  declare remark: string;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: false
+  @Column({ 
+    allowNull: false, 
+    type: DataType.STRING(6) 
   })
   declare access_code: string;
 
   @Column({
-    type: DataType.STRING,
-    allowNull: true
+    type: DataType.DATE,
+    allowNull: false
   })
-  declare exit_code: string;
+  declare date_in: Date;
 
-  @BelongsTo(() => User, 'user_id')
-  declare user?: User;
+  @Column({
+    type: DataType.DATE,
+    allowNull: false
+  })
+  declare date_out: Date;
 
-  @BelongsTo(() => Estate)
-  declare estate?: Estate;
+  @Column({ 
+    allowNull: true, 
+    type: DataType.TIME 
+  })
+  declare entry_time: string;
+
+  @Column({ 
+    allowNull: true, 
+    type: DataType.TIME
+  })
+  declare exit_time: string;
+
+  @ForeignKey(() => Estate)
+  @Column({
+    allowNull: false,
+    type: DataType.UUID
+  })
+  declare estate_id: string;
+
+  @Column({
+    type: DataType.ENUM('guest', 'resident', 'staff', 'delivery', 'maintenance', 'security', 'others'),
+    allowNull: false,
+    defaultValue: 'guest'
+  })
+  declare access_type: string;
 
   @Column({
     type: DataType.ENUM('RFID', 'QR_code', 'access_code', 'manual_approval'),
@@ -118,7 +98,6 @@ export class Access extends Model {
   @Column({
     type: DataType.ENUM('approved', 'pending', 'denied', 'cancelled', 'expired'),
     allowNull: false,
-    defaultValue: 'pending'
   })
   declare status: string;
 
@@ -126,21 +105,24 @@ export class Access extends Model {
     type: DataType.TEXT
   })
   declare remarks: string;
+  
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  declare resident_id: string;
+
+  @BelongsTo(() => User, {as: 'residents'})
+  declare resident: User;
 
   @Column({
     type: DataType.STRING,
-    allowNull: false
+    allowNull: false,
   })
   declare created_by: string;
 
-  @Column({
-    type: DataType.STRING
+  @BelongsTo(() => Estate, {
+    foreignKey: 'estate_id'
   })
-  declare approved_by: string;
-  
-  @Column({
-    type: DataType.BOOLEAN,
-    defaultValue: false,
-  })
-  declare is_multi_entry: boolean;
+  declare estate: Estate;
 }
