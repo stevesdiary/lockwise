@@ -19,7 +19,7 @@ export interface PaymentInitiationData {
   amount: number;
   email: string;
   currency: string;
-  appointment_id?: string;
+  estate_id?: string;
   paymentProvider: string;
 }
 
