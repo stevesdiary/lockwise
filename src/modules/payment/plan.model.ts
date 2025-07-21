@@ -82,6 +82,12 @@ export class Plan extends Model {
   declare price: number;
   
   @Column({
+    type: DataType.DECIMAL(10, 2),
+    allowNull: false
+  })
+  declare price_paid: number;
+  
+  @Column({
     type: DataType.STRING,
     allowNull: true
   })

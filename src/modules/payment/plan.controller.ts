@@ -1,0 +1,31 @@
+import { Request, Response } from 'express';
+import { PlanService } from './plan.service';
+
+const planService = new PlanService();
+
+export const PlanController = {
+  getAll: async (req: Request, res: Response): Promise<Response> => {
+    const result = await planService.getAllPlans();
+    return res.status(result.statusCode).json(result);
+  },
+
+  getOne: async (req: Request, res: Response): Promise<Response> => {
+    const result = await planService.getPlanById(req.params.id);
+    return res.status(result.statusCode).json(result);
+  },
+
+  create: async (req: Request, res: Response): Promise<Response> => {
+    const result = await planService.createPlan(req.body);
+    return res.status(result.statusCode).json(result);
+  },
+
+  update: async (req: Request, res: Response): Promise<Response> => {
+    const result = await planService.updatePlan(req.params.id, req.body);
+    return res.status(result.statusCode).json(result);
+  },
+
+  delete: async (req: Request, res: Response): Promise<Response> => {
+    const result = await planService.deletePlan(req.params.id);
+    return res.status(result.statusCode).json(result);
+  }
+};

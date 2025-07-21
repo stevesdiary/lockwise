@@ -162,17 +162,17 @@ export const estateSearchSchema = yup.object().shape({
   country: yup.string().optional(),
 });
 
-// export const paymentInitiationSchema = yup.object().shape({
-//   amount: yup.number().positive().required('Amount is required'),
-//   email: yup.string().email('Invalid email').required('Email is required'),
-//   currency: yup.string().optional().default('NGN'),
-//   paymentProvider: yup.string().trim().optional(),
-//   paymentMethod: yup.string().trim().required('Payment method is required')
-// });
+export const paymentInitiationSchema = yup.object().shape({
+  amount: yup.number().positive().required('Amount is required'),
+  email: yup.string().email('Invalid email').required('Email is required'),
+  currency: yup.string().optional().default('NGN'),
+  paymentProvider: yup.string().trim().optional(),
+  paymentMethod: yup.string().trim().required('Payment method is required')
+});
 
-// export const paymentVerificationSchema = yup.object().shape({
-//   reference: yup.string().required('Payment reference is required')
-// });
+export const paymentVerificationSchema = yup.object().shape({
+  reference: yup.string().required('Payment reference is required')
+});
 
 // export const appointmentStatusSchema = yup.string().required('Status is required');
 
