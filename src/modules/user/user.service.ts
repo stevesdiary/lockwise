@@ -46,8 +46,18 @@ export class UserService {
     };
   }
 
-  async deleteUser(id: string): Promise<ApiResponse<null>> {
-    const success = await this.userRepository.delete(id);
+  async updatePassword(estate_id: string, email: string, password: string): Promise<ApiResponse<User | null>> {
+    const user = await this.userRepository.updatePassword(estate_id, email, password);
+    return {
+      status: user ? 'success' : 'fail',
+      statusCode: user ? 200 : 404, 
+      message: user ? 'Password updated successfully' : 'User not found or email not registered, check if email is correct',
+      data: null
+    }
+  }
+
+  async deleteUser(estate_id: string, id: string): Promise<ApiResponse<null>> {
+    const success = await this.userRepository.delete(estate_id, id);
     return {
       status: success ? 'success' : 'fail',
       statusCode: success ? 200 : 404,

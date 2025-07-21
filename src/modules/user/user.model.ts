@@ -5,7 +5,11 @@ import { Resident } from '../resident/resident.model';
 import { Access } from '../access/access.model';
 import { Payment } from '../payment/payment.model';
 
-@Table
+@Table({
+  tableName: 'users',
+  freezeTableName: true,
+  underscored: true
+})
 export class User extends Model<User> {
   @Column({
     type: DataType.UUID,

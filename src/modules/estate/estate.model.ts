@@ -3,7 +3,7 @@ import { EstateAttributes, EstateCreationAttributes } from '../../types/estate.t
 import { Street } from './street.model';
 import { User } from '../user/user.model';
 import { Access } from '../access/access.model';
-import { all } from 'axios';
+import { Referrer } from '../referrer/referrer.model';
 import { Plan } from '../payment/plan.model';
 
 @Table ({
@@ -156,6 +156,16 @@ export class Estate extends Model<EstateAttributes, EstateCreationAttributes> {
   })
   declare Accesss: Access[];
 
+  @ForeignKey(() => Referrer)
+  @Column({
+    type: DataType.UUID,
+    allowNull: true,
+  })
+  declare referrer_id: string;
+
+  @BelongsTo(() => Referrer)
+  declare referrer: Referrer;
+
   @HasMany(() => User, { as: 'estateResidents' })
   declare estateResidents: User[];
 
@@ -165,6 +175,5 @@ export class Estate extends Model<EstateAttributes, EstateCreationAttributes> {
 
   @BelongsTo(() => Plan)
   declare plan: Plan;
-
+  
 }
-
