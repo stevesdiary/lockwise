@@ -46,3 +46,11 @@ export interface ApiResponse {
   data?: EstateResponse | EstateListResponse | Estate | Estate[] | null;
   error?: string;
 }
+
+export interface ReferrerAttributes {
+
+}
+
+export interface ReferrerCreationAttributes {
+  
+}

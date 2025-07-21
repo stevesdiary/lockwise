@@ -21,7 +21,14 @@ export class UserRepository {
     return await user.update(data);
   }
 
-  async delete(id: string): Promise<boolean> {
+  async updatePassword(estate_id: string, email: string, password: string): Promise<User | null> {
+    const user = await this.findUserByEmail(estate_id, email);
+    if(!user) return null;
+    return await user.update({
+      password: password
+    });
+  }
+  async delete(estate_id: string, id: string): Promise<boolean> {
     const deleted = await User.destroy({ where: { id } });
     return deleted > 0;
   }

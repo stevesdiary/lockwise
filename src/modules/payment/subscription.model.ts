@@ -59,7 +59,10 @@ export class Subscription extends Model {
   @BelongsTo(() => Estate)
   declare estate: Estate;
 
-  @Column({ type: DataType.BOOLEAN, defaultValue: true })
+  @Column({ 
+    type: DataType.BOOLEAN, 
+    defaultValue: true 
+  })
   declare auto_renew: boolean;
 
   @Column({
