@@ -1,12 +1,10 @@
 import * as yup from 'yup';
 
-// Login validation schema
 export const loginSchema = yup.object().shape({
   email: yup.string().trim().email('Invalid email format').required('Email is required'),
   password: yup.string().trim().required('Password is required')
 });
 
-// User registration validation schema
 export const userRegistrationSchema = yup.object().shape({
   first_name: yup.string().trim().required('First name is required'),
   last_name: yup.string().trim().required('Last name is required'),

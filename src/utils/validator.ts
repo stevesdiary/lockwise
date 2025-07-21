@@ -1,6 +1,6 @@
 import * as yup from 'yup';
 import { ValidationError, ValidationErrorResponse } from '../types/validation.type';
-import { Optional } from 'sequelize';
+
 
 export const userRegistrationSchema = yup.object().shape({
   first_name: yup
@@ -192,4 +192,21 @@ export const createAccessSchema = yup.object().shape({
   schedule_entry_time: yup.string().required(),
   schedule_exit_time: yup.string().required(),
   verification_method: yup.string().optional()
+})
+
+export const referrerCreationSchema = yup.object().shape({
+  name: yup.string().required(),
+  phone: yup
+    .string()
+    .trim()
+    .optional()
+    .matches(
+      /^(0[7-9]\d{9}|\+234[7-9]\d{9})$/,
+      'Invalid phone number'
+    ),
+  email: yup
+    .string()
+    .trim()
+    .required('Email is required')
+    .email('Invalid email format')
 })
