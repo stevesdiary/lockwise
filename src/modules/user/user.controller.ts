@@ -24,7 +24,12 @@ export const userController = {
   },
 
   deleteUser: async (req: Request, res: Response): Promise<Response> => {
-    const response = await userService.deleteUser(req.params.id);
+    const id = req.params.id;
+    const estate_id = req.query.estate_id;
+    if (typeof estate_id !== 'string' || typeof id !== 'string') {
+      return res.status(400).json({ message: 'Invalid parameter for estate_id' });
+    }
+    const response = await userService.deleteUser(estate_id, id);
     return res.status(response.statusCode).json(response);
   },
 

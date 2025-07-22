@@ -1,5 +1,5 @@
 import { Router, Request as ExpressRequest, Response } from 'express';
-
+// import { authentication } from '../../middlewares/authentication';
 import { userController } from './user.controller';
 // import { TypedRequest } from '../types/type';
 

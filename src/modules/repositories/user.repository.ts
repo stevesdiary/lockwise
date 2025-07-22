@@ -29,7 +29,12 @@ export class UserRepository {
     });
   }
   async delete(estate_id: string, id: string): Promise<boolean> {
-    const deleted = await User.destroy({ where: { id } });
+    const deleted = await User.destroy({ 
+      where: { 
+        estate_id,
+        id 
+      } 
+    });
     return deleted > 0;
   }
 
