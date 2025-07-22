@@ -1,8 +1,8 @@
 import { ReferralRepository } from '../repositories/referer.repository';
 import { Referrer } from '../referrer/referrer.model';
 import { customAlphabet } from 'nanoid';
-import { ReferrerCreationAttributes } from '../../types/referrer.type';
-import { validate } from 'uuid';
+import { ReferrerCreationAttributes } from '../../types/referrer.type'
+import { ApiResponse } from '../../types/type';
 
 const nanoid = customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 6);
 
@@ -48,6 +48,16 @@ export class ReferralService {
 
   async getAllReferrers(): Promise<Referrer[]> {
     return await this.repository.getAllReferrers();
+  }
+
+  async deleteReferrerById(id: string): Promise<ApiResponse> {
+    const deleteRef =  await this.repository.deleteReferrerById(id);
+    return {
+      status: deleteRef ? 'success' : 'fail',
+      statusCode: deleteRef ? 200 : 404,
+      message: deleteRef ? 'Referrer deleted successfully' : 'User not found',
+      data: null
+    };
   }
 }
 

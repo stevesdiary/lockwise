@@ -6,9 +6,9 @@ export const ReferralController = {
   async registerReferrer(req: Request, res: Response) {
     try {
       const validatedData = await referrerCreationSchema.validate(req.body, {
-      abortEarly: false,
-      stripUnknown: true
-    });
+        abortEarly: false,
+        stripUnknown: true
+      });
       const referrer = await referralService.registerReferrer(validatedData);
 
       return res.status(201).json({
@@ -43,6 +43,17 @@ export const ReferralController = {
       return res.status(200).json({ data: referrers });
     } catch (error) {
       console.error('Error listing referrers:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+  , async deleteReferrer(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const referrer = await referralService.deleteReferrerById(id);
+      return res.status(referrer.statusCode).json({data: referrer});
+    } catch (error) {
+      console.error('Error deleting referrer:', error);
       return res.status(500).json({ message: 'Internal server error' });
     }
   }

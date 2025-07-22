@@ -1,6 +1,7 @@
 import { Optional } from 'sequelize';
 
 export interface ReferrerAttributes {
+  id?: string;
   referral_code: string;
   name: string;
   phone?: string;

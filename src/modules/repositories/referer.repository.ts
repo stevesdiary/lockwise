@@ -30,4 +30,9 @@ export class ReferralRepository {
   async getAllReferrers(): Promise<Referrer[]> {
     return await Referrer.findAll();
   }
+
+  async deleteReferrerById(id: string): Promise<boolean> {
+    const deleteRef = await Referrer.destroy({ where: {id: id}});
+    return deleteRef > 0;
+  }
 }
