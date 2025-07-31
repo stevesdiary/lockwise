@@ -22,7 +22,6 @@ export class Unit extends Model {
   @Column(DataType.UUID)
   declare street_id: string;
 
-
   @Column({
     type: DataType.STRING,
     allowNull: false,
