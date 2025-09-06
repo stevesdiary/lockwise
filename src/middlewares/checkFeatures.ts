@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { Estate } from '../modules/estate/estate.model';
+import { Estate } from '../models/estate.model';
 import { Plan } from '../modules/payment/plan.model';
 
 import { PlanFeatures } from '../types/plan.features';

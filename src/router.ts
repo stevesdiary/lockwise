@@ -1,11 +1,12 @@
 import express, { Router } from "express";
 
-import userRouter from "./modules/user/user.route";
-import loginRouter from "./modules/user/login.route";
-import paymentRouter from "./modules/payment/payment.route";
-import estateRouter from "./modules/estate/estate.route";
-import roleRouter from "./modules/role/role.router";
-import permissionRouter from "./modules/permission/permission.route"
+import userRouter from "./routes/user.route";
+import loginRouter from "./routes/login.route";
+import paymentRouter from "./routes/payment.route";
+import estateRouter from "./routes/estate.route";
+import roleRouter from "./routes/role.router";
+import permissionRouter from "./routes/permission.route";
+import accessRouter from "./routes/access.route";
 
 const router = Router();
 
@@ -15,6 +16,7 @@ router.use('/payment', paymentRouter);
 router.use('/estate', estateRouter);
 router.use('/role', roleRouter);
 router.use('/permission', permissionRouter);
+router.use('/access', accessRouter);
 
 
 

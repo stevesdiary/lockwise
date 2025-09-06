@@ -1,17 +1,17 @@
 import dotenv from 'dotenv';
 dotenv.config();
 import { Sequelize } from 'sequelize-typescript';
-import { User } from '../modules/user/user.model';
-import { Payment } from '../modules/payment/payment.model';
-import { Estate } from '../modules/estate/estate.model';
-import { Role } from '../modules/role/role.model';
-import { Street } from '../modules/estate/street.model';
-import { Permission } from '../modules/permission/permission.model';
-import { Unit } from '../modules/estate/unit.model';
-import { Access } from '../modules/access/access.model';
-import { RolePermission } from '../modules/permission/role.permission.model';
-import { Resident } from '../modules/resident/resident.model';
-import { Plan } from '../modules/payment/plan.model';
+import { User } from '../models/user.model';
+import { Payment } from '../models/payment.model';
+import { Estate } from '../models/estate.model';
+import { Role } from '../models/role.model';
+import { Street } from '../models/street.model';
+import { Permission } from '../models/permission.model';
+import { Unit } from '../models/unit.model';
+import { Access, AccessEntry } from '../models/access.model';
+import { RolePermission } from '../models/role.permission.model';
+import { Resident } from '../models/resident.model';
+import { Plan } from '../models/plan.model';
 
 const sequelize = new Sequelize({
   dialect: 'postgres',
@@ -21,7 +21,7 @@ const sequelize = new Sequelize({
   username: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
   database: process.env.DB_NAME || 'your_database',
-  models: [User, Estate, Resident, Role, Payment, Street, Permission, Unit, Access, RolePermission, Plan],
+  models: [User, Estate, Resident, Role, Payment, Street, Permission, Unit, Access, AccessEntry, RolePermission, Plan],
   ssl: true,
   dialectOptions: {
     ssl: {
