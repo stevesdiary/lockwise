@@ -1,5 +1,5 @@
 import { Optional } from 'sequelize';
-import { Estate } from '../modules/estate/estate.model';
+import { Estate } from '../models/estate.model';
 
 export interface EstateAttributes {
   estate_id?: string;

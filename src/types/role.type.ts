@@ -1,5 +1,5 @@
 import { CreationAttributes } from "sequelize";
-import { Role } from "../modules/role/role.model";
+import { Role } from "../models/role.model";
 
 export type RoleCreationAttributes = CreationAttributes<Role>;
 

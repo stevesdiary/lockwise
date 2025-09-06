@@ -185,14 +185,49 @@ export const updatePermissionSchema = yup.object().shape({
 });
 
 export const createAccessSchema = yup.object().shape({
+  user_id: yup.string().required('User ID is required'),
+  access_code: yup.string().required('Access code is required').length(6, 'Access code must be 6 characters'),
+  date_in: yup.date().required('Entry date is required'),
+  date_out: yup.date().required('Exit date is required')
+    .min(yup.ref('date_in'), 'Exit date must be after entry date'),
+  estate_id: yup.string().required('Estate ID is required'),
+  access_type: yup.string().oneOf(['guest', 'resident', 'staff', 'delivery', 'maintenance', 'security', 'others']).required('Access type is required'),
+  verification_method: yup.string().oneOf(['RFID', 'QR_code', 'access_code', 'manual_approval']).optional().default('access_code'),
   vehicle_number: yup.string().optional(),
+  status: yup.string().oneOf(['approved', 'pending', 'denied', 'cancelled', 'expired']).required('Status is required'),
   remarks: yup.string().optional(),
-  schedule_enrty_date: yup.string().optional(),
-  schedule_exit_date: yup.string().optional(),
-  schedule_entry_time: yup.string().required(),
-  schedule_exit_time: yup.string().required(),
-  verification_method: yup.string().optional()
-})
+  resident_id: yup.string().required('Resident ID is required'),
+  created_by: yup.string().required('Created by is required'),
+  is_multi_entry: yup.boolean().optional().default(false),
+  max_entries: yup.number().optional().min(1, 'Max entries must be at least 1').when('is_multi_entry', {
+    is: true,
+    then: (schema) => schema.required('Max entries is required for multi-entry access'),
+    otherwise: (schema) => schema.optional()
+  })
+});
+
+export const entryOperationSchema = yup.object().shape({
+  access_id: yup.string().required('Access ID is required'),
+  scanned_by: yup.string().optional(),
+  gate_id: yup.string().optional(),
+  remarks: yup.string().optional()
+});
+
+export const exitOperationSchema = yup.object().shape({
+  entry_id: yup.string().required('Entry ID is required'),
+  scanned_by: yup.string().optional(),
+  gate_id: yup.string().optional(),
+  remarks: yup.string().optional()
+});
+
+export const multipleEntryConfigSchema = yup.object().shape({
+  is_multi_entry: yup.boolean().required('Multi-entry flag is required'),
+  max_entries: yup.number().optional().min(1, 'Max entries must be at least 1').when('is_multi_entry', {
+    is: true,
+    then: (schema) => schema.required('Max entries is required for multi-entry access'),
+    otherwise: (schema) => schema.optional()
+  })
+});
 
 export const referrerCreationSchema = yup.object().shape({
   name: yup.string().required(),

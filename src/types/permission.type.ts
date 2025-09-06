@@ -1,5 +1,5 @@
 import { CreationAttributes } from "sequelize";
-import { Permission } from "../modules/permission/permission.model";
+import { Permission } from "../models/permission.model";
 
 export type PermissionCreationAttributes = CreationAttributes<Permission>;
 
