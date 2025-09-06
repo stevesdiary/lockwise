@@ -1,9 +1,9 @@
 import { Table, Model, Column, DataType, BelongsTo, HasMany, ForeignKey, HasOne } from 'sequelize-typescript';
 import { Estate } from './estate.model';
-import { Role } from '../role/role.model';
-import { Resident } from '../resident/resident.model';
-import { Access } from '../access/access.model';
-import { Payment } from '../payment/payment.model';
+import { Role } from '../models/role.model';
+import { Resident } from '../models/resident.model';
+import { Access } from '../models/access.model';
+import { Payment } from '../models/payment.model';
 
 @Table({
   tableName: 'users',

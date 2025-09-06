@@ -1,6 +1,6 @@
 import { Op, Transaction } from 'sequelize';
-import { Access, AccessEntry } from '../access/access.model';
-import { Resident } from '../resident/resident.model';
+import { Access, AccessEntry } from '../models/access.model';
+import { Resident } from '../models/resident.model';
 import { Estate } from '../models/estate.model';
 import { 
   AccessCreationAttributes, 
@@ -171,11 +171,11 @@ export class AccessRepository {
     return response;
   }
 
-  async getActiveEntries(accessId: string): Promise<AccessEntry[]> {
+  async getActiveEntries( accessId: string): Promise<AccessEntry[]> {
     return AccessEntry.findAll({
       where: {
         access_id: accessId,
-        exit_time: null
+        exit_time: { [Op.not]: true }
       },
       order: [['created_at', 'DESC']]
     });

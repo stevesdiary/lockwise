@@ -1,7 +1,7 @@
 import { Table, Model, Column, DataType, BelongsToMany } from 'sequelize-typescript';
 
-import { Permission } from '../permission/permission.model';
-import { RolePermission } from '../permission/role.permission.model';
+import { Permission } from '../models/permission.model';
+import { RolePermission } from '../models/role.permission.model';
 
 @Table({
   tableName: 'roles',
