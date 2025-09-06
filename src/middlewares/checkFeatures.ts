@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { Estate } from '../models/estate.model';
-import { Plan } from '../modules/payment/plan.model';
+import { Plan } from '../models/plan.model';
 
 import { PlanFeatures } from '../types/plan.features';
 

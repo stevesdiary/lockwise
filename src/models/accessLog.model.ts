@@ -1,5 +1,5 @@
 import { Column, DataType, Table, Model, BelongsTo } from "sequelize-typescript";
-import { Resident } from "../resident/resident.model";
+import { Resident } from "../models/resident.model";
 import { Estate } from "./estate.model";
 import { AccessAttributes, AccessCreationAttributes, AccessStatus } from "../types/access.type";
 @Table({

@@ -1,10 +1,10 @@
 import { Table, Model, Column, DataType, Index, BelongsTo, HasMany, ForeignKey } from 'sequelize-typescript';
 import { EstateAttributes, EstateCreationAttributes } from '../types/estate.type';
-import { Street } from '../modules/estate/street.model';
-import { User } from '../modules/user/user.model';
-import { Access } from '../modules/access/access.model';
-import { Referrer } from '../modules/referrer/referrer.model';
-import { Plan } from '../modules/payment/plan.model';
+import { Street } from './street.model';
+import { User } from './user.model';
+import { Access } from './access.model';
+import { Referrer } from './referrer.model';
+import { Plan } from './plan.model';
 
 @Table ({
   tableName: 'estates',
