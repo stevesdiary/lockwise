@@ -1,7 +1,7 @@
-import { UserRepository } from "../modules/repositories/user.repository";
-import { EstateRepository } from '../modules/repositories/estate.repository';
+import { UserRepository } from "../repositories/user.repository";
+import { EstateRepository } from '../repositories/estate.repository';
 import sendEmail from './email.service';
-import { ResidentRepository } from '../modules/repositories/resident.repository';
+import { ResidentRepository } from '../repositories/resident.repository';
 import { ApiResponse } from "../types/estate.type";
 import { getFromRedis, saveToRedis, deleteFromRedis} from '../core/redis';
 import { nanoid } from "nanoid";
