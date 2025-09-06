@@ -1,5 +1,5 @@
 import { ReferrerAttributes } from '../types/referrer.type';
-import { Referrer } from '../referrer/referrer.model';
+import { Referrer } from '../models/referrer.model';
 
 export class ReferralRepository {
   async createReferrer(data: ReferrerAttributes ): Promise<Referrer> {

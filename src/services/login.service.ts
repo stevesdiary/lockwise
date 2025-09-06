@@ -39,3 +39,10 @@ export const loginUser = async (email: string, password: string) => {
     }
   };
 };
+
+export const logoutUser = async () => {
+  return {
+    statusCode: 200,
+    message: 'Logout successful'
+  };
+};
