@@ -12,6 +12,8 @@ import { Access, AccessEntry } from '../models/access.model';
 import { RolePermission } from '../models/role.permission.model';
 import { Resident } from '../models/resident.model';
 import { Plan } from '../models/plan.model';
+import { Referrer } from '../models/referrer.model';
+import { ReferralBonus } from '../models/referral.bonus.model';
 
 const sequelize = new Sequelize({
   dialect: 'postgres',
@@ -21,7 +23,7 @@ const sequelize = new Sequelize({
   username: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
   database: process.env.DB_NAME || 'your_database',
-  models: [User, Estate, Resident, Role, Payment, Street, Permission, Unit, Access, AccessEntry, RolePermission, Plan],
+  models: [User, Estate, Resident, Role, Payment, Street, Permission, Unit, Access, AccessEntry, RolePermission, Plan, Referrer, ReferralBonus],
   ssl: true,
   dialectOptions: {
     ssl: {
