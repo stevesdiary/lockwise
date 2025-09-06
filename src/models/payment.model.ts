@@ -9,9 +9,9 @@ import {
   UpdatedAt,
   PrimaryKey,
 } from 'sequelize-typescript';
-import {  Plan} from '../payment/plan.model';
+import {  Plan} from '../models/plan.model';
 import { Estate } from './estate.model';
-import { User } from '../user/user.model';
+import { User } from '../models/user.model';
 import { Subscription } from './subscription.model';
 
 type PaymentStatus = 'pending' | 'completed' | 'failed' | 'refunded';

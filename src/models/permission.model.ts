@@ -1,6 +1,6 @@
 import { Table, Column, PrimaryKey, ForeignKey, DataType, Model, BelongsToMany  } from "sequelize-typescript";
 
-import { Role } from "../role/role.model";
+import { Role } from "../models/role.model";
 import { RolePermission } from "./role.permission.model";
 
 @Table({

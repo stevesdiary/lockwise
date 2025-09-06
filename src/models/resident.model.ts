@@ -1,7 +1,7 @@
 import { Table, Model, Column, DataType, BelongsTo, ForeignKey } from 'sequelize-typescript';
 import { Estate } from './estate.model';
-import { Unit } from '../estate/unit.model';
-import { User } from '../user/user.model';
+import { Unit } from '../models/unit.model';
+import { User } from '../models/user.model';
 
 @Table
 export class Resident extends Model<Resident> {
