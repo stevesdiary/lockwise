@@ -1,7 +1,7 @@
 // src/types/user.type.ts
 
 import { CreationAttributes } from 'sequelize';
-import { User } from '../modules/user/user.model';
+import { User } from '../models/user.model';
 
 export type UserCreationAttributes = CreationAttributes<User>;
 

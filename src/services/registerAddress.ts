@@ -1,8 +1,8 @@
 import * as XLSX from 'xlsx';
 import fs from 'fs';
 import sequelize from '../core/database';
-import { Street } from '../modules/estate/street.model';
-import { Unit } from '../modules/estate/unit.model';
+import { Street } from '../models/street.model';
+import { Unit } from '../models/unit.model';
 
 export async function importStreetsAndUnits(filePath: string, estateId: string) {
   const workbook = XLSX.readFile(filePath);

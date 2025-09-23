@@ -65,6 +65,10 @@ export interface EmailPayload {
   text: string;
 };
 
+export interface SMSPayload {
+  body: string;
+  to: string;
+}
 export interface EmailResponse {
   statusCode: number;
   status: string;
