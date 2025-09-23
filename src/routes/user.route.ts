@@ -26,6 +26,8 @@ userRouter.get('/all',
   await userController.getUsersByEstate(req, res)
 });
 
+// userRouter.post('/refresh', refreshAccessToken);
+
 userRouter.get('/one/:id', 
   // authentication,
   // checkRole(['admin']), 
