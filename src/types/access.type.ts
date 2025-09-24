@@ -1,36 +1,73 @@
-export type AccessStatus = 'approved' | 'pending' | 'denied';
+export type AccessStatus = 'approved' | 'pending' | 'denied' | 'cancelled' | 'expired';
+export type AccessType = 'guest' | 'resident' | 'staff' | 'delivery' | 'maintenance' | 'security' | 'others';
+export type VerificationMethod = 'RFID' | 'QR_code' | 'access_code' | 'manual_approval';
 
+// Main access record - represents a visitor's permission to access
 export interface AccessAttributes {
-  log_id: string;
-  visitor_name: string;
-  schedule_in: Date;
-  schedule_out: Date;
-  entry_time?: Date;
-  access_type: string;
-  verification_method: string;
+  id: string;
+  user_id: string;
+  access_code: string;
+  date_in: Date;
+  date_out: Date;
+  entry_time?: string;
+  exit_time?: string;
+  estate_id: string;
+  access_type: AccessType;
+  verification_method: VerificationMethod;
   vehicle_number?: string;
   status: AccessStatus;
   remarks?: string;
-  exit_time?: Date;
-  estate_id: string;
   resident_id: string;
-  approved_by: string;
+  created_by: string;
+  is_multi_entry?: boolean;
+  max_entries?: number;
+  created_at?: Date;
+  updated_at?: Date;
+  deleted_at?: Date;
 }
 
-export type AccessCreationAttributes = Omit<AccessAttributes, 'log_id'>;
+export type AccessCreationAttributes = Omit<AccessAttributes, 'id' | 'created_at' | 'updated_at' | 'deleted_at'>;
 
-export interface AccessAttributes {
+// Individual entry/exit records for multiple entries
+export interface AccessEntryAttributes {
   id: string;
-  visitor_name: string;
-  schedule_in: Date;
-  schedule_out: Date;
-  verified_by: string;
-  estate_id: string;
-  resident_id: string;
-  status: AccessStatus;
-  entry_time?: Date;
+  access_id: string;
+  entry_time: Date;
   exit_time?: Date;
+  scanned_by?: string;
+  gate_id?: string;
+  created_at?: Date;
+  updated_at?: Date;
+  deleted_at?: Date;
+}
+
+export type AccessEntryCreationAttributes = Omit<AccessEntryAttributes, 'id' | 'created_at' | 'updated_at' | 'deleted_at'>;
+
+// Response types for API
+export interface AccessWithEntriesResponse extends AccessAttributes {
+  entries?: AccessEntryAttributes[];
+  total_entries?: number;
+  remaining_entries?: number;
+}
+
+// Multiple entry configuration
+export interface MultipleEntryConfig {
+  is_multi_entry: boolean;
+  max_entries?: number;
+  current_entries?: number;
+}
+
+// Entry/Exit operation types
+export interface EntryOperation {
+  access_id: string;
+  scanned_by?: string;
+  gate_id?: string;
   remarks?: string;
 }
 
-// export type AccessCreationAttributes = Omit<AccessAttributes, 'id'>;
+export interface ExitOperation {
+  entry_id: string;
+  scanned_by?: string;
+  gate_id?: string;
+  remarks?: string;
+}

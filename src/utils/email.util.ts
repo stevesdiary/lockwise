@@ -7,13 +7,13 @@ const emailTemplate ={
     <p>Use this code to complete your registration.</p>
     <p>Thank you for being a part of our community!</p>
   `,
-  onboading: (name: string, verificationCode: string) => `
+  onboading: (first_name: string, verificationCode: string) => `
     <h1>Welcome, ${name}!</h1>
     <p>Thank you for joining us. We are excited to have you on board.</p>
   `,
-  passwordReset: (name: string) => `
+  passwordReset: (first_name: string) => `
     <h1>Password Reset Request</h1>
-    <p>Hello ${name},</p>
+    <p>Hello ${first_name},</p>
     <p>Click the link below to reset your password:</p>
     <a href="https://example.com/reset-password">Reset Password</a>
   `,

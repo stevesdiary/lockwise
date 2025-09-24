@@ -1,10 +1,13 @@
-import { UserRepository } from "../modules/repositories/user.repository";
-import { EstateRepository } from '../modules/repositories/estate.repository';
+import { UserRepository } from "../repositories/user.repository";
+import { EstateRepository } from '../repositories/estate.repository';
 import sendEmail from './email.service';
-import { ResidentRepository } from '../modules/repositories/resident.repository';
+import { ResidentRepository } from '../repositories/resident.repository';
 import { ApiResponse } from "../types/estate.type";
 import { getFromRedis, saveToRedis, deleteFromRedis} from '../core/redis';
-import { nanoid } from "nanoid";
+import { customAlphabet } from "nanoid";
+
+
+const nanoid = customAlphabet("1234567890");
 
 
 
@@ -38,7 +41,7 @@ export class VerifyService {
         data: null
       };
     }
-    const user = await this.userRepository.findUserByEmail(email, code);
+    const user = await this.userRepository.findUserByEmail(email);
     if (!user) {
       return {
         statusCode: 404,
@@ -60,7 +63,7 @@ export class VerifyService {
   }
 
   async resendCode(email: string, estate_id: string): Promise<ApiResponse> {
-    const user = await this.userRepository.findUserByEmail(email, estate_id);
+    const user = await this.userRepository.findUserByEmail(email);
     if (!user) {
       return {
         statusCode: 404,
@@ -75,7 +78,7 @@ export class VerifyService {
     
     await sendEmail({
       to: user.email,
-      subject: 'Verification Code Resent',
+      subject: 'Verification Code',
       text: `Your new verification code is ${verification_code}`
     });
 

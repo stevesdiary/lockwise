@@ -1,7 +1,7 @@
-import { User } from '../modules/user/user.model';
-import { Estate } from '../modules/estate/estate.model';
-import { Resident } from '../modules/resident/resident.model';
-import { Access }from '../modules/access/access.model';
+import { User } from '../models/user.model';
+import { Estate } from '../models/estate.model';
+import { Resident } from '../models/resident.model';
+import { Access } from '../models/access.model';
 
 export interface IBaseRepository<T> {
   create(data: Partial<T>): Promise<T>;

@@ -18,7 +18,7 @@ const limiter = rateLimit ({
 })
 
 server.get("/home", (req, res) => {
-  res.json({ message: "Hello, World of tech." });
+  res.json({ message: "Hello, World of intelligent property management system." });
 });
 
 server.use(limiter);
