@@ -1,6 +1,6 @@
 import { Table, Model, Column, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
 import { Estate } from '../models/estate.model';
-
+import { AddressAttributes, AddressCreationAttributes } from '../types/address.type';
 
 @Table ({
   tableName: 'addresses',
@@ -10,7 +10,7 @@ import { Estate } from '../models/estate.model';
   paranoid: true
 })
 
-export class Address extends Model<Address> {
+export class Address extends Model<AddressAttributes, AddressCreationAttributes> {
   @Column({
     type: DataType.UUID,
     primaryKey: true,

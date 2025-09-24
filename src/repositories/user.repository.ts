@@ -22,7 +22,7 @@ export class UserRepository {
   }
 
   async updatePassword(estate_id: string, email: string, password: string): Promise<User | null> {
-    const user = await this.findUserByEmail(estate_id, email);
+    const user = await this.findUserByEmail(email);
     if(!user) return null;
     return await user.update({
       password: password
@@ -38,7 +38,7 @@ export class UserRepository {
     return deleted > 0;
   }
 
-  async findUserByEmail(email: string, estateId: string): Promise<User | null> {
-    return await User.findOne({ where: { email, estate_id: estateId } });
+  async findUserByEmail(email: string): Promise<User | null> {
+    return await User.findOne({ where: { email} });
   }
 }
