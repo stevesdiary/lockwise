@@ -6,7 +6,7 @@ import addressUploadService from '../services/address.upload.service';
 
 const upload = multer({
   dest: 'uploads/',
-  fileFilter: (req, file, cb) => {
+  fileFilter: (req: Request, file, cb) => {
     const allowedTypes = ['.xlsx', '.xls', '.csv'];
     const fileExt = path.extname(file.originalname).toLowerCase();
     if (allowedTypes.includes(fileExt)) {
