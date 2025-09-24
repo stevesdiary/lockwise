@@ -15,7 +15,7 @@ import { User } from '../models/user.model';
 import { Subscription } from './subscription.model';
 
 type PaymentStatus = 'pending' | 'completed' | 'failed' | 'refunded';
-type PaymentMethod = 'credit_card' | 'debit_card' | 'bank_transfer' | 'cash' | 'POS';
+type PaymentMethod = 'credit_card' | 'debit_card' | 'bank_transfer' | 'cash' | 'POS' | 'paystack' | 'stripe';
 type Currency = 'NGN' | 'USD' | 'EUR' | 'GBP';
 
 @Table({
@@ -37,9 +37,12 @@ export class Payment extends Model {
   @ForeignKey(() => Estate)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: true,
   })
   declare estate_id: string;
+
+  @BelongsTo(() => Estate)
+  estate!: Estate;
 
   @Column({
     type: DataType.DECIMAL(10, 2),
@@ -68,7 +71,7 @@ export class Payment extends Model {
   payment_provider!: string;
 
   @Column({
-    type: DataType.ENUM('credit_card', 'debit_card', 'bank_transfer', 'cash', 'stripe', 'paypal'),
+    type: DataType.ENUM('credit_card', 'debit_card', 'bank_transfer', 'cash', 'POS', 'paystack'),
     allowNull: false,
   })
   payment_method!: PaymentMethod;
@@ -77,6 +80,12 @@ export class Payment extends Model {
     type: DataType.STRING
   })
   reference!: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  declare email: string;
 
   @Column({
     type: DataType.DATE,
@@ -93,7 +102,7 @@ export class Payment extends Model {
   @Column({
     type: DataType.JSON,
   })
-  payment_data?: string 
+  payment_data?: object;
 
   @Column(DataType.DATE)
   refund_date?: Date;
@@ -105,7 +114,13 @@ export class Payment extends Model {
   })
   declare user_id: string;
 
+  @BelongsTo(() => User)
+  user!: User;
+
   @ForeignKey(() => Subscription)
   @Column(DataType.UUID)
   declare subscription_id: string;
+
+  @BelongsTo(() => Subscription)
+  subscription!: Subscription;
 }
