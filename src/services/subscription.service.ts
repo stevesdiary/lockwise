@@ -1,6 +1,6 @@
-import { Subscription } from './subscription.model';
+import { Subscription } from '../models/subscription.model';
 import { User } from '../models/user.model';
-import { Plan } from './plan.model';
+import { Plan } from '../models/plan.model';
 
 export const subscriptionService = {
   createSubscription: async (data: {
