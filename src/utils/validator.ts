@@ -1,8 +1,29 @@
 import * as yup from 'yup';
-import { ValidationError, ValidationErrorResponse } from '../types/validation.type';
+const addressSchema = yup.object().shape({
+  number: yup.string()
+    .optional()
+    .matches(/^[\w\s-]+$/, 'Invalid plot number format'),
 
+  street: yup.string()
+    .required('Street is required')
+    .min(2, 'Street name must be at least 2 characters'),
+
+  city: yup.string()
+    .required('City is required')
+    .min(2, 'City name must be at least 2 characters'),
+
+  country: yup.string()
+    .required('Country is required')
+    .min(2, 'Country name must be at least 2 characters'),
+});
 
 export const userRegistrationSchema = yup.object().shape({
+  title: yup
+    .string()
+    .trim()
+    .required('Title is required')
+    .oneOf(['Mr', 'Mrs', 'Ms', 'Dr', 'Prof', 'Alhj', 'Chief', 'HRH', 'HRM'], 'Invalid title'),
+
   first_name: yup
     .string()
     .trim()
@@ -36,6 +57,7 @@ export const userRegistrationSchema = yup.object().shape({
     .string()
     .required('Confirm Password is required')
     .oneOf([yup.ref('password')], 'Passwords must match'),
+    
   phone: yup
     .string()
     .trim()
@@ -44,6 +66,12 @@ export const userRegistrationSchema = yup.object().shape({
       /^(0[7-9]\d{9}|\+234[7-9]\d{9})$/,
       'Invalid Nigerian phone number'
     ),
+
+  estate_code: yup
+    .string()
+    .trim()
+    .optional()
+    .min(6, 'Estate code must be at least 6 characters'),
 });
 
 export const idSchema = yup.string().required('Id is required');
@@ -99,25 +127,14 @@ export const hospitalVerificationSchema = yup.object().shape({
 
 export const createEstateSchema = yup.object().shape({
   name: yup.string().required('Estate name is required')
-  .min(2, 'Estate name must be at least 2 characters'),
-  address: yup.string().required('Estate address is required')
-  .min(5, 'Estate address must be at least 5 characters'),
+    .min(2, 'Estate name must be at least 2 characters'),
+  address: addressSchema,
   type: yup.string().required('Estate type is required')
     .oneOf(['residential', 'mixed', 'other', 'commercial'], 'Invalid estate type'),
-  city: yup.string().required('City is required')
-    .min(2, 'City must be at least 2 characters'),
-  state: yup.string().required('State is required')
-    .min(2, 'State must be at least 2 characters'),
-  country: yup.string().required('Country is required')
-    .min(2, 'Country must be at least 2 characters'),
-  invitation_code: yup.string().optional()
-    .matches(/^[a-zA-Z0-9]{8}$/, 'Invitation code must be exactly 8 alphanumeric characters'),
-  estate_code: yup.string().required('Estate code is required')
-    .matches(/^[A-Z0-9]{8}$/, 'Estate code must be exactly 5 uppercase alphanumeric characters'),
+  estate_code: yup.string().optional(),
   number_of_appartments: yup.number().optional()
     .min(1, 'Number of apartments must be at least 1'),
   total_number_of_floors: yup.number().optional().min(3, 'Number of floors must be at least 3'),
-  
 });
 
 export const searchSchema = yup.object({

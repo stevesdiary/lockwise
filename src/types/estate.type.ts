@@ -13,20 +13,18 @@ export interface EstateAttributes {
   invitation_code?: string;
   number_of_apartments?: number;
   total_number_of_floors?: number;
+  created_by: string;
 }
 
 export interface EstateCreationAttributes extends Optional<EstateAttributes, 'estate_id'> {}
 
 export interface EstateUpdateAttributes extends Optional<EstateAttributes, 'estate_id' | 'invitation_code'> {}
 export interface EstateResponse {
-  estate_id: string;
+  // estate_id: string;
   name: string;
-  address: string;
+  address: object;
   type: string;
-  city: string;
-  state: string;
-  country: string;
-  estate_code: string;
+  // estate_code?: string;
   invitation_code?: string;
   number_of_apartments?: number;
   total_number_of_floors?: number;

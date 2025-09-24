@@ -46,7 +46,7 @@ export class Estate extends Model<EstateAttributes, EstateCreationAttributes> {
 
   @Column({
     type: DataType.STRING,
-    allowNull: false
+    // allowNull: false
   })
   declare invitation_code: string;
 
@@ -176,5 +176,14 @@ export class Estate extends Model<EstateAttributes, EstateCreationAttributes> {
 
   @BelongsTo(() => Plan)
   declare plan: Plan;
-  
+
+  @ForeignKey(() => User)
+  @Column({
+    type: DataType.UUID,
+    allowNull: false,
+  })
+  declare created_by: string;
+
+  @BelongsTo(() => User, { as: 'creator' })
+  declare creator: User;
 }

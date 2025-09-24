@@ -3,12 +3,26 @@ import { createEstateSchema } from '../utils/validator';
 import estateService from '../services/estate.service';
 import { errorHandler, handleControllerError } from '../middlewares/error.handler';
 import { idSchema } from '../schemas/validation.schema';
+import { customAlphabet } from 'nanoid';
 
 class EstateController {
   async createEstate(req: ExpressRequest, res: Response) {
     try {
-      const estateCreationData = await createEstateSchema.validate(req.body, {
+      const validatedData = await createEstateSchema.validate(req.body, {
         abortEarly: false});
+      
+      const estateCreationData = {
+        name: validatedData.name,
+        address: validatedData.address.street,
+        type: validatedData.type,
+        city: validatedData.address.city,
+        state: validatedData.address.city,
+        country: validatedData.address.country,
+        estate_code: `EST${Date.now()}`,
+        total_number_of_apartments: validatedData.number_of_appartments,
+        total_number_of_floors: validatedData.total_number_of_floors,
+        created_by: req.user!.id
+      };
 
       const estate = await estateService.createEstate(estateCreationData);
       return res.json(estate);
