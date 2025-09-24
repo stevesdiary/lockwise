@@ -1,0 +1,49 @@
+import { Payment } from '../models/payment.model';
+import { User } from '../models/user.model';
+import { Estate } from '../models/estate.model';
+import { accessLogService } from './access.log.service';
+import { analyticsService } from './analytics.service';
+
+export const adminDashboardService = {
+  getOverview: async () => {
+    return await analyticsService.getSystemStats();
+  },
+
+  getAnalytics: async (period: 'week' | 'month' | 'year' = 'month') => {
+    return await analyticsService.getRevenueAnalytics(period);
+  },
+
+  getAllPayments: async (filters: { limit?: number; offset?: number; status?: string }) => {
+    return await Payment.findAll({
+      where: {
+        ...(filters.status && { payment_status: filters.status })
+      },
+      include: [
+        { model: User, attributes: ['first_name', 'last_name', 'email'] },
+        { model: Estate, attributes: ['name'] }
+      ],
+      limit: filters.limit || 50,
+      offset: filters.offset || 0,
+      order: [['createdAt', 'DESC']]
+    });
+  },
+
+  getAllUsers: async (filters: { limit?: number; offset?: number }) => {
+    return await User.findAll({
+      include: [
+        { model: Estate, attributes: ['name'] }
+      ],
+      limit: filters.limit || 50,
+      offset: filters.offset || 0,
+      order: [['createdAt', 'DESC']]
+    });
+  },
+
+  getAccessLogs: async (filters: { limit?: number; offset?: number; estate_id?: string }) => {
+    return await accessLogService.getAccessLogs({
+      estate_id: filters.estate_id,
+      limit: filters.limit || 100,
+      offset: filters.offset || 0
+    });
+  }
+};
