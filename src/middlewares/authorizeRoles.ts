@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { User } from '../models/user.model';
 import { Role } from '../models/role.model';
 
-export const authorizeRoles = (allowedRoles: string[]) => {
+const authorizeRoles = (allowedRoles: string[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = (req as any).user?.id;
@@ -44,3 +44,5 @@ export const authorizeRoles = (allowedRoles: string[]) => {
     }
   };
 };
+
+export default authorizeRoles;

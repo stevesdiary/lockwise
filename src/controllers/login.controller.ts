@@ -19,7 +19,7 @@ export const login = async (req: Request, res: Response) => {
 
 export const logout = async (req: Request, res: Response) => {
   try {
-    const result = await logoutUser();
+    const result = await logoutUser(res);
     return res.status(result.statusCode).json(result);
   } catch (error) {
     return res.status(500).json({ message: 'Logout failed' });
