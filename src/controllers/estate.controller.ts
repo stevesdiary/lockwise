@@ -27,6 +27,7 @@ class EstateController {
       const estate = await estateService.createEstate(estateCreationData);
       return res.json(estate);
     } catch (error) {
+      console.error('Estate creation error:', error);
       return handleControllerError(error, res);
     }
   }
@@ -40,6 +41,7 @@ class EstateController {
         data: estates
       });
     } catch (error) {
+      console.error('Get all estates error:', error);
       return handleControllerError(error, res);
     }
   }
@@ -60,7 +62,8 @@ class EstateController {
       const estate = await estateService.getOneEstate(getEstateData.estate_id, getEstateData.estate_code);
       return res.json(estate);
     } catch (error) {
-        return handleControllerError(error, res);
+      console.error('Get estate by ID error:', error);
+      return handleControllerError(error, res);
     }
   }
 
@@ -83,6 +86,7 @@ class EstateController {
       }
       return res.json( estate );
     } catch (error) {
+      console.error('Update estate error:', error);
       return handleControllerError(error, res);
     }
   }
@@ -101,6 +105,7 @@ class EstateController {
         message: 'Estate deleted successfully'
       });
     } catch (error) {
+      console.error('Delete estate error:', error);
       return res.status(500).json({
         status: 'error',
         message: 'Failed to delete estate',
