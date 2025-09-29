@@ -1,0 +1,7 @@
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.tabSize": 2,
+  "editor.autoIndentOnPaste": true,
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 2000
+}
