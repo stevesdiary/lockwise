@@ -3,7 +3,7 @@ import { Permission } from './permission.model';
 import { Role } from '../models/role.model';
 
 @Table({
-  tableName: 'permissions',
+  tableName: 'role_permissions',
   timestamps: true,
   underscored: true,
   freezeTableName: true

@@ -21,11 +21,16 @@ export const authorizePermission = (requiredPermission: string) => {
       }
     });
 
-    if (!user || !user.role || !Array.isArray(user.role.permissions)) {
+    if (!user || !user.role) {
+      return res.status(403).json({ message: 'Forbidden: No role found' });
+    }
+
+    const userRole = user.role as any;
+    if (!userRole.permissions || !Array.isArray(userRole.permissions)) {
       return res.status(403).json({ message: 'Forbidden: No permissions found' });
     }
 
-    const hasPermission = user.role.permissions.some(p => p.action === requiredPermission);
+    const hasPermission = userRole.permissions.some((p: any) => p.action === requiredPermission);
 
     if (!hasPermission) {
       return res.status(403).json({ message: 'Permission denied' });
