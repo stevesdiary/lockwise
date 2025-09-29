@@ -1,5 +1,8 @@
 'use strict';
 
+const { stat } = require('fs');
+const { type } = require('os');
+
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
@@ -16,6 +19,9 @@ module.exports = {
         primaryKey: true,
         allowNull: false
       },
+      title: {
+        type: Sequelize.STRING
+      },
       first_name: {
         type: Sequelize.STRING,
       },
@@ -30,6 +36,23 @@ module.exports = {
       },
       phone: {
         type: Sequelize.STRING
+      },
+      verified: {
+        type: Sequelize.STRING
+      },
+      status: {
+        type: Sequelize.STRING
+      },
+      created_at: {
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.NOW
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.NOW
+      },
+      deleted_at: {
+        type: Sequelize.DATE
       }
     })
   },
