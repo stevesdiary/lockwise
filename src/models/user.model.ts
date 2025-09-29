@@ -20,7 +20,7 @@ export class User extends Model<User> {
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
+    allowNull: true,
   })
   declare title: string;
 
@@ -60,6 +60,13 @@ export class User extends Model<User> {
     defaultValue: false
   })
   declare verified: boolean;
+  
+  // @Column({
+  //   type: DataType.ENUM('active', 'inactive', 'suspended', 'pending'),
+  //   allowNull: false,
+  //   defaultValue: 'pending'
+  // })
+  // declare status: string;
 
   @ForeignKey(() => Role)
   @Column(DataType.UUID)
