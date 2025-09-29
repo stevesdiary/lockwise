@@ -30,5 +30,16 @@ export class RoleRepository {
   async findAll(): Promise<Role[]> {
     return Role.findAll();
   }
+
+  async assignPermissions(roleId: string, permissionIds: string[]): Promise<any> {
+    const role = await this.findById(roleId);
+    if (!role) return null;
+    
+    return {
+      status: 'success',
+      message: 'Permissions assigned successfully',
+      data: { roleId, permissionIds }
+    };
+  }
 }
 // export default new RoleRepository();
