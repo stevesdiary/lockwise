@@ -3,7 +3,7 @@ import roleController from '../controllers/role.controller';
 
 const roleRouter = Router();
 
-roleRouter.get('/', async (req: ExpressRequest, res: Response) => {
+roleRouter.get('/all', async (req: ExpressRequest, res: Response) => {
   await roleController.getAllRoles(req, res);
 })
 
@@ -21,6 +21,10 @@ roleRouter.put('/update/:roleId', async (req: ExpressRequest, res: Response) => 
 
 roleRouter.delete('/delete/:roleId', async (req: ExpressRequest, res: Response) => {
   await roleController.deleteRole(req, res);
+});
+
+roleRouter.post('/assign-permissions/:roleId', async (req: ExpressRequest, res: Response) => {
+  await roleController.assignPermissions(req, res);
 });
 
 export default roleRouter;
