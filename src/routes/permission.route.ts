@@ -4,14 +4,12 @@ import { Router, Response, Request as ExpressReque} from 'express';
 const permissionRouter = Router();
 import {PermissionController} from '../controllers/permission.controller';
 
+const permissionController = new PermissionController();
 
-permissionRouter.post('/create', async (req: ExpressRequest, res: Response ) => {
-  // await PermissionController.createPermission(req, res);
-});
-
-// permissionRouter.get('/all', PermissionController.getAllPermissions);
-// permissionRouter.get('/:id', PermissionController.getPermissionById);
-// permissionRouter.put('/:id', PermissionController.updatePermission);
-// permissionRouter.delete('/:id', PermissionController.deletePermission);
+permissionRouter.post('/create', permissionController.createPermission);
+permissionRouter.get('/all', permissionController.getAllPermissions);
+permissionRouter.get('/:id', permissionController.getPermissionById);
+permissionRouter.put('/:id', permissionController.updatePermission);
+permissionRouter.delete('/:id', permissionController.deletePermission);
 
 export default permissionRouter;
