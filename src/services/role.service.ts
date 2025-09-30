@@ -37,12 +37,16 @@ export class RoleService {
   async getAllRoles(): Promise<ApiResponse<Role[]>> {
     try {
       const roles = await Role.findAll({
-        include: [{ model: Permission, as: 'permissions' }]
+        include: [{ 
+          model: Permission, 
+          as: 'permissions',
+          through: { attributes: [] }
+        }]
       });
       return {
         status: 'success',
         statusCode: 200,
-        message: 'Roles retrieved successfully',
+        message: 'Roles with permissions retrieved successfully',
         data: roles
       };
     } catch (error) {
