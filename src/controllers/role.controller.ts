@@ -129,6 +129,7 @@ const RoleController = {
       const result = await roleService.assignPermissions(roleId, permission_ids);
       return res.json(result);
     } catch (error) {
+      console.log(error);
       return res.status(500).json({
         status: "error",
         message: "Failed to assign permissions",
