@@ -9,6 +9,9 @@ import permissionRouter from "./routes/permission.route";
 import accessRouter from "./routes/access.route";
 import addressRouter from "./routes/address.route";
 import uploadRouter from "./routes/upload.route";
+import dashboardRouter from "./routes/dashboard.routes";
+import analyticsRouter from "./routes/analytics.route";
+import googleAuthRouter from "./routes/google-auth.route";
 
 const router = Router();
 
@@ -21,6 +24,9 @@ router.use('/permission', permissionRouter);
 router.use('/access', accessRouter);
 router.use('/address', addressRouter);
 router.use('/upload', uploadRouter);
+router.use('/dashboard', dashboardRouter);
+router.use('/analytics', analyticsRouter);
+router.use('/auth', googleAuthRouter);
 
 
 
