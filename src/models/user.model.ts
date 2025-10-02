@@ -55,6 +55,19 @@ export class User extends Model<User> {
   declare password: string;
 
   @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  declare google_id: string;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
+  })
+  declare oauth_enabled: boolean;
+
+  @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: false
