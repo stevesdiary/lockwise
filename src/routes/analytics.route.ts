@@ -17,4 +17,16 @@ analyticsRouter.get('/stats',
   analyticsController.getSystemStats
 );
 
+analyticsRouter.get('/detailed', 
+  authentication, 
+  authorizeRoles(['admin']), 
+  analyticsController.getDetailedAnalytics
+);
+
+analyticsRouter.get('/estate/:estateId', 
+  authentication, 
+  authorizeRoles(['admin', 'manager']), 
+  analyticsController.getEstateAnalytics
+);
+
 export default analyticsRouter;
