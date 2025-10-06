@@ -69,4 +69,14 @@ export class Address extends Model<AddressAttributes, AddressCreationAttributes>
     defaultValue: true
   })
   declare available: boolean;
+
+  @Column({
+    type: DataType.DECIMAL(10, 8)
+  })
+  declare latitude: number;
+
+  @Column({
+    type: DataType.DECIMAL(11, 8)
+  })
+  declare longitude: number;
 }

@@ -9,6 +9,8 @@ export interface AddressAttributes {
   country?: string;
   zip_code?: string;
   available?: boolean;
+  latitude?: number;
+  longitude?: number;
   created_at?: Date;
   updated_at?: Date;
   deleted_at?: Date;
