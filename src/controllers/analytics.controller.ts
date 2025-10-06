@@ -35,5 +35,40 @@ export const analyticsController = {
         error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
+  },
+
+  async getDetailedAnalytics(req: Request, res: Response) {
+    try {
+      const analytics = await analyticsService.getDetailedAnalytics();
+      
+      res.json({
+        status: 'success',
+        data: analytics
+      });
+    } catch (error) {
+      res.status(500).json({
+        status: 'error',
+        message: 'Failed to fetch detailed analytics',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  },
+
+  async getEstateAnalytics(req: Request, res: Response) {
+    try {
+      const { estateId } = req.params;
+      const analytics = await analyticsService.getEstateAnalytics(estateId);
+      
+      res.json({
+        status: 'success',
+        data: analytics
+      });
+    } catch (error) {
+      res.status(500).json({
+        status: 'error',
+        message: 'Failed to fetch estate analytics',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
   }
 };
