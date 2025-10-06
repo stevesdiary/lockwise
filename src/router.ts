@@ -16,6 +16,10 @@ import accessCodeRouter from "./routes/access.code.route";
 import faqRouter from "./routes/faq.route";
 import configRouter from "./routes/config.route";
 import notificationRouter from "./routes/notification.route";
+import communityBoardRouter from "./routes/community.board.route";
+import emergencyRouter from "./routes/emergency.route";
+import supportRouter from "./routes/support.route";
+import adminSupportRouter from "./routes/admin.support.route";
 
 const router = Router();
 
@@ -35,6 +39,10 @@ router.use('/access-codes', accessCodeRouter);
 router.use('/faqs', faqRouter);
 router.use('/config', configRouter);
 router.use('/notifications', notificationRouter);
+router.use('/community', communityBoardRouter);
+router.use('/emergency', emergencyRouter);
+router.use('/support', supportRouter);
+router.use('/admin/support', adminSupportRouter);
 
 
 
