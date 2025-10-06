@@ -19,16 +19,10 @@ export class Permission extends Model {
   })
   declare id: string;
 
-  @ForeignKey(() => Role)
-  @Column({
-    type: DataType.UUID,
-    allowNull: false,
-  })
-  declare role_id: string;
-
   @Column({
     type: DataType.STRING,
     allowNull: false,
+    unique: true,
   })
   declare action: string;
 

@@ -1,6 +1,6 @@
-import { AccessLog } from './access.log.model';
-import { User } from '../user/user.model';
-import { Estate } from '../estate/estate.model';
+import { AccessLog } from '../models/access.log.model';
+import { User } from '../models/user.model';
+import { Estate } from '../models/estate.model';
 
 export const accessLogService = {
   logAccess: async (data: {

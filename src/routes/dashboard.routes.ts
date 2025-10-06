@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import adminDashboardController from './admin.dashboard.controller';
-import managerDashboardController from './manager.dashboard.controller';
-import { authentication } from '../../middlewares/authentication';
-import { authorizeRoles } from '../../middlewares/authorizeRoles';
+import adminDashboardController from '../controllers/admin.dashboard.controller';
+import managerDashboardController from '../controllers/manager.dashboard.controller';
+import authentication from '../middlewares/authentication';
+import authorizeRoles from '../middlewares/authorizeRoles';
 
 const dashboardRouter = Router();
 

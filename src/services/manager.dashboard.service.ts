@@ -1,7 +1,7 @@
-import { Payment } from '../payment/payment.model';
-import { User } from '../user/user.model';
-import { Subscription } from '../payment/subscription.model';
-import { accessLogService } from '../access/access.log.service';
+import { Payment } from '../models/payment.model';
+import { User } from '../models/user.model';
+import { Subscription } from '../models/subscription.model';
+import { accessLogService } from '../services/access.log.service';
 
 export const managerDashboardService = {
   getEstateOverview: async (estate_id: string) => {

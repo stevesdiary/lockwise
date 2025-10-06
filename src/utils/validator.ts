@@ -67,10 +67,19 @@ export const userRegistrationSchema = yup.object().shape({
       'Invalid Nigerian phone number'
     ),
 
+  role: yup
+    .string()
+    .required('Role is required')
+    .oneOf(['resident', 'manager'], 'Role must be either resident or manager'),
+    
   estate_code: yup
     .string()
     .trim()
-    .optional()
+    .when('role', {
+      is: 'resident',
+      then: (schema) => schema.required('Estate code is required for residents'),
+      otherwise: (schema) => schema.optional()
+    })
     .min(6, 'Estate code must be at least 6 characters'),
 });
 

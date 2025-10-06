@@ -12,7 +12,7 @@ import {
   getOneAccess
 } from '../controllers/access.controller';
 import authentication from '../middlewares/authentication';
-import { authorizeRole } from '../middlewares/authorizeRoles';
+import authorizeRoles from '../middlewares/authorizeRoles';
 
 const router = express.Router();
 
@@ -33,6 +33,6 @@ router.post('/check-in', authentication, checkInVisitor);
 router.post('/check-out', authentication, checkOutVisitor);
 
 // Admin routes (require admin role)
-router.get('/admin/all', authentication, authorizeRole('admin', 'security'), getAllAccess);
+router.get('/admin/all', authentication, authorizeRoles(['admin', 'security']), getAllAccess);
 
 export default router;

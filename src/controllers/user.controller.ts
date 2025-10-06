@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { userService } from '../services/user.service';
+import { userRegistrationSchema } from '../utils/validator';
 
 export const userController = {
   getUsersByEstate: async (req: Request, res: Response): Promise<Response> => {
@@ -14,8 +15,17 @@ export const userController = {
   },
 
   register: async (req: Request, res: Response): Promise<Response> => {
-    const response = await userService.createUser(req.body);
-    return res.status(response.statusCode).json(response);
+    try {
+      const validatedData = await userRegistrationSchema.validate(req.body, {abortEarly: false});
+      const response = await userService.createUser(validatedData);
+      return res.status(response.statusCode).json(response);
+    } catch (error: any) {
+      console.error('User registration error:', error);
+      if (error.name === 'ValidationError') {
+        return res.status(400).json({ message: error.message, errors: error.errors });
+      }
+      return res.status(500).json({ message: 'Internal server error' });
+    }
   },
 
   updateUser: async (req: Request, res: Response): Promise<Response> => {

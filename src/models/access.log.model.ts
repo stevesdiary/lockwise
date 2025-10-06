@@ -1,6 +1,6 @@
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
-import { User } from '../user/user.model';
-import { Estate } from '../estate/estate.model';
+import { User } from '../models/user.model';
+import { Estate } from '../models/estate.model';
 
 @Table({
   tableName: 'access_logs',

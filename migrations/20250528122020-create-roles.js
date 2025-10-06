@@ -8,8 +8,8 @@ module.exports = {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4
       },
-      name: {
-        type: Sequelize.STRING,
+      role: {
+        type: Sequelize.ENUM('resident', 'admin', 'manager', 'security', 'super_admin', 'customer_service'),
         allowNull: false,
         unique: true
       },

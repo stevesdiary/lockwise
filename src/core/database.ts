@@ -14,31 +14,34 @@ import { Resident } from '../models/resident.model';
 import { Plan } from '../models/plan.model';
 import { Referrer } from '../models/referrer.model';
 import { ReferralBonus } from '../models/referral.bonus.model';
+import { Subscription } from '../models/subscription.model';
 import { Address } from '../models/address.model';
+
+const env = process.env.NODE_ENV || 'development';
+const isProduction = env === 'production';
 
 const sequelize = new Sequelize({
   dialect: 'postgres',
   dialectModule: require('pg'),
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '5432'),
-  username: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || 'postgres',
-  database: process.env.DB_NAME || 'your_database',
-  models: [User, Estate, Resident, Role, Payment, Street, Permission, Unit, Access, AccessEntry, RolePermission, Plan, Referrer, ReferralBonus, Address],
-  ssl: true,
+  host: isProduction ? (process.env.PROD_DB_HOST || 'localhost') : (process.env.DEV_DB_HOST || 'localhost'),
+  port: parseInt(isProduction ? (process.env.PROD_DB_PORT || '5432') : (process.env.DEV_DB_PORT || '5432')),
+  username: isProduction ? (process.env.PROD_DB_USER || 'postgres') : (process.env.DEV_DB_USER || 'postgres'),
+  password: isProduction ? (process.env.PROD_DB_PASSWORD || '') : (process.env.DEV_DB_PASSWORD || ''),
+  database: isProduction ? (process.env.PROD_DB_NAME || 'lockwise') : (process.env.DEV_DB_NAME || 'lockwise_dev'),
+  models: [User, Estate, Resident, Role, Payment, Street, Permission, Unit, Access, AccessEntry, RolePermission, Plan, Referrer, ReferralBonus, Address, Subscription],
   dialectOptions: {
     ssl: {
-      require: true,
+      require: process.env.SSL,
       rejectUnauthorized: false
-    },
-    connectionTimeout: 30000
+    }
   },
   pool: {
     max: 5,
     min: 0,
     acquire: 30000,
     idle: 10000
-  }
+  },
+  logging: isProduction ? false : console.log
 });
 
 export default sequelize;

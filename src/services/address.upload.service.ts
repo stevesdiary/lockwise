@@ -3,6 +3,7 @@ import fs from 'fs';
 import sequelize from '../core/database';
 import { Address } from '../models/address.model';
 import { AddressCreationAttributes } from '../types/address.type';
+import { CreationAttributes } from 'sequelize';
 
 interface AddressUploadResult {
   addressesCreated: Address[];
@@ -40,7 +41,7 @@ export class AddressUploadService {
               estate_id: estateId, 
               apartment_number: addressData.apartment_number 
             },
-            defaults: addressData,
+            defaults: addressData as CreationAttributes<Address>,
             transaction
           });
 

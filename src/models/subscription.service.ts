@@ -1,5 +1,5 @@
 import { Subscription } from './subscription.model';
-import { User } from '../user/user.model';
+import { User } from '../models/user.model';
 import { Plan } from './plan.model';
 
 export const subscriptionService = {

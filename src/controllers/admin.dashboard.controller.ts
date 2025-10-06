@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { adminDashboardService } from './admin.dashboard.service';
+import { adminDashboardService } from '../services/admin.dashboard.service';
 
 const adminDashboardController = {
   getOverview: async (req: Request, res: Response) => {

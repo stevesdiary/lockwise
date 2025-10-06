@@ -18,7 +18,7 @@ export class Role extends Model<Role> {
   declare id: string;
 
   @Column({
-    type: DataType.ENUM('resident', 'admin', 'manager', 'security', 'super_admin'),
+    type: DataType.ENUM('resident', 'admin', 'manager', 'security', 'super_admin', 'customer_service'),
     allowNull: false,
   })
   declare role: string;

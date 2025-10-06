@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { managerDashboardService } from './manager.dashboard.service';
+import { managerDashboardService } from '../services/manager.dashboard.service';
 
 const managerDashboardController = {
   getEstateOverview: async (req: Request, res: Response) => {

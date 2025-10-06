@@ -15,6 +15,7 @@ const RoleController = {
       const newRole = await roleService.createRole(roleData);
       return res.json(newRole);
     } catch (error) {
+      console.error("Error creating role:", error);
       return res.status(500).json({
         status: "error",
         message: "Failed to create role",
@@ -109,6 +110,29 @@ const RoleController = {
       return res.status(500).json({
         status: "error",
         message: "Failed to delete role",
+        error: error instanceof Error ? error.message : "Unknown error occurred",
+      });
+    }
+  },
+  assignPermissions: async (req: ExpressRequest, res: Response): Promise<Response> => {
+    try {
+      const roleId = req.params.roleId;
+      const { permission_ids } = req.body;
+      
+      if (!roleId || !permission_ids) {
+        return res.status(400).json({
+          status: "error",
+          message: "Role ID and permission IDs are required",
+        });
+      }
+      
+      const result = await roleService.assignPermissions(roleId, permission_ids);
+      return res.json(result);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({
+        status: "error",
+        message: "Failed to assign permissions",
         error: error instanceof Error ? error.message : "Unknown error occurred",
       });
     }
