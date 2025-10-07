@@ -27,7 +27,7 @@ module.exports = {
         }
       },
       type: {
-        type: Sequelize.ENUM('announcement', 'chat', 'meeting', 'event'),
+        type: Sequelize.ENUM('announcement', 'chat', 'meeting', 'event', 'alert'),
         allowNull: false
       },
       title: {

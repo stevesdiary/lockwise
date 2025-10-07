@@ -58,7 +58,7 @@ module.exports = {
       },
       estate_code: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
         unique: true
       },
       address: {
@@ -76,6 +76,33 @@ module.exports = {
       total_number_of_staff: {
         type: Sequelize.INTEGER
       },
+      number_of_staff: {
+        type: Sequelize.INTEGER,
+        allowNull: true
+      },
+      contact_address: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      approval_status: {
+        type: Sequelize.ENUM('approved', 'pending', 'declined'),
+        allowNull: false,
+        defaultValue: 'pending'
+      },
+      referrer_id: {
+        type: Sequelize.UUID,
+        allowNull: true,
+        references: {
+          model: 'referrers',
+          key: 'id'
+        },
+        onDelete: 'SET NULL'
+      },
+      plan_id: {
+        type: Sequelize.UUID,
+        allowNull: true
+      },
+
       total_floors: {
         type: Sequelize.INTEGER
       },

@@ -43,6 +43,26 @@ module.exports = {
       status: {
         type: Sequelize.STRING
       },
+      role_id: {
+        type: Sequelize.UUID,
+        allowNull: true,
+        references: {
+          model: 'roles',
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL'
+      },
+      estate_id: {
+        type: Sequelize.UUID,
+        allowNull: true,
+        references: {
+          model: 'estates',
+          key: 'estate_id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL'
+      },
       created_at: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
