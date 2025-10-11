@@ -2,7 +2,7 @@ import { Payment } from '../models/payment.model';
 import { User } from '../models/user.model';
 import { Estate } from '../models/estate.model';
 import { Subscription } from '../models/subscription.model';
-import { Access } from '../models/access.model';
+import { AccessLog } from '../models/access.log.model';
 import { Op, fn, col, literal } from 'sequelize';
 
 export const analyticsService = {
@@ -99,7 +99,7 @@ export const analyticsService = {
       }),
 
       // Access statistics
-      Access.findAll({
+      AccessLog.findAll({
         attributes: [
           'access_type',
           [fn('COUNT', col('id')), 'count']
@@ -160,7 +160,7 @@ export const analyticsService = {
         where: { estate_id: estateId, role: 'security' }
       }),
 
-      Access.count({
+      AccessLog.count({
         where: {
           estate_id: estateId,
           created_at: {
