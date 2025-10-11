@@ -16,7 +16,9 @@ export interface EmergencyAlertAttributes {
   updated_at: Date;
 }
 
-export type EmergencyAlertCreationAttributes = Omit<EmergencyAlertAttributes, 'id' | 'created_at' | 'updated_at'>;
+export type EmergencyAlertCreationAttributes = Omit<EmergencyAlertAttributes, 'id' | 'created_at' | 'updated_at'> & {
+  status?: string;
+};
 
 @Table({
   tableName: 'emergency_alerts',
@@ -103,7 +105,9 @@ export interface EmergencyContactAttributes {
   updated_at: Date;
 }
 
-export type EmergencyContactCreationAttributes = Omit<EmergencyContactAttributes, 'id' | 'created_at' | 'updated_at'>;
+export type EmergencyContactCreationAttributes = Omit<EmergencyContactAttributes, 'id' | 'created_at' | 'updated_at' | 'is_active'> & {
+  is_active?: boolean;
+};
 
 @Table({
   tableName: 'emergency_contacts',
