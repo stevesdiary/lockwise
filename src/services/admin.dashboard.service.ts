@@ -1,7 +1,7 @@
 import { Payment } from '../models/payment.model';
 import { User } from '../models/user.model';
 import { Estate } from '../models/estate.model';
-import { accessLogService } from './access.log.service';
+import accessLogService from './access.log.service';
 import { analyticsService } from './analytics.service';
 
 export const adminDashboardService = {
