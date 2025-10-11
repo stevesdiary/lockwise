@@ -15,7 +15,9 @@ export interface CommunityPostAttributes {
   updated_at: Date;
 }
 
-export type CommunityPostCreationAttributes = Omit<CommunityPostAttributes, 'id' | 'created_at' | 'updated_at'>;
+export type CommunityPostCreationAttributes = Omit<CommunityPostAttributes, 'id' | 'created_at' | 'updated_at' | 'is_pinned'> & {
+  is_pinned?: boolean;
+};
 
 @Table({
   tableName: 'community_posts',
