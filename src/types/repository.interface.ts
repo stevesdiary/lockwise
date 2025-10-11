@@ -1,7 +1,7 @@
 import { User } from '../models/user.model';
 import { Estate } from '../models/estate.model';
 import { Resident } from '../models/resident.model';
-import { Access } from '../models/access.model';
+import { AccessLog } from '../models/access.log.model';
 
 export interface IBaseRepository<T> {
   create(data: Partial<T>): Promise<T>;
@@ -26,7 +26,7 @@ export interface IResidentRepository extends IBaseRepository<Resident> {
   findAllByEstate(estateId: string): Promise<Resident[]>;
 }
 
-export interface IAccessRepository extends IBaseRepository<Access> {
-  findAllByEstate(estateId: string): Promise<Access[]>;
-  findAllByResident(residentId: string): Promise<Access[]>;
+export interface IAccessRepository extends IBaseRepository<AccessLog> {
+  findAllByEstate(estateId: string): Promise<AccessLog[]>;
+  findAllByResident(residentId: string): Promise<AccessLog[]>;
 }
