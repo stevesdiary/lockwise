@@ -1,19 +1,29 @@
 import { Request, Response } from 'express';
 import { handleControllerError } from '../middlewares/error.handler';
-import { accessService } from '../services/access';
-import { createAccessSchema, entryOperationSchema, exitOperationSchema } from '../utils/validator';
-import { EntryOperation, ExitOperation } from '../types/access.type';
+import accessLogService from '../services/access.log.service';
 
-// Create access record
+// Create access request
 async function createAccessRecord(req: Request, res: Response) {
   try {
-    const validatedAccessData = await createAccessSchema.validate(req.body, { abortEarly: false });
-    if (!validatedAccessData) {
-      throw new Error('Input data is required');
-    }
-    const result = await accessService.createAccess(validatedAccessData);
+    const user_id = req.user.id;
+    const estate_id = req.user.estate_id;
+    const { scheduled_entry_date, scheduled_exit_date, vehicle_number, remarks } = req.body;
     
-    return res.status(result.statusCode).json(result);
+    const accessLog = await accessLogService.createAccessRequest({
+      user_id,
+      estate_id,
+      scheduled_entry_date,
+      scheduled_exit_date,
+      vehicle_number,
+      remarks,
+      created_by: req.user?.id
+    });
+    
+    return res.status(201).json({
+      status: 'success',
+      message: 'Access request created successfully',
+      data: accessLog
+    });
   } catch (error) {
     return handleControllerError(error, res);
   }
@@ -22,23 +32,22 @@ async function createAccessRecord(req: Request, res: Response) {
 // Record visitor entry
 async function recordEntry(req: Request, res: Response) {
   try {
-    const entryData: EntryOperation = {
-      access_id: req.params.accessId || req.body.access_id,
-      scanned_by: req.body.scanned_by || req.user?.id,
-      gate_id: req.body.gate_id,
-      remarks: req.body.remarks
-    };
+    const accessId = req.params.accessId || req.body.access_id;
+    const { gate_id, scanned_by } = req.body;
 
-    if (!entryData.access_id) {
+    if (!accessId) {
       return res.status(400).json({
         status: 'error',
-        message: 'Access ID is required',
-        statusCode: 400
+        message: 'Access ID is required'
       });
     }
 
-    const result = await accessService.recordEntry(entryData);
-    return res.status(result.statusCode).json(result);
+    await accessLogService.logEntry(accessId, gate_id, scanned_by || req.user?.id);
+    
+    return res.status(200).json({
+      status: 'success',
+      message: 'Entry recorded successfully'
+    });
   } catch (error) {
     return handleControllerError(error, res);
   }
@@ -47,122 +56,45 @@ async function recordEntry(req: Request, res: Response) {
 // Record visitor exit
 async function recordExit(req: Request, res: Response) {
   try {
-    const exitData: ExitOperation = {
-      entry_id: req.params.entryId || req.body.entry_id,
-      scanned_by: req.body.scanned_by || req.user?.id,
-      gate_id: req.body.gate_id,
-      remarks: req.body.remarks
-    };
+    const accessId = req.params.accessId || req.body.access_id;
 
-    if (!exitData.entry_id) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Entry ID is required',
-        statusCode: 400
-      });
-    }
-
-    const result = await accessService.recordExit(exitData);
-    return res.status(result.statusCode).json(result);
-  } catch (error) {
-    return handleControllerError(error, res);
-  }
-}
-
-// Get access with all entries
-async function getAccessWithEntries(req: Request, res: Response) {
-  try {
-    const accessId = req.params.accessId;
     if (!accessId) {
       return res.status(400).json({
         status: 'error',
-        message: 'Access ID is required',
-        statusCode: 400
+        message: 'Access ID is required'
       });
     }
 
-    const result = await accessService.getAccessWithEntries(accessId);
-    return res.status(result.statusCode).json(result);
+    await accessLogService.logExit(accessId);
+    
+    return res.status(200).json({
+      status: 'success',
+      message: 'Exit recorded successfully'
+    });
   } catch (error) {
     return handleControllerError(error, res);
   }
 }
 
-// Get active entries for an access
-async function getActiveEntries(req: Request, res: Response) {
+// Approve access request
+async function approveAccess(req: Request, res: Response) {
   try {
     const accessId = req.params.accessId;
-    if (!accessId) {
+    const approvedBy = req.user?.id;
+
+    if (!accessId || !approvedBy) {
       return res.status(400).json({
         status: 'error',
-        message: 'Access ID is required',
-        statusCode: 400
+        message: 'Access ID and approver ID are required'
       });
     }
 
-    const result = await accessService.getActiveEntries(accessId);
-    return res.status(result.statusCode).json(result);
-  } catch (error) {
-    return handleControllerError(error, res);
-  }
-}
-
-// Check if visitor can enter
-async function checkEntryPermission(req: Request, res: Response) {
-  try {
-    const accessId = req.params.accessId;
-    if (!accessId) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Access ID is required',
-        statusCode: 400
-      });
-    }
-
-    const result = await accessService.canVisitorEnter(accessId);
-    return res.status(result.statusCode).json(result);
-  } catch (error) {
-    return handleControllerError(error, res);
-  }
-}
-
-// Legacy check-in method (for backward compatibility)
-async function checkInVisitor(req: Request, res: Response) {
-  try {
-    const { access_id, remarks } = req.body;
-    const approver_id = req.user?.id;
-
-    if (!access_id || !approver_id) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Access ID and approver ID are required',
-        statusCode: 400
-      });
-    }
-
-    const result = await accessService.checkInVisitor(access_id, approver_id, remarks);
-    return res.status(result.statusCode).json(result);
-  } catch (error) {
-    return handleControllerError(error, res);
-  }
-}
-
-// Legacy check-out method (for backward compatibility)
-async function checkOutVisitor(req: Request, res: Response) {
-  try {
-    const { access_id } = req.body;
-    const approver_id = req.user?.id;
-
-    if (!access_id || !approver_id) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Access ID and approver ID are required',
-        statusCode: 400
-      });
-    }
-
-    const result = await accessService.checkOutVisitor(access_id, approver_id);
-    return res.status(result.statusCode).json(result);
+    await accessLogService.approveAccess(accessId, approvedBy);
+    
+    return res.status(200).json({
+      status: 'success',
+      message: 'Access approved successfully'
+    });
   } catch (error) {
     return handleControllerError(error, res);
   }
@@ -171,29 +103,43 @@ async function checkOutVisitor(req: Request, res: Response) {
 // Get all access logs
 async function getAllAccess(req: Request, res: Response) {
   try {
-    const estate_id = req.query.estate_id as string || req.user?.estate_id;
+    const { estate_id, user_id, status, limit, offset } = req.query;
     
-    const result = await accessService.getAccesss(estate_id);
-    return res.status(result.statusCode).json(result);
+    const accessLogs = await accessLogService.getAccessLogs({
+      estate_id: estate_id as string || req.user?.estate_id,
+      user_id: user_id as string,
+      status: status as string,
+      limit: limit ? parseInt(limit as string) : undefined,
+      offset: offset ? parseInt(offset as string) : undefined
+    });
+    
+    return res.status(200).json({
+      status: 'success',
+      data: accessLogs
+    });
   } catch (error) {
     return handleControllerError(error, res);
   }
 }
 
-// Get single access log
-async function getOneAccess(req: Request, res: Response) {
+// Get active access for user
+async function getActiveAccess(req: Request, res: Response) {
   try {
-    const id = req.params.id;
-    if (!id) {
+    const { user_id, estate_id } = req.query;
+    
+    if (!user_id || !estate_id) {
       return res.status(400).json({
         status: 'error',
-        message: 'Access ID is required',
-        statusCode: 400
+        message: 'User ID and Estate ID are required'
       });
     }
 
-    const result = await accessService.getOnelog(id);
-    return res.status(result.statusCode).json(result);
+    const activeAccess = await accessLogService.getActiveAccess(user_id as string, estate_id as string);
+    
+    return res.status(200).json({
+      status: 'success',
+      data: activeAccess
+    });
   } catch (error) {
     return handleControllerError(error, res);
   }
@@ -203,11 +149,7 @@ export {
   createAccessRecord,
   recordEntry,
   recordExit,
-  getAccessWithEntries,
-  getActiveEntries,
-  checkEntryPermission,
-  checkInVisitor,
-  checkOutVisitor,
+  approveAccess,
   getAllAccess,
-  getOneAccess
+  getActiveAccess
 };
