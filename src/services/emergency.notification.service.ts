@@ -35,7 +35,7 @@ class EmergencyNotificationService {
       description: alert.description,
       location: alert.location,
       status: alert.status,
-      created_at: alert.created_at
+      created_at: alert.createdAt
     }), 3600); // 1 hour expiry
 
     return users.length;
