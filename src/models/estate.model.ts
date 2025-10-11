@@ -2,7 +2,7 @@ import { Table, Model, Column, DataType, Index, BelongsTo, HasMany, ForeignKey }
 import { EstateAttributes, EstateCreationAttributes } from '../types/estate.type';
 import { Street } from './street.model';
 import { User } from './user.model';
-import { Access } from './access.model';
+import { AccessLog } from './access.log.model';
 import { Referrer } from './referrer.model';
 import { Plan } from './plan.model';
 
@@ -11,7 +11,7 @@ import { Plan } from './plan.model';
   indexes: [
     {
       name: 'estate_id_index',
-      fields: ['estate_id', 'invitation_code'],
+      fields: ['estate_id'],
       using: 'BTREE',
       unique: true,
     },
@@ -33,7 +33,7 @@ export class Estate extends Model<EstateAttributes, EstateCreationAttributes> {
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
+    allowNull: true,
     unique: true,
   })
   declare estate_code: string;
@@ -43,12 +43,6 @@ export class Estate extends Model<EstateAttributes, EstateCreationAttributes> {
     allowNull: false,
   })
   declare name: string;
-
-  @Column({
-    type: DataType.STRING,
-    // allowNull: false
-  })
-  declare invitation_code: string;
 
   @Column({
     type: DataType.STRING,
@@ -97,7 +91,8 @@ export class Estate extends Model<EstateAttributes, EstateCreationAttributes> {
   declare total_parking_spaces: number;
 
   @Column({
-    type: DataType.NUMBER
+    type: DataType.NUMBER,
+    allowNull: true
   })
   declare number_of_staff: number;
 
@@ -152,10 +147,10 @@ export class Estate extends Model<EstateAttributes, EstateCreationAttributes> {
   @HasMany(() => Street)
   declare streets: Street[];
 
-  @HasMany(() => Access, {
+  @HasMany(() => AccessLog, {
     foreignKey: 'estate_id'
   })
-  declare Accesss: Access[];
+  declare accessLogs: AccessLog[];
 
   @ForeignKey(() => Referrer)
   @Column({
