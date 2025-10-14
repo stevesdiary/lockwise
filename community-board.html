@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Community Board</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .tabs { display: flex; background: white; border-radius: 8px; margin-bottom: 20px; overflow: hidden; }
+        .tab { flex: 1; padding: 15px; text-align: center; cursor: pointer; border: none; background: white; }
+        .tab.active { background: #007bff; color: white; }
+        .content { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+        .post { border: 1px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
+        .post.pinned { border-left: 4px solid #28a745; }
+        .post.announcement { border-left: 4px solid #ffc107; }
+        .post.meeting { border-left: 4px solid #17a2b8; }
+        .chat-container { height: 400px; overflow-y: auto; border: 1px solid #eee; padding: 10px; margin-bottom: 10px; }
+        .chat-message { margin-bottom: 10px; padding: 8px; border-radius: 4px; }
+        .chat-message.own { background: #007bff; color: white; margin-left: 20%; }
+        .chat-message.other { background: #f8f9fa; margin-right: 20%; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, textarea, select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .user-info { font-size: 12px; color: #666; margin-bottom: 5px; }
+        .timestamp { font-size: 11px; color: #999; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Community Board</h1>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('announcements')">Announcements</button>
+            <button class="tab" onclick="showTab('chat')">Group Chat</button>
+            <button class="tab" onclick="showTab('meetings')">Meetings</button>
+            <button class="tab" onclick="showTab('create')">Create Post</button>
+        </div>
+
+        <!-- Announcements Tab -->
+        <div id="announcements" class="content">
+            <h2>Estate Announcements</h2>
+            <div id="announcementsList"></div>
+        </div>
+
+        <!-- Chat Tab -->
+        <div id="chat" class="content" style="display: none;">
+            <h2>Group Chat</h2>
+            <div id="chatContainer" class="chat-container"></div>
+            <div class="form-group">
+                <input type="text" id="chatInput" placeholder="Type your message..." onkeypress="handleChatKeyPress(event)">
+                <button onclick="sendChatMessage()">Send</button>
+            </div>
+        </div>
+
+        <!-- Meetings Tab -->
+        <div id="meetings" class="content" style="display: none;">
+            <h2>Virtual Meetings</h2>
+            <div id="meetingsList"></div>
+        </div>
+
+        <!-- Create Post Tab -->
+        <div id="create" class="content" style="display: none;">
+            <h2>Create New Post</h2>
+            <form onsubmit="createPost(event)">
+                <div class="form-group">
+                    <label for="postType">Type:</label>
+                    <select id="postType" onchange="togglePostFields()">
+                        <option value="announcement">Announcement</option>
+                        <option value="meeting">Meeting</option>
+                        <option value="event">Event</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="postTitle">Title:</label>
+                    <input type="text" id="postTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="postContent">Content:</label>
+                    <textarea id="postContent" rows="4" required></textarea>
+                </div>
+                <div id="meetingFields" style="display: none;">
+                    <div class="form-group">
+                        <label for="meetingDate">Meeting Date:</label>
+                        <input type="datetime-local" id="meetingDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="meetingLink">Meeting Link:</label>
+                        <input type="url" id="meetingLink" placeholder="https://zoom.us/j/...">
+                    </div>
+                </div>
+                <button type="submit">Create Post</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+
+        function showTab(tabName) {
+            // Hide all content
+            document.querySelectorAll('.content').forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected content and activate tab
+            document.getElementById(tabName).style.display = 'block';
+            event.target.classList.add('active');
+            
+            // Load content based on tab
+            if (tabName === 'announcements') loadAnnouncements();
+            if (tabName === 'chat') loadChatMessages();
+            if (tabName === 'meetings') loadMeetings();
+        }
+
+        async function loadAnnouncements() {
+            try {
+                const response = await fetch('/api/community/posts?type=announcement', {
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                });
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    displayPosts(data.data, 'announcementsList');
+                }
+            } catch (error) {
+                console.error('Error loading announcements:', error);
+            }
+        }
+
+        async function loadChatMessages() {
+            try {
+                const response = await fetch('/api/community/chat', {
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                });
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    displayChatMessages(data.data);
+                }
+            } catch (error) {
+                console.error('Error loading chat messages:', error);
+            }
+        }
+
+        async function loadMeetings() {
+            try {
+                const response = await fetch('/api/community/posts?type=meeting', {
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                });
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    displayPosts(data.data, 'meetingsList');
+                }
+            } catch (error) {
+                console.error('Error loading meetings:', error);
+            }
+        }
+
+        function displayPosts(posts, containerId) {
+            const container = document.getElementById(containerId);
+            
+            if (posts.length === 0) {
+                container.innerHTML = '<p>No posts yet.</p>';
+                return;
+            }
+
+            container.innerHTML = posts.map(post => `
+                <div class="post ${post.is_pinned ? 'pinned' : ''} ${post.type}">
+                    ${post.is_pinned ? '<span style="color: #28a745; font-weight: bold;">📌 PINNED</span><br>' : ''}
+                    <div class="user-info">
+                        ${post.user.first_name} ${post.user.last_name} • ${post.type.toUpperCase()}
+                    </div>
+                    ${post.title ? `<h3>${post.title}</h3>` : ''}
+                    <p>${post.content}</p>
+                    ${post.attachments && post.attachments.meeting_link ? 
+                        `<p><a href="${post.attachments.meeting_link}" target="_blank">Join Meeting</a></p>` : ''}
+                    <div class="timestamp">${new Date(post.created_at).toLocaleString()}</div>
+                </div>
+            `).join('');
+        }
+
+        function displayChatMessages(messages) {
+            const container = document.getElementById('chatContainer');
+            
+            container.innerHTML = messages.map(message => `
+                <div class="chat-message ${message.user_id === currentUser?.id ? 'own' : 'other'}">
+                    <div class="user-info">${message.user.first_name} ${message.user.last_name}</div>
+                    <div>${message.content}</div>
+                    <div class="timestamp">${new Date(message.created_at).toLocaleString()}</div>
+                </div>
+            `).join('');
+            
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            try {
+                const response = await fetch('/api/community/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify({ message })
+                });
+
+                if (response.ok) {
+                    input.value = '';
+                    loadChatMessages();
+                }
+            } catch (error) {
+                console.error('Error sending message:', error);
+            }
+        }
+
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+
+        async function createPost(event) {
+            event.preventDefault();
+            
+            const type = document.getElementById('postType').value;
+            const title = document.getElementById('postTitle').value;
+            const content = document.getElementById('postContent').value;
+            
+            let endpoint = '/api/community/posts';
+            let body = { type, title, content };
+            
+            if (type === 'meeting') {
+                const meetingDate = document.getElementById('meetingDate').value;
+                const meetingLink = document.getElementById('meetingLink').value;
+                endpoint = '/api/community/meetings';
+                body = { title, content, meeting_date: meetingDate, meeting_link: meetingLink };
+            } else if (type === 'announcement') {
+                endpoint = '/api/community/announcements';
+                body = { title, content };
+            }
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify(body)
+                });
+
+                if (response.ok) {
+                    alert('Post created successfully!');
+                    document.querySelector('form').reset();
+                    showTab('announcements');
+                }
+            } catch (error) {
+                console.error('Error creating post:', error);
+            }
+        }
+
+        function togglePostFields() {
+            const type = document.getElementById('postType').value;
+            const meetingFields = document.getElementById('meetingFields');
+            
+            if (type === 'meeting') {
+                meetingFields.style.display = 'block';
+            } else {
+                meetingFields.style.display = 'none';
+            }
+        }
+
+        // Load initial content
+        window.onload = () => {
+            loadAnnouncements();
+        };
+    </script>
+</body>
+</html>

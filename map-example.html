@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lockwise Estate Map</title>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
+    <style>
+        #map { height: 400px; width: 100%; }
+    </style>
+</head>
+<body>
+    <h1>Estate Map</h1>
+    <div id="map"></div>
+    <button onclick="getDirections()">Get Directions</button>
+
+    <script>
+        let map, userLocation;
+
+        async function initMap() {
+            const response = await fetch('/api/addresses/map', {
+                headers: { 'Authorization': 'Bearer YOUR_JWT_TOKEN' }
+            });
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                const { estate, locations } = data.data;
+                
+                map = new google.maps.Map(document.getElementById('map'), {
+                    zoom: 16,
+                    center: { lat: estate.latitude, lng: estate.longitude }
+                });
+
+                // Estate marker
+                new google.maps.Marker({
+                    position: { lat: estate.latitude, lng: estate.longitude },
+                    map: map,
+                    title: estate.name
+                });
+
+                // Unit markers
+                locations.forEach(location => {
+                    new google.maps.Marker({
+                        position: { lat: location.latitude, lng: location.longitude },
+                        map: map,
+                        title: `Unit ${location.apartment_number}`
+                    });
+                });
+            }
+        }
+
+        async function getDirections() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    const response = await fetch(
+                        `/api/addresses/directions?fromLat=${position.coords.latitude}&fromLng=${position.coords.longitude}&toLat=ESTATE_LAT&toLng=ESTATE_LNG`,
+                        { headers: { 'Authorization': 'Bearer YOUR_JWT_TOKEN' } }
+                    );
+                    const result = await response.json();
+                    if (result.status === 'success') {
+                        window.open(result.data.directionsUrl, '_blank');
+                    }
+                });
+            }
+        }
+
+        window.onload = initMap;
+    </script>
+</body>
+</html>

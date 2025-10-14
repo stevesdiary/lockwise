@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lockwise Location Picker</title>
+    <script type="importmap">
+    {
+      "imports": {
+        "@googlemaps/extended-component-library": "https://unpkg.com/@googlemaps/extended-component-library@0.6"
+      }
+    }
+    </script>
+    <script type="module" src="@googlemaps/extended-component-library/place_picker.js"></script>
+    <script type="module" src="@googlemaps/extended-component-library/api_loader.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        #map { height: 400px; width: 100%; margin: 20px 0; }
+        .info-panel { background: #f8f9fa; padding: 15px; border-radius: 4px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Address Location Picker</h1>
+        
+        <div class="form-group">
+            <label for="addressSelect">Select Address:</label>
+            <select id="addressSelect">
+                <option value="">Choose an address...</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="placePicker">Search Location:</label>
+            <gmpx-api-loader id="apiLoader" solution-channel="GMP_GE_mapsandplacesapi_v1"></gmpx-api-loader>
+            <gmpx-place-picker id="placePicker" placeholder="Enter a location"></gmpx-place-picker>
+        </div>
+
+        <gmp-map id="map" center="6.5244,3.3792" zoom="10" map-id="DEMO_MAP_ID">
+            <gmp-advanced-marker id="marker"></gmp-advanced-marker>
+        </gmp-map>
+
+        <div id="locationInfo" class="info-panel" style="display: none;">
+            <h3>Selected Location</h3>
+            <p><strong>Address:</strong> <span id="selectedAddress"></span></p>
+            <p><strong>Coordinates:</strong> <span id="selectedCoords"></span></p>
+            <button onclick="saveLocation()">Save Location</button>
+        </div>
+    </div>
+
+    <script>
+        let currentAddress = null;
+        let selectedLocation = null;
+
+        async function init() {
+            await loadMapConfig();
+            await customElements.whenDefined('gmp-map');
+            await loadAddresses();
+
+            const map = document.querySelector('gmp-map');
+            const marker = document.querySelector('gmp-advanced-marker');
+            const placePicker = document.querySelector('gmpx-place-picker');
+            const infowindow = new google.maps.InfoWindow();
+
+            map.innerMap.setOptions({
+                mapTypeControl: false
+            });
+
+            placePicker.addEventListener('gmpx-placechange', () => {
+                const place = placePicker.value;
+
+                if (!place.location) {
+                    alert("No location details available for: " + place.name);
+                    return;
+                }
+
+                selectedLocation = {
+                    latitude: place.location.lat,
+                    longitude: place.location.lng,
+                    formatted_address: place.formattedAddress || place.displayName
+                };
+
+                if (place.viewport) {
+                    map.innerMap.fitBounds(place.viewport);
+                } else {
+                    map.center = place.location;
+                    map.zoom = 17;
+                }
+
+                marker.position = place.location;
+                
+                // Update info panel
+                document.getElementById('selectedAddress').textContent = selectedLocation.formatted_address;
+                document.getElementById('selectedCoords').textContent = 
+                    `${selectedLocation.latitude.toFixed(6)}, ${selectedLocation.longitude.toFixed(6)}`;
+                document.getElementById('locationInfo').style.display = 'block';
+
+                infowindow.setContent(`
+                    <strong>${place.displayName}</strong><br>
+                    <span>${place.formattedAddress}</span>
+                `);
+                infowindow.open(map.innerMap, marker);
+            });
+
+            // Address selection handler
+            document.getElementById('addressSelect').addEventListener('change', (e) => {
+                currentAddress = e.target.value;
+                if (currentAddress) {
+                    loadAddressLocation(currentAddress);
+                }
+            });
+        }
+
+        async function loadAddresses() {
+            try {
+                const response = await fetch('/api/addresses/map', {
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                });
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    const select = document.getElementById('addressSelect');
+                    data.data.locations.forEach(location => {
+                        const option = document.createElement('option');
+                        option.value = location.address_id;
+                        option.textContent = `${location.apartment_number} - ${location.full_address}`;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading addresses:', error);
+            }
+        }
+
+        async function loadAddressLocation(addressId) {
+            try {
+                const response = await fetch(`/api/addresses/location/${addressId}`, {
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                });
+                const data = await response.json();
+
+                if (data.status === 'success' && data.data.latitude && data.data.longitude) {
+                    const map = document.querySelector('gmp-map');
+                    const marker = document.querySelector('gmp-advanced-marker');
+                    
+                    const location = {
+                        lat: data.data.latitude,
+                        lng: data.data.longitude
+                    };
+
+                    map.center = location;
+                    map.zoom = 17;
+                    marker.position = location;
+
+                    selectedLocation = {
+                        latitude: data.data.latitude,
+                        longitude: data.data.longitude,
+                        formatted_address: `${data.data.apartment_number}, ${data.data.street}, ${data.data.city}`
+                    };
+
+                    document.getElementById('selectedAddress').textContent = selectedLocation.formatted_address;
+                    document.getElementById('selectedCoords').textContent = 
+                        `${selectedLocation.latitude.toFixed(6)}, ${selectedLocation.longitude.toFixed(6)}`;
+                    document.getElementById('locationInfo').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error loading address location:', error);
+            }
+        }
+
+        async function saveLocation() {
+            if (!currentAddress || !selectedLocation) {
+                alert('Please select an address and location');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/addresses/location/${currentAddress}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify(selectedLocation)
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    alert('Location saved successfully!');
+                } else {
+                    alert('Error saving location: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error saving location:', error);
+                alert('Error saving location');
+            }
+        }
+
+        async function loadMapConfig() {
+            try {
+                const response = await fetch('/api/config/map', {
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                });
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    const apiLoader = document.getElementById('apiLoader');
+                    const map = document.getElementById('map');
+                    
+                    apiLoader.setAttribute('key', data.data.apiKey);
+                    map.setAttribute('map-id', data.data.mapId);
+                }
+            } catch (error) {
+                console.error('Error loading map config:', error);
+                alert('Error loading map configuration');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
