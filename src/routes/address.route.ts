@@ -1,36 +1,10 @@
 import { Router } from 'express';
-import addressController from '../controllers/address.controller';
 import locationController from '../controllers/location.controller';
 import { authenticateJWT } from '../middlewares/authentication';
 
 const router = Router();
 
-router.post('/upload', 
-  authenticateJWT,
-  addressController.uploadMiddleware,
-  addressController.uploadAddresses
-);
-
-router.get('/map', 
-  authenticateJWT,
-  addressController.getEstateMap
-);
-
-router.get('/map/:estateId', 
-  authenticateJWT,
-  addressController.getEstateMap
-);
-
-router.put('/:addressId/location', 
-  authenticateJWT,
-  addressController.updateAddressLocation
-);
-
-router.get('/directions', 
-  authenticateJWT,
-  addressController.getDirections
-);
-
+// Location-based routes only (map functionality removed)
 router.put('/location/:addressId', 
   authenticateJWT,
   locationController.updateAddressLocation

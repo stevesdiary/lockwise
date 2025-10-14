@@ -5,17 +5,17 @@ import { authenticateJWT } from '../middlewares/authentication';
 const router = Router();
 
 router.post('/generate', 
-  authenticateJWT,
+  // authenticateJWT,
   accessCodeController.generateCode
 );
 
 router.post('/custom', 
-  authenticateJWT,
+  // authenticateJWT,
   accessCodeController.generateCustomCode
 );
 
 router.post('/refresh-category', 
-  authenticateJWT,
+  // authenticateJWT,
   accessCodeController.refreshCategory
 );
 
