@@ -1,0 +1,11 @@
+{
+  "name": "lockwise-load-test",
+  "version": "1.0.0",
+  "scripts": {
+    "test:light": "k6 run --vus 10 --duration 30s tests/auth-load.js",
+    "test:moderate": "k6 run --vus 50 --duration 2m tests/access-code-load.js",
+    "test:heavy": "k6 run --vus 200 --duration 5m tests/database-stress.js",
+    "test:stress-50": "k6 run tests/stress-50-users.js",
+    "test:stress-100": "k6 run tests/stress-100-users.js"
+  }
+}
