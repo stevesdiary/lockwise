@@ -75,6 +75,18 @@ export class User extends Model<User> {
   declare verified: boolean;
   
   @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  declare reset_token: string | null;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  declare reset_expires: Date | null;
+  
+  @Column({
     type: DataType.ENUM('active', 'inactive', 'suspended', 'pending'),
     allowNull: false,
     defaultValue: 'pending'
