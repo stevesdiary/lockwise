@@ -8,3 +8,4 @@ dist/
 build/
 .qoder
 uploads/
+.DS_Store
