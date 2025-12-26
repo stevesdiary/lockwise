@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lockwise Real-time Features Demo</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>Lockwise Real-time Features</h1>
+    
+    <div id="status">Disconnected</div>
+    
+    <div>
+        <h3>Notifications</h3>
+        <div id="notifications"></div>
+    </div>
+    
+    <div>
+        <h3>Access Codes</h3>
+        <div id="access-codes"></div>
+    </div>
+    
+    <div>
+        <h3>Chat Support</h3>
+        <input type="text" id="chatMessage" placeholder="Type message...">
+        <button onclick="sendMessage()">Send</button>
+        <div id="chat-messages"></div>
+    </div>
+
+    <script>
+        // Replace with actual JWT token
+        const token = 'your-jwt-token-here';
+        
+        const socket = io('http://localhost:3000', {
+            auth: { token }
+        });
+
+        socket.on('connect', () => {
+            document.getElementById('status').textContent = 'Connected';
+            console.log('Connected to WebSocket server');
+        });
+
+        socket.on('disconnect', () => {
+            document.getElementById('status').textContent = 'Disconnected';
+            console.log('Disconnected from WebSocket server');
+        });
+
+        // Listen for notifications
+        socket.on('notification', (data) => {
+            const notificationsDiv = document.getElementById('notifications');
+            const notificationElement = document.createElement('div');
+            notificationElement.innerHTML = `
+                <strong>${data.title}</strong>: ${data.message} 
+                <small>(${new Date(data.timestamp).toLocaleTimeString()})</small>
+            `;
+            notificationsDiv.appendChild(notificationElement);
+        });
+
+        // Listen for access code updates
+        socket.on('access_code_update', (data) => {
+            const accessCodesDiv = document.getElementById('access-codes');
+            const codeElement = document.createElement('div');
+            codeElement.innerHTML = `
+                Code: ${data.code} - Status: ${data.isActive ? 'Active' : 'Inactive'}
+                <small>(${new Date(data.timestamp).toLocaleTimeString()})</small>
+            `;
+            accessCodesDiv.appendChild(codeElement);
+        });
+
+        // Listen for chat messages
+        socket.on('new_message', (data) => {
+            const messagesDiv = document.getElementById('chat-messages');
+            const messageElement = document.createElement('div');
+            messageElement.innerHTML = `
+                <strong>User ${data.senderId}:</strong> ${data.message}
+                <small>(${new Date(data.timestamp).toLocaleTimeString()})</small>
+            `;
+            messagesDiv.appendChild(messageElement);
+        });
+
+        function sendMessage() {
+            const messageInput = document.getElementById('chatMessage');
+            const message = messageInput.value.trim();
+            
+            if (message) {
+                socket.emit('send_message', {
+                    message: message,
+                    chatId: 'demo_chat_123'
+                });
+                messageInput.value = '';
+            }
+        }
+
+        // Join a support chat room
+        socket.emit('join_support_chat', { chatId: 'demo_chat_123' });
+    </script>
+</body>
+</html>
