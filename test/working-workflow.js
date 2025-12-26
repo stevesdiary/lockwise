@@ -2,7 +2,9 @@ const fs = require('fs');
 const FormData = require('form-data');
 const axios = require('axios');
 
-const BASE_URL = 'http://localhost:3002/api/v1';
+const BASE_URL = process.env.BASE_URL || 'http://localhost:3002/api/v1';
+const TEST_EMAIL = process.env.TEST_EMAIL || 'manager@lockwise.com';
+const TEST_PASSWORD = process.env.TEST_PASSWORD || 'Password123!';
 
 async function workingWorkflow() {
   let token = null;
@@ -17,9 +19,9 @@ async function workingWorkflow() {
         title: 'Mr',
         first_name: 'Manager',
         last_name: 'User',
-        email: 'manager@lockwise.com',
-        password: 'Password123!',
-        confirm_password: 'Password123!',
+        email: TEST_EMAIL,
+        password: TEST_PASSWORD,
+        confirm_password: TEST_PASSWORD,
         phone: '08012345678',
         role: 'manager'
       });
@@ -35,8 +37,8 @@ async function workingWorkflow() {
     // Step 2: Login to get token
     console.log('\n2️⃣ Logging in...');
     const loginResponse = await axios.post(`${BASE_URL}/log/login`, {
-      email: 'manager@lockwise.com',
-      password: 'Password123!'
+      email: TEST_EMAIL,
+      password: TEST_PASSWORD
     });
     
     token = loginResponse.data.token;
