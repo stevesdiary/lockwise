@@ -1,74 +1,73 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { analyticsService } from '../services/analytics.service';
+import { AuthRequest } from '../middleware/auth.middleware';
 
 export const analyticsController = {
-  async getRevenue(req: Request, res: Response) {
+  async getDashboard(req: AuthRequest, res: Response) {
     try {
-      const period = req.query.period as 'week' | 'month' | 'year' || 'month';
-      const analytics = await analyticsService.getRevenueAnalytics(period);
-      
+      const { days = 30 } = req.query;
+      const endDate = new Date().toISOString();
+      const startDate = new Date(Date.now() - Number(days) * 24 * 60 * 60 * 1000).toISOString();
+
+      const [usageStats, performanceMetrics, systemHealth] = await Promise.all([
+        analyticsService.getUsageStats(startDate, endDate),
+        analyticsService.getPerformanceMetrics(),
+        analyticsService.getSystemHealth()
+      ]);
+
       res.json({
-        status: 'success',
-        data: analytics
+        period: { startDate, endDate, days: Number(days) },
+        usage: usageStats,
+        performance: performanceMetrics,
+        system: systemHealth
       });
     } catch (error) {
-      res.status(500).json({
-        status: 'error',
-        message: 'Failed to fetch revenue analytics',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
+      res.status(500).json({ error: 'Failed to fetch analytics dashboard' });
     }
   },
 
-  async getSystemStats(req: Request, res: Response) {
+  async getUserAnalytics(req: AuthRequest, res: Response) {
     try {
-      const stats = await analyticsService.getSystemStats();
-      
-      res.json({
-        status: 'success',
-        data: stats
-      });
+      const { userId } = req.params;
+      const { days = 30 } = req.query;
+
+      const behavior = await analyticsService.getUserBehavior(userId, Number(days));
+
+      res.json({ userId, period: Number(days), behavior });
     } catch (error) {
-      res.status(500).json({
-        status: 'error',
-        message: 'Failed to fetch system statistics',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
+      res.status(500).json({ error: 'Failed to fetch user analytics' });
     }
   },
 
-  async getDetailedAnalytics(req: Request, res: Response) {
+  async trackCustomEvent(req: AuthRequest, res: Response) {
     try {
-      const analytics = await analyticsService.getDetailedAnalytics();
-      
-      res.json({
-        status: 'success',
-        data: analytics
-      });
+      const { event, properties } = req.body;
+
+      await analyticsService.trackEvent(req.user!.id, event, properties);
+
+      res.json({ message: 'Event tracked successfully' });
     } catch (error) {
-      res.status(500).json({
-        status: 'error',
-        message: 'Failed to fetch detailed analytics',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
+      res.status(500).json({ error: 'Failed to track event' });
     }
   },
 
-  async getEstateAnalytics(req: Request, res: Response) {
+  async getPerformanceReport(req: AuthRequest, res: Response) {
     try {
-      const { estateId } = req.params;
-      const analytics = await analyticsService.getEstateAnalytics(estateId);
-      
-      res.json({
-        status: 'success',
-        data: analytics
-      });
+      const metrics = await analyticsService.getPerformanceMetrics();
+
+      res.json(metrics);
     } catch (error) {
-      res.status(500).json({
-        status: 'error',
-        message: 'Failed to fetch estate analytics',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
+      res.status(500).json({ error: 'Failed to fetch performance report' });
+    }
+  },
+
+  async getSystemStatus(req: AuthRequest, res: Response) {
+    try {
+      const health = await analyticsService.getSystemHealth();
+
+      res.json(health);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch system status' });
     }
   }
 };
