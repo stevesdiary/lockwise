@@ -1,0 +1,9 @@
+first_name,last_name,email,phone,role,estate_name,unit_number,emergency_contact_name,emergency_contact_phone
+"John","Doe","john.doe@email.com","+2348012345678","resident","Sunset Gardens Estate","A101","Jane Doe","+2348012345679"
+"Mary","Johnson","mary.johnson@email.com","+2348023456789","resident","Sunset Gardens Estate","B205","Mike Johnson","+2348023456790"
+"David","Wilson","david.wilson@email.com","+2348034567890","manager","Victoria Island Towers","","Sarah Wilson","+2348034567891"
+"Sarah","Brown","sarah.brown@email.com","+2348045678901","resident","Lekki Phase 1 Homes","C302","Tom Brown","+2348045678902"
+"Michael","Davis","michael.davis@email.com","+2348056789012","resident","Abuja Central Plaza","D150","Lisa Davis","+2348056789013"
+"Jennifer","Miller","jennifer.miller@email.com","+2348067890123","security","GRA Estate Kano","","Robert Miller","+2348067890124"
+"Robert","Garcia","robert.garcia@email.com","+2348078901234","resident","Port Harcourt Gardens","E401","Maria Garcia","+2348078901235"
+"Lisa","Rodriguez","lisa.rodriguez@email.com","+2348089012345","manager","Ikeja Business Hub","","Carlos Rodriguez","+2348089012346"

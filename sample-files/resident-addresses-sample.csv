@@ -1,0 +1,11 @@
+resident_email,estate_id,apartment_number,building,street,city,state,country,zip_code,latitude,longitude
+"john.doe@email.com","660e8400-e29b-41d4-a716-446655440000","A101","Block A","15 Sunset Boulevard","Lagos","Lagos State","Nigeria","100001","6.5244","3.3792"
+"mary.johnson@email.com","660e8400-e29b-41d4-a716-446655440000","B205","Block B","15 Sunset Boulevard","Lagos","Lagos State","Nigeria","100001","6.5244","3.3792"
+"sarah.brown@email.com","660e8400-e29b-41d4-a716-446655440000","C302","Block C","78 Admiralty Way","Lagos","Lagos State","Nigeria","105102","6.4474","3.4553"
+"michael.davis@email.com","660e8400-e29b-41d4-a716-446655440000","D150","Block D","12 Central Business District","Abuja","FCT","Nigeria","900001","9.0579","7.4951"
+"robert.garcia@email.com","660e8400-e29b-41d4-a716-446655440000","E401","Block E","89 Trans Amadi","Port Harcourt","Rivers State","Nigeria","500001","4.8156","7.0498"
+"jennifer.wilson@email.com","660e8400-e29b-41d4-a716-446655440000","A205","Block A","56 Government Reserved Area","Kano","Kano State","Nigeria","700001","12.0022","8.5920"
+"david.miller@email.com","660e8400-e29b-41d4-a716-446655440000","B103","Block B","34 Allen Avenue","Lagos","Lagos State","Nigeria","100271","6.6018","3.3515"
+"lisa.rodriguez@email.com","660e8400-e29b-41d4-a716-446655440000","C450","Block C","67 Independence Layout","Enugu","Enugu State","Nigeria","400001","6.2649","7.3782"
+"james.anderson@email.com","660e8400-e29b-41d4-a716-446655440000","D201","Block D","15 Sunset Boulevard","Lagos","Lagos State","Nigeria","100001","6.5244","3.3792"
+"maria.martinez@email.com","660e8400-e29b-41d4-a716-446655440000","E305","Block E","45 Ahmadu Bello Way","Lagos","Lagos State","Nigeria","101241","6.4281","3.4219"
