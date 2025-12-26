@@ -22,6 +22,11 @@ import supportRouter from "./routes/support.route";
 import adminSupportRouter from "./routes/admin.support.route";
 import legalRouter from "./routes/legal.route";
 import monitoringRouter from "./routes/monitoring.route";
+import chatRouter from "./routes/chat.route";
+import referralRouter from "./routes/referral.route";
+import planRouter from "./routes/plan.route";
+import webhookRouter from "./routes/webhook.route";
+import bulkUploadRouter from "./routes/bulk-upload.route";
 
 const router = Router();
 
@@ -46,7 +51,14 @@ router.use('/emergency', emergencyRouter);
 router.use('/support', supportRouter);
 router.use('/admin/support', adminSupportRouter);
 router.use('/legal', legalRouter);
+router.use('/chat', chatRouter);
+router.use('/referral', referralRouter);
+router.use('/plan', planRouter);
+router.use('/bulk-upload', bulkUploadRouter);
 router.use('/monitoring', monitoringRouter);
+router.use('/webhooks', webhookRouter);
+
+router.use('/webhook', webhookRouter);
 
 // Legacy route for backward compatibility
 router.use("/log", loginRouter);
