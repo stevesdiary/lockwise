@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { loginUser, logoutUser } from '../services/login.service';
 import { loginSchema } from '../utils/validator';
+import { AuthRequest } from '../middleware/auth.middleware';
 
 export const login = async (req: Request, res: Response) => {
   try {
@@ -29,9 +30,9 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-export const logout = async (req: Request, res: Response) => {
+export const logout = async (req: AuthRequest, res: Response) => {
   try {
-    const result = await logoutUser(res);
+    const result = await logoutUser(req.user?.sessionId, res);
     return res.status(result.statusCode).json(result);
   } catch (error) {
     console.error('Logout controller error:', error);

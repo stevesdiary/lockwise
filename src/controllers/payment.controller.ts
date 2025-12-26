@@ -1,11 +1,13 @@
 import { Request as ExpressRequest, Response } from 'express';
 import * as yup from 'yup';
 
+import { webSocketService } from '../core';
 import { 
   paymentInitiationSchema, 
   paymentVerificationSchema 
 } from '../utils/validator';
 import { paymentService } from '../services/payment.service';
+import realTimeNotificationService from '../services/realtime-notification.service';
 
 const paymentController = {
   initiatePayment: async (req: ExpressRequest, res: Response) => {
@@ -21,7 +23,9 @@ const paymentController = {
         amount: transactionData.amount,
         email: transactionData.email,
         currency: transactionData.currency || 'NGN',
-        payment_provider: transactionData.paymentProvider || 'paystack',
+        payment_provider: (transactionData.paymentProvider === 'paystack' || transactionData.paymentProvider === 'flutterwave' 
+          ? transactionData.paymentProvider 
+          : 'paystack') as 'paystack' | 'flutterwave',
         payment_method: transactionData.paymentMethod
       };
       const paymentResult = await paymentService.initiatePayment(paymentData);
@@ -32,6 +36,16 @@ const paymentController = {
           message: 'Failed to initiate payment'
         });
       }
+      
+      // Send real-time notification
+      await realTimeNotificationService.sendNotification({
+        id: Date.now().toString(),
+        title: 'Payment Initiated',
+        message: `Payment of ${paymentData.amount} ${paymentData.currency} initiated`,
+        type: 'info',
+        userId: transactionData.email // Using email as userId for demo
+      });
+      
       return res.status(paymentResult.statusCode).json(paymentResult);
     } catch (error) {
       if (error instanceof yup.ValidationError) {
