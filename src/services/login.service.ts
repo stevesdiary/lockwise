@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import { Response } from "express";
 import { User } from "../models/user.model";
 import { saveToRedis } from "../core/redis";
+import { sessionService } from "./session.service";
 
 // Define environment variables with proper types
 const jwtExpiry: string | number = process.env.JWT_EXPIRY || "1h";
@@ -32,20 +33,36 @@ export const loginUser = async (email: string, password: string) => {
       };
     }
 
+    // Create session
+    const sessionData = await sessionService.createSession(user.id, user.role);
+    if (!sessionData) {
+      return {
+        statusCode: 429,
+        message: 'Maximum concurrent sessions reached'
+      };
+    }
+
     const token = jwt.sign(
-      { userId: user.id, email: user.email },
+      { 
+        userId: user.id, 
+        email: user.email, 
+        role: user.role,
+        sessionId: sessionData.sessionId
+      },
       process.env.JWT_SECRET || 'default_secret',
-      { expiresIn: '1h' }
+      { expiresIn: '15m' }
     );
 
     return {
       statusCode: 200,
       message: 'Login successful',
       token,
+      refreshToken: sessionData.refreshToken,
       user: {
         id: user.id,
         email: user.email,
-        name: user.first_name
+        name: user.first_name,
+        role: user.role
       }
     };
   } catch (error) {
@@ -53,14 +70,21 @@ export const loginUser = async (email: string, password: string) => {
   }
 };
 
-export const logoutUser = async (res: Response) => {
+export const logoutUser = async (sessionId?: string, res?: Response) => {
   try {
-    res.clearCookie("sessionId", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      path: "/",
-    });
+    if (sessionId) {
+      await sessionService.deleteSession(sessionId);
+    }
+    
+    if (res) {
+      res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        path: "/",
+      });
+    }
+    
     return {
       statusCode: 200,
       status: "success",

@@ -1,6 +1,9 @@
-import { CommunityPost, CommunityComment } from '../models/community.board.model';
-import { User } from '../models/user.model';
-import { Op } from 'sequelize';
+import {
+  CommunityPost,
+  CommunityComment,
+} from "../models/community.board.model";
+import { User } from "../models/user.model";
+import { Op } from "sequelize";
 
 class CommunityBoardService {
   async createPost(data: {
@@ -23,23 +26,25 @@ class CommunityBoardService {
       include: [
         {
           model: User,
-          attributes: ['id', 'first_name', 'last_name']
+          attributes: ["id", "first_name", "last_name"],
         },
         {
           model: CommunityComment,
-          include: [{
-            model: User,
-            attributes: ['id', 'first_name', 'last_name']
-          }],
+          include: [
+            {
+              model: User,
+              attributes: ["id", "first_name", "last_name"],
+            },
+          ],
           limit: 5,
-          order: [['created_at', 'DESC']]
-        }
+          order: [["created_at", "DESC"]],
+        },
       ],
       order: [
-        ['is_pinned', 'DESC'],
-        ['created_at', 'DESC']
+        ["is_pinned", "DESC"],
+        ["created_at", "DESC"],
       ],
-      limit
+      limit,
     });
   }
 
@@ -47,7 +52,7 @@ class CommunityBoardService {
     return await CommunityComment.create({
       post_id: postId,
       user_id: userId,
-      content
+      content,
     });
   }
 
@@ -69,41 +74,54 @@ class CommunityBoardService {
 
   async deletePost(postId: string, userId: string, estateId: string) {
     const deletedCount = await CommunityPost.destroy({
-      where: { id: postId, user_id: userId, estate_id: estateId }
+      where: { id: postId, user_id: userId, estate_id: estateId },
     });
     return deletedCount > 0;
   }
 
-  async createAnnouncement(estateId: string, userId: string, title: string, content: string) {
+  async createAnnouncement(
+    estateId: string,
+    userId: string,
+    title: string,
+    content: string
+  ) {
     return await this.createPost({
       estate_id: estateId,
       user_id: userId,
-      type: 'announcement',
+      type: "announcement",
       title,
-      content
+      content,
     });
   }
 
-  async createMeeting(estateId: string, userId: string, title: string, content: string, meetingData: any) {
+  async createMeeting(
+    estateId: string,
+    userId: string,
+    title: string,
+    content: string,
+    meetingData: any
+  ) {
     return await this.createPost({
       estate_id: estateId,
       user_id: userId,
-      type: 'meeting',
+      type: "meeting",
       title,
       content,
-      attachments: meetingData
+      attachments: meetingData,
     });
   }
 
   async getChatMessages(estateId: string, limit: number = 100) {
     return await CommunityPost.findAll({
-      where: { estate_id: estateId, type: 'chat' },
-      include: [{
-        model: User,
-        attributes: ['id', 'first_name', 'last_name']
-      }],
-      order: [['created_at', 'ASC']],
-      limit
+      where: { estate_id: estateId, type: "chat" },
+      include: [
+        {
+          model: User,
+          attributes: ["id", "first_name", "last_name"],
+        },
+      ],
+      order: [["created_at", "ASC"]],
+      limit,
     });
   }
 
@@ -111,8 +129,8 @@ class CommunityBoardService {
     return await this.createPost({
       estate_id: estateId,
       user_id: userId,
-      type: 'chat',
-      content: message
+      type: "chat",
+      content: message,
     });
   }
 }

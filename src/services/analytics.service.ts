@@ -1,195 +1,137 @@
-import { Payment } from '../models/payment.model';
-import { User } from '../models/user.model';
-import { Estate } from '../models/estate.model';
-import { Subscription } from '../models/subscription.model';
-import { AccessLog } from '../models/access.log.model';
-import { Op, fn, col, literal } from 'sequelize';
+import sequelize from '../core/database.optimized';
+import { QueryTypes } from 'sequelize';
+import { Redis } from 'ioredis';
+
+let redisClient: Redis | null = null;
+
+async function getRedisClient(): Promise<Redis> {
+  if (!redisClient) {
+    redisClient = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
+  }
+  return redisClient;
+}
 
 export const analyticsService = {
-  getRevenueAnalytics: async (period: 'week' | 'month' | 'year' = 'month') => {
-    const startDate = new Date();
-    if (period === 'week') startDate.setDate(startDate.getDate() - 7);
-    else if (period === 'month') startDate.setMonth(startDate.getMonth() - 1);
-    else startDate.setFullYear(startDate.getFullYear() - 1);
-
-    const payments = await Payment.findAll({
-      where: {
-        payment_status: 'completed',
-        createdAt: { [Op.gte]: startDate }
-      },
-      attributes: ['amount', 'createdAt', 'currency']
+  async trackEvent(userId: string, event: string, properties?: any) {
+    await sequelize.query(`
+      INSERT INTO analytics_events (user_id, event_name, properties, created_at)
+      VALUES ($1, $2, $3, NOW())
+    `, {
+      bind: [userId, event, properties],
+      type: QueryTypes.INSERT
     });
 
-    const totalRevenue = payments.reduce((sum, payment) => sum + Number(payment.amount), 0);
-    const paymentCount = payments.length;
-
-    return {
-      totalRevenue,
-      paymentCount,
-      period,
-      payments: payments.slice(0, 10) // Latest 10 payments
-    };
+    // Update real-time counters in Redis
+    const redis = await getRedisClient();
+    const today = new Date().toISOString().split('T')[0];
+    await redis.incr(`analytics:events:${event}:${today}`);
+    await redis.incr(`analytics:users:${userId}:${today}`);
   },
 
-  getSystemStats: async () => {
-    const [totalUsers, totalEstates, activeSubscriptions, totalRevenue] = await Promise.all([
-      User.count(),
-      Estate.count(),
-      Subscription.count({ where: { status: 'active' }}),
-      Payment.sum('amount', { where: { payment_status: 'completed' }})
-    ]);
+  async getUsageStats(startDate: string, endDate: string) {
+    const [stats] = await sequelize.query(`
+      SELECT 
+        COUNT(DISTINCT user_id) as active_users,
+        COUNT(*) as total_events,
+        COUNT(DISTINCT DATE(created_at)) as active_days,
+        AVG(CASE WHEN event_name = 'login' THEN 1 ELSE 0 END) as avg_logins_per_day
+      FROM analytics_events 
+      WHERE created_at BETWEEN $1 AND $2
+    `, {
+      bind: [startDate, endDate],
+      type: QueryTypes.SELECT
+    }) as any[];
 
-    return {
-      totalUsers,
-      totalEstates,
-      activeSubscriptions,
-      totalRevenue: totalRevenue || 0
-    };
+    const topEvents = await sequelize.query(`
+      SELECT event_name, COUNT(*) as count
+      FROM analytics_events 
+      WHERE created_at BETWEEN $1 AND $2
+      GROUP BY event_name 
+      ORDER BY count DESC 
+      LIMIT 10
+    `, {
+      bind: [startDate, endDate],
+      type: QueryTypes.SELECT
+    });
+
+    return { ...stats, topEvents };
   },
 
-  getDetailedAnalytics: async () => {
-    const [estateStats, userStats, revenueStats, accessStats] = await Promise.all([
-      // Estate statistics
-      Estate.findAll({
-        attributes: [
-          'estate_id',
-          'name',
-          'city',
-          'state',
-          'status',
-          [fn('COUNT', col('users.user_id')), 'resident_count']
-        ],
-        include: [{
-          model: User,
-          as: 'users',
-          where: { role: 'resident' },
-          attributes: [],
-          required: false
-        }],
-        group: ['Estate.estate_id'],
-        raw: true
-      }),
+  async getPerformanceMetrics() {
+    const [metrics] = await sequelize.query(`
+      SELECT 
+        AVG(duration_ms) as avg_response_time,
+        MAX(duration_ms) as max_response_time,
+        COUNT(CASE WHEN status_code >= 400 THEN 1 END) as error_count,
+        COUNT(*) as total_requests
+      FROM audit_logs 
+      WHERE created_at > NOW() - INTERVAL '24 hours'
+    `, { type: QueryTypes.SELECT }) as any[];
 
-      // User role distribution
-      User.findAll({
-        attributes: [
-          'role',
-          [fn('COUNT', col('user_id')), 'count']
-        ],
-        group: ['role'],
-        raw: true
-      }),
+    const slowQueries = await sequelize.query(`
+      SELECT path, AVG(duration_ms) as avg_time, COUNT(*) as count
+      FROM audit_logs 
+      WHERE created_at > NOW() - INTERVAL '24 hours' AND duration_ms > 1000
+      GROUP BY path 
+      ORDER BY avg_time DESC 
+      LIMIT 5
+    `, { type: QueryTypes.SELECT });
 
-      // Revenue by month (last 12 months)
-      Payment.findAll({
-        attributes: [
-          [fn('DATE_TRUNC', 'month', col('created_at')), 'month'],
-          [fn('SUM', col('amount')), 'revenue'],
-          [fn('COUNT', col('payment_id')), 'payment_count']
-        ],
-        where: {
-          payment_status: 'completed',
-          created_at: {
-            [Op.gte]: literal("NOW() - INTERVAL '12 months'")
-          }
-        },
-        group: [fn('DATE_TRUNC', 'month', col('created_at'))],
-        order: [[fn('DATE_TRUNC', 'month', col('created_at')), 'ASC']],
-        raw: true
-      }),
-
-      // Access statistics
-      AccessLog.findAll({
-        attributes: [
-          'access_type',
-          [fn('COUNT', col('id')), 'count']
-        ],
-        group: ['access_type'],
-        raw: true
-      })
-    ]);
-
-    // Calculate totals
-    const totalEstates = estateStats.length;
-    const totalResidents = (userStats as any[]).find(u => String(u.role) === 'resident')?.count || 0;
-    const totalSecurityStaff = (userStats as any[]).find(u => String(u.role) === 'security')?.count || 0;
-    const totalRevenue = (revenueStats as any[]).reduce((sum, r) => sum + Number(r.revenue), 0);
-
-    return {
-      overview: {
-        totalEstates,
-        totalResidents,
-        totalSecurityStaff,
-        totalRevenue,
-        totalUsers: (userStats as any[]).reduce((sum, u) => sum + Number(u.count), 0)
-      },
-      estateBreakdown: (estateStats as any[]).map(estate => ({
-        estate_id: estate.estate_id,
-        name: estate.name,
-        location: `${estate.city}, ${estate.state}`,
-        status: estate.status,
-        resident_count: Number(estate.resident_count)
-      })),
-      userRoleDistribution: (userStats as any[]).map(role => ({
-        role: role.role,
-        count: Number(role.count)
-      })),
-      monthlyRevenue: (revenueStats as any[]).map(month => ({
-        month: month.month,
-        revenue: Number(month.revenue),
-        payment_count: Number(month.payment_count)
-      })),
-      accessTypeDistribution: (accessStats as any[]).map(access => ({
-        type: access.access_type,
-        count: Number(access.count)
-      }))
-    };
+    return { ...metrics, slowQueries };
   },
 
-  getEstateAnalytics: async (estateId: string) => {
-    const [estateInfo, residents, securityStaff, recentAccess, revenue] = await Promise.all([
-      Estate.findByPk(estateId, {
-        attributes: ['estate_id', 'name', 'address', 'total_number_of_apartments', 'status']
-      }),
+  async getUserBehavior(userId: string, days: number = 30) {
+    const [behavior] = await sequelize.query(`
+      SELECT 
+        COUNT(*) as total_actions,
+        COUNT(DISTINCT DATE(created_at)) as active_days,
+        COUNT(CASE WHEN event_name = 'access_code_generated' THEN 1 END) as codes_generated,
+        COUNT(CASE WHEN event_name = 'payment_made' THEN 1 END) as payments_made,
+        MAX(created_at) as last_activity
+      FROM analytics_events 
+      WHERE user_id = $1 AND created_at > NOW() - INTERVAL '$2 days'
+    `, {
+      bind: [userId, days],
+      type: QueryTypes.SELECT
+    }) as any[];
 
-      User.count({
-        where: { estate_id: estateId, role: 'resident' }
-      }),
+    const eventPattern = await sequelize.query(`
+      SELECT event_name, COUNT(*) as count, 
+             EXTRACT(hour FROM created_at) as hour
+      FROM analytics_events 
+      WHERE user_id = $1 AND created_at > NOW() - INTERVAL '$2 days'
+      GROUP BY event_name, EXTRACT(hour FROM created_at)
+      ORDER BY count DESC
+    `, {
+      bind: [userId, days],
+      type: QueryTypes.SELECT
+    });
 
-      User.count({
-        where: { estate_id: estateId, role: 'security' }
-      }),
+    return { ...behavior, eventPattern };
+  },
 
-      AccessLog.count({
-        where: {
-          estate_id: estateId,
-          created_at: {
-            [Op.gte]: literal("NOW() - INTERVAL '30 days'")
-          }
-        }
-      }),
-
-      Payment.findAll({
-        include: [{
-          model: User,
-          where: { estate_id: estateId },
-          attributes: []
-        }],
-        where: { payment_status: 'completed' },
-        attributes: [[fn('SUM', col('amount')), 'total']],
-        raw: true
-      }).then(result => (result[0] as any)?.total || 0)
+  async getSystemHealth() {
+    const redis = await getRedisClient();
+    const [[dbHealth], redisHealth] = await Promise.all([
+      sequelize.query('SELECT NOW() as timestamp, COUNT(*) as user_count FROM users', {
+        type: QueryTypes.SELECT
+      }) as Promise<any[]>,
+      redis.ping()
     ]);
 
+    const recentErrors = await sequelize.query(`
+      SELECT path, status_code, COUNT(*) as count
+      FROM audit_logs 
+      WHERE status_code >= 400 AND created_at > NOW() - INTERVAL '1 hour'
+      GROUP BY path, status_code 
+      ORDER BY count DESC 
+      LIMIT 5
+    `, { type: QueryTypes.SELECT });
+
     return {
-      estate: estateInfo,
-      metrics: {
-        totalResidents: residents,
-        securityStaff: securityStaff,
-        recentAccessCount: recentAccess,
-        totalRevenue: revenue || 0,
-        occupancyRate: estateInfo ? (residents / estateInfo.total_number_of_apartments * 100).toFixed(1) : 0
-      }
+      database: { status: 'healthy', ...dbHealth },
+      redis: { status: redisHealth === 'PONG' ? 'healthy' : 'unhealthy' },
+      recentErrors
     };
   }
 };
