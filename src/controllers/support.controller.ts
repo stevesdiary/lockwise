@@ -1,124 +1,98 @@
-import { Request, Response } from 'express';
-import { handleControllerError } from '../middlewares/error.handler';
-import { SupportTicket, SupportMessage } from '../models/support.model';
-import { User } from '../models/user.model';
+import { Response } from 'express';
+import { supportService } from '../services/support.service';
+import { AuthRequest } from '../middleware/auth.middleware';
 
-class SupportController {
-  async createTicket(req: Request, res: Response) {
+export const supportController = {
+  async createTicket(req: AuthRequest, res: Response) {
     try {
-      const userId = req.user?.id;
       const { subject, description, category, priority } = req.body;
-
-      if (!userId) {
-        return res.status(401).json({
-          status: 'fail',
-          message: 'User not authenticated'
-        });
-      }
-
-      const ticket = await SupportTicket.create({
-        user_id: userId,
+      const ticket = await supportService.createTicket(req.user!.id, {
         subject,
         description,
         category,
-        priority: priority || 'medium'
+        priority
       });
 
-      return res.status(201).json({
-        status: 'success',
-        data: ticket
-      });
+      res.status(201).json({ message: 'Ticket created', data: ticket });
     } catch (error) {
-      return handleControllerError(error, res);
+      res.status(500).json({ error: 'Failed to create ticket' });
     }
-  }
+  },
 
-  async getUserTickets(req: Request, res: Response) {
+  async getMyTickets(req: AuthRequest, res: Response) {
     try {
-      const userId = req.user?.id;
-
-      if (!userId) {
-        return res.status(401).json({
-          status: 'fail',
-          message: 'User not authenticated'
-        });
-      }
-
-      const tickets = await SupportTicket.findAll({
-        where: { user_id: userId },
-        include: [{
-          model: SupportMessage,
-          include: [{ model: User, attributes: ['first_name', 'last_name'] }],
-          limit: 5,
-          order: [['created_at', 'DESC']]
-        }],
-        order: [['created_at', 'DESC']]
-      });
-
-      return res.status(200).json({
-        status: 'success',
-        data: tickets
-      });
+      const tickets = await supportService.getUserTickets(req.user!.id);
+      res.json({ data: tickets });
     } catch (error) {
-      return handleControllerError(error, res);
+      res.status(500).json({ error: 'Failed to fetch tickets' });
     }
-  }
+  },
 
-  async getTicketMessages(req: Request, res: Response) {
+  async getOpenTickets(req: AuthRequest, res: Response) {
     try {
-      const userId = req.user?.id;
+      const tickets = await supportService.getOpenTickets();
+      res.json({ data: tickets });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch open tickets' });
+    }
+  },
+
+  async getAgentTickets(req: AuthRequest, res: Response) {
+    try {
+      const tickets = await supportService.getAgentTickets(req.user!.id);
+      res.json({ data: tickets });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch agent tickets' });
+    }
+  },
+
+  async assignTicket(req: AuthRequest, res: Response) {
+    try {
       const { ticketId } = req.params;
-
-      if (!userId) {
-        return res.status(401).json({
-          status: 'fail',
-          message: 'User not authenticated'
-        });
-      }
-
-      const messages = await SupportMessage.findAll({
-        where: { ticket_id: ticketId },
-        include: [{ model: User, attributes: ['first_name', 'last_name'] }],
-        order: [['created_at', 'ASC']]
-      });
-
-      return res.status(200).json({
-        status: 'success',
-        data: messages
-      });
+      const ticket = await supportService.assignTicket(ticketId, req.user!.id);
+      res.json({ message: 'Ticket assigned', data: ticket });
     } catch (error) {
-      return handleControllerError(error, res);
+      res.status(500).json({ error: 'Failed to assign ticket' });
     }
-  }
+  },
 
-  async addMessage(req: Request, res: Response) {
+  async sendMessage(req: AuthRequest, res: Response) {
     try {
-      const userId = req.user?.id;
       const { ticketId } = req.params;
-      const { message } = req.body;
-
-      if (!userId) {
-        return res.status(401).json({
-          status: 'fail',
-          message: 'User not authenticated'
-        });
-      }
-
-      const supportMessage = await SupportMessage.create({
-        ticket_id: ticketId,
-        user_id: userId,
+      const { message, is_internal } = req.body;
+      
+      const msg = await supportService.sendMessage(
+        ticketId,
+        req.user!.id,
         message,
-        is_internal: false
-      });
+        is_internal || false
+      );
 
-      return res.status(201).json({
-        status: 'success',
-        data: supportMessage
-      });
+      res.status(201).json({ message: 'Message sent', data: msg });
     } catch (error) {
-      return handleControllerError(error, res);
+      res.status(500).json({ error: 'Failed to send message' });
+    }
+  },
+
+  async getMessages(req: AuthRequest, res: Response) {
+    try {
+      const { ticketId } = req.params;
+      const messages = await supportService.getTicketMessages(ticketId, req.user!.id);
+      res.json({ data: messages });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch messages' });
+    }
+  },
+
+  async updateStatus(req: AuthRequest, res: Response) {
+    try {
+      const { ticketId } = req.params;
+      const { status } = req.body;
+      
+      const ticket = await supportService.updateTicketStatus(ticketId, status);
+      res.json({ message: 'Status updated', data: ticket });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to update status' });
     }
   }
-}
-
-export default new SupportController();
+};
