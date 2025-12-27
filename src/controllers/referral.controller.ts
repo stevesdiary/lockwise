@@ -45,15 +45,49 @@ export const ReferralController = {
       console.error('Error listing referrers:', error);
       return res.status(500).json({ message: 'Internal server error' });
     }
-  }
+  },
 
-  , async deleteReferrer(req: Request, res: Response) {
+  async deleteReferrer(req: Request, res: Response) {
     try {
       const { id } = req.params;
       const referrer = await referralService.deleteReferrerById(id);
       return res.status(referrer.statusCode).json({data: referrer});
     } catch (error) {
       console.error('Error deleting referrer:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  },
+
+  async getUnpaidBonuses(req: Request, res: Response) {
+    try {
+      const bonuses = await referralService.getUnpaidBonuses();
+      return res.status(200).json({ data: bonuses });
+    } catch (error) {
+      console.error('Error fetching unpaid bonuses:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  },
+
+  async getReferrerBonuses(req: Request, res: Response) {
+    try {
+      const { referrerId } = req.params;
+      const bonuses = await referralService.getReferrerBonuses(referrerId);
+      return res.status(200).json({ data: bonuses });
+    } catch (error) {
+      console.error('Error fetching referrer bonuses:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  },
+
+  async markBonusAsPaid(req: Request, res: Response) {
+    try {
+      const { bonusId } = req.params;
+      const { payment_reference } = req.body;
+      
+      const result = await referralService.markBonusAsPaid(bonusId, payment_reference);
+      return res.status(result.statusCode).json(result);
+    } catch (error) {
+      console.error('Error marking bonus as paid:', error);
       return res.status(500).json({ message: 'Internal server error' });
     }
   }

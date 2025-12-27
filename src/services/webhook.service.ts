@@ -63,6 +63,12 @@ export const webhookService = {
         const payment = await Payment.findOne({ where: { reference: data.reference }});
         if (payment) {
           await this.createOrExtendSubscription(payment);
+          
+          // Create referral bonus if estate has referrer
+          if (payment.estate_id) {
+            const { referralService } = require('./referral.service');
+            await referralService.createBonusOnPayment(payment.estate_id, data.amount / 100);
+          }
         }
 
         return {
