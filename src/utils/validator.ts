@@ -69,8 +69,8 @@ export const userRegistrationSchema = yup.object().shape({
 
   role: yup
     .string()
-    .required('Role is required')
-    .oneOf(['resident', 'manager'], 'Role must be either resident or manager'),
+    .optional(),
+    // .oneOf('Role must be either resident or manager'),
     
   estate_code: yup
     .string()

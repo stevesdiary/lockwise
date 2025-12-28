@@ -1,0 +1,9 @@
+estate_name,address,city,state,postal_code,country,manager_email,manager_phone,total_units,estate_type
+"Sunset Gardens Estate","123 Sunset Boulevard","Lagos","Lagos State","100001","Nigeria","manager@sunsetgardens.com","+2348012345678",150,"Residential"
+"Victoria Island Towers","45 Ahmadu Bello Way","Lagos","Lagos State","101241","Nigeria","admin@vitowers.com","+2348023456789",200,"Mixed Use"
+"Lekki Phase 1 Homes","78 Admiralty Way","Lagos","Lagos State","105102","Nigeria","contact@lekkihomes.com","+2348034567890",85,"Residential"
+"Abuja Central Plaza","12 Central Business District","Abuja","FCT","900001","Nigeria","info@abujacentral.com","+2348045678901",300,"Commercial"
+"GRA Estate Kano","56 Government Reserved Area","Kano","Kano State","700001","Nigeria","manager@grakano.com","+2348056789012",120,"Residential"
+"Port Harcourt Gardens","89 Trans Amadi","Port Harcourt","Rivers State","500001","Nigeria","admin@phgardens.com","+2348067890123",95,"Residential"
+"Ikeja Business Hub","34 Allen Avenue","Lagos","Lagos State","100271","Nigeria","contact@ikejahub.com","+2348078901234",180,"Commercial"
+"Enugu Heights","67 Independence Layout","Enugu","Enugu State","400001","Nigeria","info@enuguheights.com","+2348089012345",110,"Residential"

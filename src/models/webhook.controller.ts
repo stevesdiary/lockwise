@@ -1,46 +1,85 @@
 import { Request, Response } from 'express';
-import crypto from 'crypto';
-import { Payment } from './payment.model';
-import { Subscription } from './subscription.model';
+import { webhookService } from '../services/webhook.service';
 
 const webhookController = {
   handlePaystackWebhook: async (req: Request, res: Response) => {
     try {
-      const hash = crypto.createHmac('sha512', process.env.PAYSTACK_SECRET_KEY!)
-        .update(JSON.stringify(req.body))
-        .digest('hex');
+      // Validate request body
+      if (!req.body || typeof req.body !== 'object') {
+        return res.status(400).json({ error: 'Invalid request body' });
+      }
 
-      if (hash !== req.headers['x-paystack-signature']) {
+      // Verify signature
+      const signature = req.headers['x-paystack-signature'] as string;
+      if (!signature) {
+        return res.status(400).json({ error: 'Missing signature' });
+      }
+
+      const isValid = webhookService.verifyPaystackSignature(req.body, signature);
+      if (!isValid) {
+        console.warn('Invalid webhook signature received');
         return res.status(400).json({ error: 'Invalid signature' });
       }
 
       const { event, data } = req.body;
 
-      if (event === 'charge.success') {
-        await Payment.update(
-          { 
-            payment_status: 'completed',
-            payment_data: data
-          },
-          { where: { reference: data.reference }}
-        );
-
-        // Create or extend subscription
-        const payment = await Payment.findOne({ where: { reference: data.reference }});
-        if (payment) {
-          await Subscription.upsert({
-            user_id: payment.user_id,
-            estate_id: payment.estate_id,
-            status: 'active',
-            start_date: new Date(),
-            end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
-          });
-        }
+      // Validate required fields
+      if (!event || !data) {
+        return res.status(400).json({ error: 'Missing required fields' });
       }
 
-      res.status(200).json({ received: true });
+      // Process webhook
+      const result = await webhookService.processPaystackWebhook(event, data);
+      
+      return res.status(result.statusCode).json({ 
+        received: result.success,
+        message: result.message 
+      });
     } catch (error) {
-      console.error('Webhook error:', error);
+      console.error('Webhook processing error:', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        body: req.body
+      });
+      res.status(500).json({ error: 'Webhook processing failed' });
+    }
+  },
+
+  handleFlutterwaveWebhook: async (req: Request, res: Response) => {
+    try {
+      if (!req.body || typeof req.body !== 'object') {
+        return res.status(400).json({ error: 'Invalid request body' });
+      }
+
+      const signature = req.headers['verif-hash'] as string;
+      if (!signature) {
+        return res.status(400).json({ error: 'Missing signature' });
+      }
+
+      const isValid = webhookService.verifyFlutterwaveSignature(req.body, signature);
+      if (!isValid) {
+        console.warn('Invalid webhook signature received');
+        return res.status(400).json({ error: 'Invalid signature' });
+      }
+
+      const { event, data } = req.body;
+
+      if (!event || !data) {
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+
+      const result = await webhookService.processFlutterwaveWebhook(event, data);
+      
+      return res.status(result.statusCode).json({ 
+        received: result.success,
+        message: result.message 
+      });
+    } catch (error) {
+      console.error('Webhook processing error:', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        body: req.body
+      });
       res.status(500).json({ error: 'Webhook processing failed' });
     }
   }

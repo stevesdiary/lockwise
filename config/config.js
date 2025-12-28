@@ -19,7 +19,7 @@ module.exports = {
     port: process.env.DEV_DB_PORT || 5432,
     dialectOptions: {
       ssl: {
-        require: process.env.SSL,
+        require: true,
         rejectUnauthorized: false
       }
     }
@@ -48,6 +48,12 @@ module.exports = {
     password: process.env.TEST_DB_PASSWORD,
     database: process.env.TEST_DB_NAME || 'lockwise_test',
     port: process.env.TEST_DB_PORT || 5432,
-    logging: false
+    logging: false,
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false
+      }
+    }
   }
 }

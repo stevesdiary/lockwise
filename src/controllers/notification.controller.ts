@@ -1,132 +1,103 @@
 import { Request, Response } from 'express';
-import { handleControllerError } from '../middlewares/error.handler';
-import pushNotificationService from '../services/push.notification.service';
+import NotificationService from '../services/notification.service';
+import EmailService from '../services/email.service';
+import SMSService from '../services/sms.service';
 
-class NotificationController {
-  async subscribe(req: Request, res: Response) {
+export const notificationController = {
+  async sendTestEmail(req: Request, res: Response) {
     try {
-      const userId = req.user?.id;
-      const { subscription } = req.body;
-
-      if (!userId) {
-        return res.status(401).json({
-          status: 'fail',
-          message: 'User not authenticated'
-        });
-      }
-
-      await pushNotificationService.subscribeToPush(userId, subscription);
-
-      return res.status(200).json({
-        status: 'success',
-        message: 'Push notification subscription saved'
+      const { email, name } = req.body;
+      
+      const success = await EmailService.sendWelcomeEmail(email, name);
+      
+      res.status(success ? 200 : 500).json({
+        status: success ? 'success' : 'error',
+        message: success ? 'Test email sent successfully' : 'Failed to send test email'
       });
-    } catch (error) {
-      return handleControllerError(error, res);
+    } catch (error: any) {
+      res.status(500).json({
+        status: 'error',
+        message: error.message
+      });
+    }
+  },
+
+  async sendTestSMS(req: Request, res: Response) {
+    try {
+      const { phone, name, code } = req.body;
+      
+      const success = await SMSService.sendVerificationSMS(phone, name, code);
+      
+      res.status(success ? 200 : 500).json({
+        status: success ? 'success' : 'error',
+        message: success ? 'Test SMS sent successfully' : 'Failed to send test SMS'
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        status: 'error',
+        message: error.message
+      });
+    }
+  },
+
+  async getQueueStats(req: Request, res: Response) {
+    try {
+      const stats = await NotificationService.getQueueStats();
+      
+      res.status(200).json({
+        status: 'success',
+        data: stats
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        status: 'error',
+        message: error.message
+      });
+    }
+  },
+
+  async sendBulkNotification(req: Request, res: Response) {
+    try {
+      const { recipients, type, template, data, priority } = req.body;
+      
+      const notifications = recipients.map((recipient: any) => 
+        NotificationService.sendNotification({
+          type,
+          to: recipient.email || recipient.phone,
+          template,
+          data: { ...data, name: recipient.name },
+          priority
+        })
+      );
+      
+      await Promise.all(notifications);
+      
+      res.status(200).json({
+        status: 'success',
+        message: `${notifications.length} notifications queued successfully`
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        status: 'error',
+        message: error.message
+      });
+    }
+  },
+
+  async testEmailConnection(req: Request, res: Response) {
+    try {
+      const isConnected = await EmailService.testConnection();
+      
+      res.status(200).json({
+        status: 'success',
+        connected: isConnected,
+        message: isConnected ? 'Email service connected' : 'Email service connection failed'
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        status: 'error',
+        message: error.message
+      });
     }
   }
-
-  async getNotifications(req: Request, res: Response) {
-    try {
-      const userId = req.user?.id;
-      const limit = parseInt(req.query.limit as string) || 20;
-
-      if (!userId) {
-        return res.status(401).json({
-          status: 'fail',
-          message: 'User not authenticated'
-        });
-      }
-
-      const notifications = await pushNotificationService.getUserNotifications(userId, limit);
-
-      return res.status(200).json({
-        status: 'success',
-        data: notifications
-      });
-    } catch (error) {
-      return handleControllerError(error, res);
-    }
-  }
-
-  async markAsRead(req: Request, res: Response) {
-    try {
-      const userId = req.user?.id;
-      const { notificationId } = req.params;
-
-      if (!userId) {
-        return res.status(401).json({
-          status: 'fail',
-          message: 'User not authenticated'
-        });
-      }
-
-      const updated = await pushNotificationService.markAsRead(notificationId, userId);
-
-      if (!updated) {
-        return res.status(404).json({
-          status: 'fail',
-          message: 'Notification not found'
-        });
-      }
-
-      return res.status(200).json({
-        status: 'success',
-        message: 'Notification marked as read'
-      });
-    } catch (error) {
-      return handleControllerError(error, res);
-    }
-  }
-
-  async markAllAsRead(req: Request, res: Response) {
-    try {
-      const userId = req.user?.id;
-
-      if (!userId) {
-        return res.status(401).json({
-          status: 'fail',
-          message: 'User not authenticated'
-        });
-      }
-
-      const updatedCount = await pushNotificationService.markAllAsRead(userId);
-
-      return res.status(200).json({
-        status: 'success',
-        message: `${updatedCount} notifications marked as read`
-      });
-    } catch (error) {
-      return handleControllerError(error, res);
-    }
-  }
-
-  async sendTestNotification(req: Request, res: Response) {
-    try {
-      const userId = req.user?.id;
-      const { title, message } = req.body;
-
-      if (!userId) {
-        return res.status(401).json({
-          status: 'fail',
-          message: 'User not authenticated'
-        });
-      }
-
-      const notification = await pushNotificationService.sendToUser(userId, {
-        title: title || 'Test Notification',
-        message: message || 'This is a test notification',
-        type: 'system_alert'
-      });
-
-      return res.status(200).json({
-        status: 'success',
-        data: notification
-      });
-    } catch (error) {
-      return handleControllerError(error, res);
-    }
-  }
-}
-
-export default new NotificationController();
+};

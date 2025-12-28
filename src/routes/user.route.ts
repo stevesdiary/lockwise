@@ -1,44 +1,72 @@
-import { Router, Request as ExpressRequest, Response } from 'express';
-// import { authentication } from '../../middlewares/authentication';
-import { userController } from '../controllers/user.controller';
-// import { TypedRequest } from '../types/type';
+import { Router, Request as ExpressRequest, Response } from "express";
+import { userController } from "../controllers/user.controller";
+import {
+  authenticateToken,
+  requireAdmin,
+  requireManager,
+} from "../middleware/auth.middleware";
+import { rateLimiters } from "../middleware/rate-limit.middleware";
+import { auditLogger } from "../middleware/audit.middleware";
+import { analyticsMiddleware } from "../middleware/analytics.middleware";
 
 const userRouter = Router();
 
-userRouter.post("/register", async (req: ExpressRequest, res: Response) => {
-  await userController.register(req, res);
-});
-
-userRouter.post("/verify",
+userRouter.post(
+  "/register",
+  rateLimiters.auth,
+  auditLogger,
+  analyticsMiddleware("user_register"),
   async (req: ExpressRequest, res: Response) => {
-  await userController.verifyUser(req, res);
-});
+    await userController.register(req, res);
+  }
+);
+
+userRouter.post(
+  "/verify",
+  rateLimiters.strict,
+  auditLogger,
+  async (req: ExpressRequest, res: Response) => {
+    await userController.verifyUser(req, res);
+  }
+);
 
 // userRouter.post("/resendcode",
 //   async (req: ExpressRequest, res: Response) => {
 //   await userController.resendCode(req, res);
 // });
 
-userRouter.get('/all',
-  // authentication,
-  // checkRole(['admin']), 
+userRouter.get(
+  "/all",
+  rateLimiters.api,
+  authenticateToken,
+  requireManager,
+  auditLogger,
+  analyticsMiddleware("users_list_viewed"),
   async (req: ExpressRequest, res: Response) => {
-  await userController.getUsersByEstate(req, res)
-});
+    await userController.getUsersByEstate(req, res);
+  }
+);
 
 // userRouter.post('/refresh', refreshAccessToken);
 
-userRouter.get('/one/:id', 
-  // authentication,
-  // checkRole(['admin']), 
+userRouter.get(
+  "/one/:id",
+  authenticateToken,
+  requireManager,
   async (req: ExpressRequest, res: Response) => {
-  await userController.getOneUser(req, res);
-});
+    await userController.getOneUser(req, res);
+  }
+);
 
-userRouter.delete('/delete/:id',
-  
+userRouter.delete(
+  "/delete/:id",
+  rateLimiters.strict,
+  authenticateToken,
+  requireAdmin,
+  auditLogger,
   async (req: ExpressRequest, res: Response) => {
-  await userController.deleteUser(req, res);
-})
+    await userController.deleteUser(req, res);
+  }
+);
 
 export default userRouter;

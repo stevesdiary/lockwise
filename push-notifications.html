@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lockwise Push Notifications</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .notification { background: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; margin: 10px 0; border-radius: 4px; }
+        .notification.unread { border-left: 4px solid #007bff; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Push Notifications</h1>
+        
+        <div id="status" class="status"></div>
+        
+        <div>
+            <button id="subscribeBtn" onclick="subscribeToPush()">Enable Notifications</button>
+            <button id="testBtn" onclick="sendTestNotification()" disabled>Send Test</button>
+            <button onclick="loadNotifications()">Refresh</button>
+        </div>
+
+        <h2>Notifications</h2>
+        <div id="notifications"></div>
+    </div>
+
+    <script>
+        let isSubscribed = false;
+
+        // Check if service worker and push messaging are supported
+        if ('serviceWorker' in navigator && 'PushManager' in window) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('Service Worker registered:', registration);
+                    checkSubscription();
+                })
+                .catch(error => {
+                    console.error('Service Worker registration failed:', error);
+                    showStatus('Service Worker not supported', 'error');
+                });
+        } else {
+            showStatus('Push messaging not supported', 'error');
+        }
+
+        async function checkSubscription() {
+            const registration = await navigator.serviceWorker.ready;
+            const subscription = await registration.pushManager.getSubscription();
+            
+            isSubscribed = !(subscription === null);
+            updateUI();
+        }
+
+        async function subscribeToPush() {
+            try {
+                const registration = await navigator.serviceWorker.ready;
+                
+                const subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: urlBase64ToUint8Array('YOUR_VAPID_PUBLIC_KEY') // Replace with actual key
+                });
+
+                // Send subscription to server
+                const response = await fetch('/api/notifications/subscribe', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify({ subscription })
+                });
+
+                if (response.ok) {
+                    isSubscribed = true;
+                    updateUI();
+                    showStatus('Push notifications enabled!', 'success');
+                } else {
+                    showStatus('Failed to subscribe to push notifications', 'error');
+                }
+            } catch (error) {
+                console.error('Error subscribing to push:', error);
+                showStatus('Error enabling notifications', 'error');
+            }
+        }
+
+        async function sendTestNotification() {
+            try {
+                const response = await fetch('/api/notifications/test', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify({
+                        title: 'Test Notification',
+                        message: 'This is a test push notification from Lockwise!'
+                    })
+                });
+
+                if (response.ok) {
+                    showStatus('Test notification sent!', 'success');
+                    setTimeout(loadNotifications, 1000);
+                } else {
+                    showStatus('Failed to send test notification', 'error');
+                }
+            } catch (error) {
+                console.error('Error sending test notification:', error);
+                showStatus('Error sending notification', 'error');
+            }
+        }
+
+        async function loadNotifications() {
+            try {
+                const response = await fetch('/api/notifications', {
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    displayNotifications(data.data);
+                } else {
+                    showStatus('Failed to load notifications', 'error');
+                }
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+                showStatus('Error loading notifications', 'error');
+            }
+        }
+
+        async function markAsRead(notificationId) {
+            try {
+                const response = await fetch(`/api/notifications/${notificationId}/read`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    }
+                });
+
+                if (response.ok) {
+                    loadNotifications();
+                }
+            } catch (error) {
+                console.error('Error marking notification as read:', error);
+            }
+        }
+
+        function displayNotifications(notifications) {
+            const container = document.getElementById('notifications');
+            
+            if (notifications.length === 0) {
+                container.innerHTML = '<p>No notifications</p>';
+                return;
+            }
+
+            container.innerHTML = notifications.map(notification => `
+                <div class="notification ${!notification.is_read ? 'unread' : ''}" onclick="markAsRead('${notification.id}')">
+                    <h4>${notification.title}</h4>
+                    <p>${notification.message}</p>
+                    <small>Type: ${notification.type} | ${new Date(notification.created_at).toLocaleString()}</small>
+                    ${!notification.is_read ? '<span style="color: #007bff; font-weight: bold;"> • NEW</span>' : ''}
+                </div>
+            `).join('');
+        }
+
+        function updateUI() {
+            const subscribeBtn = document.getElementById('subscribeBtn');
+            const testBtn = document.getElementById('testBtn');
+            
+            if (isSubscribed) {
+                subscribeBtn.textContent = 'Notifications Enabled';
+                subscribeBtn.disabled = true;
+                testBtn.disabled = false;
+            } else {
+                subscribeBtn.textContent = 'Enable Notifications';
+                subscribeBtn.disabled = false;
+                testBtn.disabled = true;
+            }
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            setTimeout(() => {
+                status.textContent = '';
+                status.className = 'status';
+            }, 5000);
+        }
+
+        function urlBase64ToUint8Array(base64String) {
+            const padding = '='.repeat((4 - base64String.length % 4) % 4);
+            const base64 = (base64String + padding)
+                .replace(/-/g, '+')
+                .replace(/_/g, '/');
+
+            const rawData = window.atob(base64);
+            const outputArray = new Uint8Array(rawData.length);
+
+            for (let i = 0; i < rawData.length; ++i) {
+                outputArray[i] = rawData.charCodeAt(i);
+            }
+            return outputArray;
+        }
+
+        // Load notifications on page load
+        window.onload = loadNotifications;
+    </script>
+</body>
+</html>

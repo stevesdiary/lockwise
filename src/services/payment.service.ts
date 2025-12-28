@@ -1,284 +1,287 @@
-import axios from 'axios';
-import { 
-  PaymentVerificationData, 
-  PaymentResponse,
-  PaymentRequestData
-} from '../types/payment.types';
-import { v4 as uuidv4 } from 'uuid';
+import { nanoid } from 'nanoid';
 import { Payment } from '../models/payment.model';
-import { User } from '../models/user.model';
-import { brevoEmailService } from './brevo.email.service';
-import { subscriptionService } from './subscription.service';
+import { Subscription } from '../models/subscription.model';
+import { Plan } from '../models/plan.model';
+import PaystackService from './paystack.service';
+import FlutterwaveService from './flutterwave.service';
 
-export const paymentService = {
-  initiatePayment: async (paymentData: PaymentRequestData): Promise<PaymentResponse> => {
+interface PaymentData {
+  amount: number;
+  email: string;
+  currency?: string;
+  payment_provider?: 'paystack' | 'flutterwave';
+  payment_method: string;
+  user_id?: string;
+  plan_id?: string;
+}
+
+interface PaymentResult {
+  statusCode: number;
+  status: string;
+  message: string;
+  data?: any;
+}
+
+class PaymentService {
+  async initiatePayment(data: PaymentData): Promise<PaymentResult> {
     try {
-      const { amount, email, currency, payment_provider, payment_method } = paymentData;
+      const reference = `LW_${nanoid(10)}_${Date.now()}`;
+      const provider = data.payment_provider || 'paystack';
+
+      let providerResponse;
       
-      if (!amount || !email || !payment_provider || !payment_method) {
-        return {
-          statusCode: 400,
-          status: 'error',
-          message: 'Missing required payment data',
-          data: null
-        };
+      if (provider === 'paystack') {
+        providerResponse = await PaystackService.initializeTransaction({
+          amount: data.amount,
+          email: data.email,
+          currency: data.currency || 'NGN',
+          reference,
+          callback_url: `${process.env.BASE_URL}/api/v1/payment/callback`,
+          metadata: {
+            user_id: data.user_id,
+            plan_id: data.plan_id,
+          },
+        });
+      } else {
+        providerResponse = await FlutterwaveService.initializePayment({
+          amount: data.amount,
+          currency: data.currency || 'NGN',
+          email: data.email,
+          tx_ref: reference,
+          redirect_url: `${process.env.BASE_URL}/api/v1/payment/callback`,
+          meta: {
+            user_id: data.user_id,
+            plan_id: data.plan_id,
+          },
+        });
       }
-      
-      if (amount < 100) {
-        return {
-          statusCode: 400,
-          status: 'error',
-          message: 'Amount must be greater than 100',
-          data: null
-        };
-      }
-      
-      const user = await User.findOne({
-        where: { email },
-        attributes: ['id', 'estate_id', 'first_name', 'last_name', 'email']
-      });
-      
-      if (!user) {
-        return {
-          statusCode: 404,
-          status: 'error',
-          message: 'User not found',
-          data: null
-        };
-      }
-      
-      const generateReference = uuidv4();
-      
-      // Create payment record first
+
+      // Save payment record
       await Payment.create({
-        amount,
-        email,
-        reference: generateReference,
-        payment_provider,
-        currency: currency || 'NGN',
-        user_id: user.id,
-        payment_method,
-        payment_status: 'pending',
-        estate_id: user.estate_id
+        payment_id: nanoid(),
+        resident_id: data.user_id || nanoid(),
+        amount: data.amount,
+        payment_date: new Date(),
+        status: 'pending',
+        reference,
+        provider,
+        provider_response: JSON.stringify(providerResponse),
       });
-      
-      const params = {
-        amount: amount * 100,
-        email,
-        currency: currency || 'NGN',
-        reference: generateReference
-      };
-      
-      const response = await axios.post('https://api.paystack.co/transaction/initialize', params, {
-        headers: {
-          'Authorization': `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (response.status !== 200) {
-        return {
-          statusCode: 400,
-          status: 'error',
-          message: 'Payment initialization failed',
-          data: null
-        };
-      }
-      
-      const paymentResponse = {
-        authorization_url: (response.data as any).data.authorization_url,
-        reference: generateReference
-      };
-      
+
       return {
         statusCode: 200,
         status: 'success',
-        message: 'Payment initiated successfully',
-        data: paymentResponse
+        message: 'Payment initialized successfully',
+        data: {
+          reference,
+          authorization_url: provider === 'paystack' 
+            ? providerResponse.data.authorization_url 
+            : providerResponse.data.link,
+          access_code: providerResponse.data.access_code,
+        },
       };
-    } catch (error) {
-      console.error('Payment initiation error:', error);
+    } catch (error: any) {
       return {
         statusCode: 500,
         status: 'error',
-        message: 'Internal server error',
-        data: null
+        message: error.message || 'Payment initialization failed',
       };
     }
-  },
-  
-  verifyPayment: async (verificationData: PaymentVerificationData): Promise<PaymentResponse> => {
+  }
+
+  async verifyPayment(data: { reference: string }): Promise<PaymentResult> {
     try {
-      const payment = await Payment.findOne({
-        where: { reference: verificationData.reference }
-      });
+      const payment = await Payment.findOne({ where: { reference: data.reference } });
       
       if (!payment) {
         return {
           statusCode: 404,
           status: 'error',
           message: 'Payment not found',
-          data: null
         };
       }
+
+      let verificationResponse;
       
-      const response = await axios.get(`https://api.paystack.co/transaction/verify/${verificationData.reference}`, {
-        headers: {
-          'Authorization': `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (response.status !== 200) {
-        return {
-          statusCode: 400,
-          status: 'error',
-          message: 'Payment verification failed',
-          data: null
-        };
-      }
-      
-      const responseData = response.data as any;
-      const isSuccess = responseData.data.status === 'success';
-      
-      await Payment.update(
-        { 
-          payment_status: isSuccess ? 'completed' : 'failed',
-          payment_data: responseData
-        },
-        { where: { reference: verificationData.reference }}
-      );
-      
-      // Send confirmation email and create subscription on success
-      if (isSuccess) {
-        await brevoEmailService.sendPaymentConfirmation(
-          payment.email,
-          responseData.data.amount / 100,
-          verificationData.reference
+      if (payment.provider === 'paystack') {
+        verificationResponse = await PaystackService.verifyTransaction(data.reference);
+      } else {
+        // For Flutterwave, we need transaction ID from webhook
+        const providerData = JSON.parse(payment.provider_response || '{}');
+        verificationResponse = await FlutterwaveService.verifyTransaction(
+          providerData.data?.id || data.reference
         );
-        
-        // Create 30-day subscription
-        if (payment.estate_id) {
-          await subscriptionService.createSubscription({
-            user_id: payment.user_id,
-            plan_id: 'basic', // Default plan
-            estate_id: payment.estate_id,
-            duration_months: 1
-          });
-        }
       }
-      
+
+      const isSuccessful = payment.provider === 'paystack' 
+        ? verificationResponse.data.status === 'success'
+        : verificationResponse.data.status === 'successful';
+
+      // Update payment status
+      await payment.update({
+        status: isSuccessful ? 'completed' : 'failed',
+        provider_response: JSON.stringify(verificationResponse),
+      });
+
+      // Handle subscription if payment is for a plan
+      if (isSuccessful && payment.plan_id) {
+        await this.handleSubscriptionPayment(payment);
+      }
+
       return {
         statusCode: 200,
-        status: 'success',
-        message: 'Payment verified successfully',
-        data: responseData
+        status: isSuccessful ? 'success' : 'failed',
+        message: isSuccessful ? 'Payment verified successfully' : 'Payment verification failed',
+        data: {
+          payment_status: payment.status,
+          amount: payment.amount,
+          reference: payment.reference,
+        },
       };
-    } catch (error) {
-      console.error('Payment verification error:', error);
+    } catch (error: any) {
       return {
         statusCode: 500,
         status: 'error',
-        message: 'Internal server error',
-        data: null
+        message: error.message || 'Payment verification failed',
       };
     }
-  },
+  }
 
-  getAllPayments: async (filters: { limit?: number; offset?: number; status?: string }) => {
+  private async handleSubscriptionPayment(payment: any): Promise<void> {
     try {
-      const payments = await Payment.findAll({
-        where: {
-          ...(filters.status && { payment_status: filters.status })
-        },
-        include: [
-          { model: User, attributes: ['first_name', 'last_name', 'email'] }
-        ],
-        limit: filters.limit || 50,
-        offset: filters.offset || 0,
-        order: [['createdAt', 'DESC']]
+      const plan = await Plan.findByPk(payment.plan_id);
+      if (!plan) return;
+
+      const endDate = new Date();
+      switch (plan.billing_cycle) {
+        case 'monthly':
+          endDate.setMonth(endDate.getMonth() + 1);
+          break;
+        case 'quarterly':
+          endDate.setMonth(endDate.getMonth() + 3);
+          break;
+        case 'biannually':
+          endDate.setMonth(endDate.getMonth() + 6);
+          break;
+        case 'annually':
+          endDate.setFullYear(endDate.getFullYear() + 1);
+          break;
+      }
+
+      await Subscription.create({
+        id: nanoid(),
+        user_id: payment.resident_id,
+        plan_id: payment.plan_id,
+        status: 'active',
+        start_date: new Date(),
+        end_date: endDate,
+      });
+    } catch (error) {
+      console.error('Subscription creation failed:', error);
+    }
+  }
+
+  async handlePaymentFailure(reference: string, reason: string): Promise<void> {
+    try {
+      const payment = await Payment.findOne({ where: { reference } });
+      if (payment) {
+        await payment.update({
+          status: 'failed',
+          failure_reason: reason,
+        });
+        
+        // Send failure notification
+        // await NotificationService.sendPaymentFailureNotification(payment);
+      }
+    } catch (error) {
+      console.error('Payment failure handling error:', error);
+    }
+  }
+
+  async getAllPayments(options: { limit: number; offset: number; status?: string }): Promise<PaymentResult> {
+    try {
+      const whereClause = options.status ? { status: options.status } : {};
+      
+      const payments = await Payment.findAndCountAll({
+        where: whereClause,
+        limit: options.limit,
+        offset: options.offset,
+        order: [['created_at', 'DESC']],
       });
 
       return {
         statusCode: 200,
         status: 'success',
         message: 'Payments retrieved successfully',
-        data: payments
+        data: {
+          payments: payments.rows,
+          total: payments.count,
+          page: Math.floor(options.offset / options.limit) + 1,
+          totalPages: Math.ceil(payments.count / options.limit),
+        },
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         statusCode: 500,
         status: 'error',
-        message: 'Failed to retrieve payments',
-        data: null
-      };
-    }
-  },
-
-  getPaymentById: async (id: string) => {
-    try {
-      const payment = await Payment.findByPk(id, {
-        include: [
-          { model: User, attributes: ['first_name', 'last_name', 'email'] }
-        ]
-      });
-
-      if (!payment) {
-        return {
-          statusCode: 404,
-          status: 'error',
-          message: 'Payment not found',
-          data: null
-        };
-      }
-
-      return {
-        statusCode: 200,
-        status: 'success',
-        message: 'Payment retrieved successfully',
-        data: payment
-      };
-    } catch (error) {
-      return {
-        statusCode: 500,
-        status: 'error',
-        message: 'Failed to retrieve payment',
-        data: null
-      };
-    }
-  },
-
-  getPaymentByReference: async (reference: string) => {
-    try {
-      const payment = await Payment.findOne({
-        where: { reference },
-        include: [
-          { model: User, attributes: ['first_name', 'last_name', 'email'] }
-        ]
-      });
-
-      if (!payment) {
-        return {
-          statusCode: 404,
-          status: 'error',
-          message: 'Payment not found',
-          data: null
-        };
-      }
-
-      return {
-        statusCode: 200,
-        status: 'success',
-        message: 'Payment retrieved successfully',
-        data: payment
-      };
-    } catch (error) {
-      return {
-        statusCode: 500,
-        status: 'error',
-        message: 'Failed to retrieve payment',
-        data: null
+        message: error.message || 'Failed to retrieve payments',
       };
     }
   }
-};
+
+  async getPaymentById(paymentId: string): Promise<PaymentResult> {
+    try {
+      const payment = await Payment.findByPk(paymentId);
+      
+      if (!payment) {
+        return {
+          statusCode: 404,
+          status: 'error',
+          message: 'Payment not found',
+        };
+      }
+
+      return {
+        statusCode: 200,
+        status: 'success',
+        message: 'Payment retrieved successfully',
+        data: payment,
+      };
+    } catch (error: any) {
+      return {
+        statusCode: 500,
+        status: 'error',
+        message: error.message || 'Failed to retrieve payment',
+      };
+    }
+  }
+
+  async getPaymentByReference(reference: string): Promise<PaymentResult> {
+    try {
+      const payment = await Payment.findOne({ where: { reference } });
+      
+      if (!payment) {
+        return {
+          statusCode: 404,
+          status: 'error',
+          message: 'Payment not found',
+        };
+      }
+
+      return {
+        statusCode: 200,
+        status: 'success',
+        message: 'Payment retrieved successfully',
+        data: payment,
+      };
+    } catch (error: any) {
+      return {
+        statusCode: 500,
+        status: 'error',
+        message: error.message || 'Failed to retrieve payment',
+      };
+    }
+  }
+}
+
+export const paymentService = new PaymentService();

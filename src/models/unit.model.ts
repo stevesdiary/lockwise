@@ -1,7 +1,18 @@
-import { Column, Table, DataType, Model, ForeignKey, PrimaryKey, HasMany, BelongsTo } from "sequelize-typescript";
+import { Column, Table, DataType, Model, ForeignKey, HasMany } from "sequelize-typescript";
 import { Street } from "./street.model";
-import { Resident } from '../models/resident.model';
-import { User } from "../models/user.model";
+import { Resident } from './resident.model';
+
+interface UnitAttributes {
+  id: string;
+  street_id: string;
+  number: string;
+  block?: string;
+  floor?: number;
+  unit_type?: 'flat' | 'duplex' | 'chalet' | 'terrace' | 'other';
+}
+
+interface UnitCreationAttributes extends Omit<UnitAttributes, 'id'> {}
+
 @Table({ 
   tableName: 'units',
   timestamps: true,
@@ -9,7 +20,7 @@ import { User } from "../models/user.model";
   freezeTableName: true,
   paranoid: true,
 })
-export class Unit extends Model {
+export class Unit extends Model<UnitAttributes, UnitCreationAttributes> {
   @Column({
     type: DataType.UUID,
     defaultValue: DataType.UUIDV4,
@@ -19,7 +30,10 @@ export class Unit extends Model {
   declare id: string;
 
   @ForeignKey(() => Street)
-  @Column(DataType.UUID)
+  @Column({
+    type: DataType.UUID,
+    allowNull: false
+  })
   declare street_id: string;
 
   @Column({
@@ -32,20 +46,19 @@ export class Unit extends Model {
   @Column({
     type: DataType.STRING
   })
-  declare block: string;
+  declare block?: string;
 
   @Column({
     type: DataType.INTEGER
   })
-  declare floor: number;
+  declare floor?: number;
 
   @Column({
     type: DataType.ENUM('flat', 'duplex', 'chalet', 'terrace', 'other'),
     allowNull: true
   })
-  declare unit_type: string;
+  declare unit_type?: 'flat' | 'duplex' | 'chalet' | 'terrace' | 'other';
 
   @HasMany(() => Resident, { as: 'residentsInUnit' })
-  declare residentsInUnit: Resident[];
-
+  declare residentsInUnit?: Resident[];
 }

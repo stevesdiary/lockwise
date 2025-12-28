@@ -3,13 +3,9 @@ import {
   createAccessRecord,
   recordEntry,
   recordExit,
-  getAccessWithEntries,
-  getActiveEntries,
-  checkEntryPermission,
-  checkInVisitor,
-  checkOutVisitor,
+  approveAccess,
   getAllAccess,
-  getOneAccess
+  getActiveAccess
 } from '../controllers/access.controller';
 import authentication from '../middlewares/authentication';
 import authorizeRoles from '../middlewares/authorizeRoles';
@@ -18,21 +14,12 @@ const router = express.Router();
 
 // Access management routes
 router.post('/', authentication, createAccessRecord);
-router.get('/', authentication, getAllAccess);
-router.get('/:id', authentication, getOneAccess);
+router.get('/all', authentication, getAllAccess);
+router.get('/active', authentication, getActiveAccess);
 
-// Multiple entry routes
-router.post('/:accessId/entries', authentication, recordEntry);
-router.put('/entries/:entryId/exit', authentication, recordExit);
-router.get('/:accessId/entries', authentication, getAccessWithEntries);
-router.get('/:accessId/entries/active', authentication, getActiveEntries);
-router.get('/:accessId/can-enter', authentication, checkEntryPermission);
-
-// Legacy routes (for backward compatibility)
-router.post('/check-in', authentication, checkInVisitor);
-router.post('/check-out', authentication, checkOutVisitor);
-
-// Admin routes (require admin role)
-router.get('/admin/all', authentication, authorizeRoles(['admin', 'security']), getAllAccess);
+// Access approval and logging
+router.put('/:accessId/approve', authentication, authorizeRoles(['admin', 'security']), approveAccess);
+router.post('/:accessId/entry', authentication, recordEntry);
+router.post('/:accessId/exit', authentication, recordExit);
 
 export default router;

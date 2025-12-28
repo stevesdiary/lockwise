@@ -3,5 +3,8 @@
   "editor.tabSize": 2,
   "editor.autoIndentOnPaste": true,
   "files.autoSave": "afterDelay",
-  "files.autoSaveDelay": 2000
+  "files.autoSaveDelay": 2000,
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 }

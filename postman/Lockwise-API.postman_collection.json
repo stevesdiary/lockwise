@@ -1,0 +1,149 @@
+{
+  "info": {
+    "name": "Lockwise API - Complete",
+    "description": "Complete API documentation for Lockwise Access Management System with all endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {"key": "baseUrl", "value": "http://localhost:3000/api/v1"},
+    {"key": "accessToken", "value": ""},
+    {"key": "estateId", "value": ""},
+    {"key": "userId", "value": ""}
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{"key": "token", "value": "{{accessToken}}", "type": "string"}]
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {"name": "Login", "event": [{"listen": "test", "script": {"exec": ["if (pm.response.code === 200) {", "    var jsonData = pm.response.json();", "    pm.collectionVariables.set('accessToken', jsonData.accessToken);", "}"]}}], "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"rememberMe\": true\n}"}, "url": "{{baseUrl}}/auth/login"}},
+        {"name": "Refresh Token", "request": {"method": "POST", "url": "{{baseUrl}}/auth/refresh"}},
+        {"name": "Logout", "request": {"method": "POST", "auth": {"type": "bearer", "bearer": [{"key": "token", "value": "{{accessToken}}"}]}, "url": "{{baseUrl}}/auth/logout"}},
+        {"name": "Google OAuth", "request": {"method": "GET", "url": "{{baseUrl}}/auth/google"}}
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {"name": "Register Manager", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"title\": \"Mr\",\n  \"first_name\": \"James\",\n  \"last_name\": \"Smith\",\n  \"email\": \"manager@estate.com\",\n  \"password\": \"SecurePass123!\",\n  \"confirm_password\": \"SecurePass123!\",\n  \"phone\": \"08012345678\",\n  \"role\": \"manager\",\n  \"estate_code\": \"EST123\"\n}"}, "url": "{{baseUrl}}/user/register"}},
+        {"name": "Register Resident", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"title\": \"Mrs\",\n  \"first_name\": \"Jane\",\n  \"last_name\": \"Doe\",\n  \"email\": \"resident@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"confirm_password\": \"SecurePass123!\",\n  \"phone\": \"08012345678\",\n  \"role\": \"resident\",\n  \"estate_code\": \"EST123\"\n}"}, "url": "{{baseUrl}}/user/register"}},
+        {"name": "Register Security", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"title\": \"Mr\",\n  \"first_name\": \"Mike\",\n  \"last_name\": \"Security\",\n  \"email\": \"security@estate.com\",\n  \"password\": \"SecurePass123!\",\n  \"confirm_password\": \"SecurePass123!\",\n  \"phone\": \"08012345678\",\n  \"role\": \"security\",\n  \"estate_code\": \"EST123\"\n}"}, "url": "{{baseUrl}}/user/register"}},
+        {"name": "Get All Users", "request": {"method": "GET", "auth": {"type": "bearer"}, "url": {"raw": "{{baseUrl}}/user?page=1&limit=10", "query": [{"key": "page", "value": "1"}, {"key": "limit", "value": "10"}]}}},
+        {"name": "Get User by ID", "request": {"method": "GET", "auth": {"type": "bearer"}, "url": "{{baseUrl}}/user/{{userId}}"}},
+        {"name": "Update User", "request": {"method": "PUT", "auth": {"type": "bearer"}, "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"first_name\": \"Updated Name\"\n}"}, "url": "{{baseUrl}}/user/{{userId}}"}},
+        {"name": "Delete User", "request": {"method": "DELETE", "auth": {"type": "bearer"}, "url": "{{baseUrl}}/user/{{userId}}"}}
+      ]
+    },
+    {
+      "name": "Estates",
+      "item": [
+        {"name": "Create Estate", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"name\": \"Lekki Gardens\",\n  \"address\": \"Admiralty Way\",\n  \"type\": \"residential\",\n  \"contact_phone\": \"08012345678\",\n  \"contact_email\": \"info@estate.com\",\n  \"total_number_of_apartments\": 100,\n  \"city\": \"Lagos\",\n  \"state\": \"Lagos\",\n  \"country\": \"Nigeria\"\n}"}, "url": "{{baseUrl}}/estate"}},
+        {"name": "Get All Estates", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/estate?page=1&limit=10", "query": [{"key": "page", "value": "1"}, {"key": "limit", "value": "10"}]}}},
+        {"name": "Get Estate by ID", "request": {"method": "GET", "url": "{{baseUrl}}/estate/{{estateId}}"}},
+        {"name": "Update Estate", "request": {"method": "PUT", "auth": {"type": "bearer"}, "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"name\": \"Updated Estate Name\"\n}"}, "url": "{{baseUrl}}/estate/{{estateId}}"}},
+        {"name": "Delete Estate", "request": {"method": "DELETE", "auth": {"type": "bearer"}, "url": "{{baseUrl}}/estate/{{estateId}}"}}
+      ]
+    },
+    {
+      "name": "Access Codes",
+      "item": [
+        {"name": "Generate Access Code", "request": {"method": "POST", "auth": {"type": "bearer"}, "url": "{{baseUrl}}/access-codes/generate"}},
+        {"name": "Generate Custom Code", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"eventName\": \"Birthday Party\"\n}"}, "url": "{{baseUrl}}/access-codes/custom"}},
+        {"name": "Refresh Category", "request": {"method": "POST", "auth": {"type": "bearer"}, "url": "{{baseUrl}}/access-codes/refresh-category"}}
+      ]
+    },
+    {
+      "name": "Access Logs",
+      "item": [
+        {"name": "Create Access Log", "request": {"method": "POST", "auth": {"type": "bearer"}, "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"user_id\": \"uuid\",\n  \"estate_id\": \"uuid\",\n  \"access_code\": \"123456\",\n  \"date_in\": \"2025-01-01T10:00:00Z\",\n  \"date_out\": \"2025-01-01T18:00:00Z\",\n  \"access_type\": \"guest\",\n  \"status\": \"pending\"\n}"}, "url": "{{baseUrl}}/access"}},
+        {"name": "Get Access Logs", "request": {"method": "GET", "auth": {"type": "bearer"}, "url": "{{baseUrl}}/access"}}
+      ]
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {"name": "Initiate Payment", "request": {"method": "POST", "auth": {"type": "bearer"}, "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"amount\": 5000,\n  \"email\": \"user@example.com\",\n  \"paymentMethod\": \"card\"\n}"}, "url": "{{baseUrl}}/payment/initiate"}},
+        {"name": "Verify Payment", "request": {"method": "POST", "auth": {"type": "bearer"}, "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"reference\": \"payment-ref\"\n}"}, "url": "{{baseUrl}}/payment/verify"}}
+      ]
+    },
+    {
+      "name": "Roles & Permissions",
+      "item": [
+        {"name": "Get All Roles", "request": {"method": "GET", "auth": {"type": "bearer"}, "url": "{{baseUrl}}/role"}},
+        {"name": "Create Role", "request": {"method": "POST", "auth": {"type": "bearer"}, "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"role\": \"custom_role\"\n}"}, "url": "{{baseUrl}}/role"}},
+        {"name": "Get Permissions", "request": {"method": "GET", "auth": {"type": "bearer"}, "url": "{{baseUrl}}/permission"}},
+        {"name": "Assign Permission", "request": {"method": "POST", "auth": {"type": "bearer"}, "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"user_id\": \"uuid\",\n  \"permission\": \"access_control\"\n}"}, "url": "{{baseUrl}}/permission"}}
+      ]
+    },
+    {
+      "name": "Dashboard & Analytics",
+      "item": [
+        {"name": "Manager Dashboard", "request": {"method": "GET", "auth": {"type": "bearer"}, "url": "{{baseUrl}}/dashboard/manager"}},
+        {"name": "Admin Dashboard", "request": {"method": "GET", "auth": {"type": "bearer"}, "url": "{{baseUrl}}/dashboard/admin"}},
+        {"name": "Get Analytics", "request": {"method": "GET", "auth": {"type": "bearer"}, "url": "{{baseUrl}}/analytics"}}
+      ]
+    },
+    {
+      "name": "Community Board",
+      "item": [
+        {"name": "Get Posts", "request": {"method": "GET", "auth": {"type": "bearer"}, "url": "{{baseUrl}}/community/posts"}},
+        {"name": "Create Post", "request": {"method": "POST", "auth": {"type": "bearer"}, "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"type\": \"announcement\",\n  \"title\": \"Community Meeting\",\n  \"content\": \"Meeting on Friday\"\n}"}, "url": "{{baseUrl}}/community/posts"}},
+        {"name": "Add Comment", "request": {"method": "POST", "auth": {"type": "bearer"}, "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"post_id\": \"uuid\",\n  \"content\": \"Great idea!\"\n}"}, "url": "{{baseUrl}}/community/comments"}}
+      ]
+    },
+    {
+      "name": "Emergency",
+      "item": [
+        {"name": "Create Alert", "request": {"method": "POST", "auth": {"type": "bearer"}, "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"type\": \"fire\",\n  \"description\": \"Fire in building A\",\n  \"location\": \"Block A, Floor 3\"\n}"}, "url": "{{baseUrl}}/emergency/alerts"}},
+        {"name": "Get Alerts", "request": {"method": "GET", "auth": {"type": "bearer"}, "url": "{{baseUrl}}/emergency/alerts"}},
+        {"name": "Get Emergency Contacts", "request": {"method": "GET", "auth": {"type": "bearer"}, "url": "{{baseUrl}}/emergency/contacts"}}
+      ]
+    },
+    {
+      "name": "Support",
+      "item": [
+        {"name": "Create Ticket", "request": {"method": "POST", "auth": {"type": "bearer"}, "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"subject\": \"Access Issue\",\n  \"description\": \"Cannot generate access code\",\n  \"category\": \"technical\",\n  \"priority\": \"high\"\n}"}, "url": "{{baseUrl}}/support/tickets"}},
+        {"name": "Get My Tickets", "request": {"method": "GET", "auth": {"type": "bearer"}, "url": "{{baseUrl}}/support/tickets"}},
+        {"name": "Admin Get All Tickets", "request": {"method": "GET", "auth": {"type": "bearer"}, "url": "{{baseUrl}}/admin/support/tickets"}}
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {"name": "Get Notifications", "request": {"method": "GET", "auth": {"type": "bearer"}, "url": "{{baseUrl}}/notifications"}},
+        {"name": "Mark as Read", "request": {"method": "PUT", "auth": {"type": "bearer"}, "url": "{{baseUrl}}/notifications/:id/read"}}
+      ]
+    },
+    {
+      "name": "FAQs",
+      "item": [
+        {"name": "Get FAQs", "request": {"method": "GET", "url": "{{baseUrl}}/faqs"}},
+        {"name": "Create FAQ", "request": {"method": "POST", "auth": {"type": "bearer"}, "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"question\": \"How to generate access code?\",\n  \"answer\": \"Click on generate button\",\n  \"category\": \"access_codes\"\n}"}, "url": "{{baseUrl}}/faqs"}}
+      ]
+    },
+    {
+      "name": "Upload",
+      "item": [
+        {"name": "Upload File", "request": {"method": "POST", "auth": {"type": "bearer"}, "body": {"mode": "formdata", "formdata": [{"key": "file", "type": "file", "src": ""}]}, "url": "{{baseUrl}}/upload"}}
+      ]
+    },
+    {
+      "name": "Legal",
+      "item": [
+        {"name": "Terms & Conditions", "request": {"method": "GET", "url": "{{baseUrl}}/legal/terms"}},
+        {"name": "Privacy Policy", "request": {"method": "GET", "url": "{{baseUrl}}/legal/privacy"}}
+      ]
+    },
+    {
+      "name": "Monitoring",
+      "item": [
+        {"name": "Health Check", "request": {"method": "GET", "url": "{{baseUrl}}/monitoring/health"}},
+        {"name": "Get Metrics", "request": {"method": "GET", "auth": {"type": "bearer"}, "url": "{{baseUrl}}/monitoring/metrics"}},
+        {"name": "Reset Metrics", "request": {"method": "POST", "auth": {"type": "bearer"}, "url": "{{baseUrl}}/monitoring/metrics/reset"}}
+      ]
+    }
+  ]
+}

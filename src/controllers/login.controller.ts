@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { loginUser, logoutUser } from '../services/login.service';
 import { loginSchema } from '../utils/validator';
+import { AuthRequest } from '../middleware/auth.middleware';
 
 export const login = async (req: Request, res: Response) => {
   try {
@@ -12,15 +13,26 @@ export const login = async (req: Request, res: Response) => {
 
     const result = await loginUser(email, password);
     return res.status(result.statusCode).json(result);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Login controller error:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ message: 'Validation failed', errors: error.errors });
+    }
+    
+    // Handle database errors
+    if (error.name === 'SequelizeConnectionError') {
+      return res.status(503).json({ message: 'Database connection error' });
+    }
+    
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 };
 
-export const logout = async (req: Request, res: Response) => {
+export const logout = async (req: AuthRequest, res: Response) => {
   try {
-    const result = await logoutUser(res);
+    const result = await logoutUser(req.user?.sessionId, res);
     return res.status(result.statusCode).json(result);
   } catch (error) {
     console.error('Logout controller error:', error);

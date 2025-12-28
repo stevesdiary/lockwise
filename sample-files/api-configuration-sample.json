@@ -1,0 +1,66 @@
+{
+  "api_endpoints": {
+    "base_url": "http://localhost:3000/api/v1",
+    "authentication": {
+      "login": "/auth/login",
+      "logout": "/auth/logout",
+      "register": "/users/register",
+      "verify": "/users/verify"
+    },
+    "estates": {
+      "list": "/estates",
+      "create": "/estates",
+      "upload_bulk": "/estates/bulk-upload"
+    },
+    "users": {
+      "list": "/users/all",
+      "create": "/users/register",
+      "bulk_upload": "/users/bulk-upload"
+    },
+    "access_codes": {
+      "generate": "/access-codes/generate",
+      "list": "/access-codes",
+      "bulk_generate": "/access-codes/bulk-generate"
+    }
+  },
+  "sample_requests": {
+    "login": {
+      "method": "POST",
+      "endpoint": "/auth/login",
+      "body": {
+        "email": "admin@lockwise.com",
+        "password": "admin123"
+      }
+    },
+    "create_estate": {
+      "method": "POST",
+      "endpoint": "/estates",
+      "headers": {
+        "Authorization": "Bearer YOUR_JWT_TOKEN"
+      },
+      "body": {
+        "name": "Sample Estate",
+        "address": "123 Sample Street",
+        "city": "Lagos",
+        "state": "Lagos State",
+        "postal_code": "100001",
+        "country": "Nigeria",
+        "manager_email": "manager@sample.com",
+        "manager_phone": "+2348012345678"
+      }
+    },
+    "generate_access_code": {
+      "method": "POST",
+      "endpoint": "/access-codes/generate",
+      "headers": {
+        "Authorization": "Bearer YOUR_JWT_TOKEN"
+      },
+      "body": {
+        "guest_name": "John Visitor",
+        "guest_phone": "+2348012345678",
+        "valid_until": "2024-12-31T23:59:59Z",
+        "access_type": "visitor"
+      }
+    }
+  }
+}

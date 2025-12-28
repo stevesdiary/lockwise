@@ -8,7 +8,7 @@ import { Role } from '../models/role.model';
 import { Street } from '../models/street.model';
 import { Permission } from '../models/permission.model';
 import { Unit } from '../models/unit.model';
-import { Access, AccessEntry } from '../models/access.model';
+import { AccessLog } from '../models/access.log.model';
 import { RolePermission } from '../models/role.permission.model';
 import { Resident } from '../models/resident.model';
 import { Plan } from '../models/plan.model';
@@ -28,12 +28,13 @@ const sequelize = new Sequelize({
   username: isProduction ? (process.env.PROD_DB_USER || 'postgres') : (process.env.DEV_DB_USER || 'postgres'),
   password: isProduction ? (process.env.PROD_DB_PASSWORD || '') : (process.env.DEV_DB_PASSWORD || ''),
   database: isProduction ? (process.env.PROD_DB_NAME || 'lockwise') : (process.env.DEV_DB_NAME || 'lockwise_dev'),
-  models: [User, Estate, Resident, Role, Payment, Street, Permission, Unit, Access, AccessEntry, RolePermission, Plan, Referrer, ReferralBonus, Address, Subscription],
+  models: [User, Estate, Resident, Role, Payment, Street, Permission, Unit, AccessLog, RolePermission, Plan, Referrer, ReferralBonus, Address, Subscription],
   dialectOptions: {
     ssl: {
-      require: process.env.SSL,
+      require: true,
       rejectUnauthorized: false
-    }
+    },
+    keepAlive: true
   },
   pool: {
     max: 5,

@@ -1,31 +1,12 @@
 import { Table, Model, Column, DataType, ForeignKey, BelongsTo, HasMany } from 'sequelize-typescript';
 import { User } from './user.model';
 
-export interface SupportTicketAttributes {
-  id: string;
-  user_id: string;
-  subject: string;
-  description: string;
-  category: string;
-  priority: string;
-  status: string;
-  assigned_to?: string;
-  resolved_at?: Date;
-  created_at: Date;
-  updated_at: Date;
-}
-
-export type SupportTicketCreationAttributes = Omit<SupportTicketAttributes, 'id' | 'created_at' | 'updated_at' | 'status'> & {
-  status?: string;
-};
-
 @Table({
   tableName: 'support_tickets',
   timestamps: true,
-  underscored: true,
-  freezeTableName: true
+  underscored: true
 })
-export class SupportTicket extends Model<SupportTicketAttributes, SupportTicketCreationAttributes> {
+export class SupportTicket extends Model {
   @Column({
     type: DataType.UUID,
     primaryKey: true,
@@ -34,86 +15,53 @@ export class SupportTicket extends Model<SupportTicketAttributes, SupportTicketC
   declare id: string;
 
   @ForeignKey(() => User)
-  @Column({
-    type: DataType.UUID,
-    allowNull: false
-  })
+  @Column({ type: DataType.UUID, allowNull: false })
   declare user_id: string;
 
-  @BelongsTo(() => User, { as: 'user' })
-  declare user: User;
+  @ForeignKey(() => User)
+  @Column({ type: DataType.UUID })
+  declare assigned_agent_id: string;
 
-  @Column({
-    type: DataType.STRING,
-    allowNull: false
-  })
+  @Column({ type: DataType.STRING, allowNull: false })
   declare subject: string;
 
-  @Column({
-    type: DataType.TEXT,
-    allowNull: false
-  })
+  @Column({ type: DataType.TEXT, allowNull: false })
   declare description: string;
 
   @Column({
-    type: DataType.ENUM('technical', 'billing', 'access', 'general'),
-    allowNull: false
+    type: DataType.ENUM('open', 'in_progress', 'resolved', 'closed'),
+    defaultValue: 'open'
   })
-  declare category: string;
+  declare status: string;
 
   @Column({
     type: DataType.ENUM('low', 'medium', 'high', 'urgent'),
-    allowNull: false,
     defaultValue: 'medium'
   })
   declare priority: string;
 
   @Column({
-    type: DataType.ENUM('open', 'in_progress', 'resolved', 'closed'),
-    allowNull: false,
-    defaultValue: 'open'
+    type: DataType.ENUM('technical', 'billing', 'access', 'general'),
+    defaultValue: 'general'
   })
-  declare status: string;
+  declare category: string;
 
-  @ForeignKey(() => User)
-  @Column({
-    type: DataType.UUID,
-    allowNull: true
-  })
-  declare assigned_to: string;
+  @BelongsTo(() => User, 'user_id')
+  declare user: User;
 
-  @BelongsTo(() => User, { as: 'assignee' })
-  declare assignee: User;
+  @BelongsTo(() => User, 'assigned_agent_id')
+  declare agent: User;
 
-  @Column({
-    type: DataType.DATE,
-    allowNull: true
-  })
-  declare resolved_at: Date;
-
-  @HasMany(() => SupportMessage, { foreignKey: 'ticket_id' })
+  @HasMany(() => SupportMessage)
   declare messages: SupportMessage[];
 }
-
-export interface SupportMessageAttributes {
-  id: string;
-  ticket_id: string;
-  user_id: string;
-  message: string;
-  is_internal: boolean;
-  created_at: Date;
-  updated_at: Date;
-}
-
-export type SupportMessageCreationAttributes = Omit<SupportMessageAttributes, 'id' | 'created_at' | 'updated_at'>;
 
 @Table({
   tableName: 'support_messages',
   timestamps: true,
-  underscored: true,
-  freezeTableName: true
+  underscored: true
 })
-export class SupportMessage extends Model<SupportMessageAttributes, SupportMessageCreationAttributes> {
+export class SupportMessage extends Model {
   @Column({
     type: DataType.UUID,
     primaryKey: true,
@@ -122,35 +70,22 @@ export class SupportMessage extends Model<SupportMessageAttributes, SupportMessa
   declare id: string;
 
   @ForeignKey(() => SupportTicket)
-  @Column({
-    type: DataType.UUID,
-    allowNull: false
-  })
+  @Column({ type: DataType.UUID, allowNull: false })
   declare ticket_id: string;
+
+  @ForeignKey(() => User)
+  @Column({ type: DataType.UUID, allowNull: false })
+  declare sender_id: string;
+
+  @Column({ type: DataType.TEXT, allowNull: false })
+  declare message: string;
+
+  @Column({ type: DataType.BOOLEAN, defaultValue: false })
+  declare is_internal: boolean;
 
   @BelongsTo(() => SupportTicket)
   declare ticket: SupportTicket;
 
-  @ForeignKey(() => User)
-  @Column({
-    type: DataType.UUID,
-    allowNull: false
-  })
-  declare user_id: string;
-
   @BelongsTo(() => User)
-  declare user: User;
-
-  @Column({
-    type: DataType.TEXT,
-    allowNull: false
-  })
-  declare message: string;
-
-  @Column({
-    type: DataType.BOOLEAN,
-    allowNull: false,
-    defaultValue: false
-  })
-  declare is_internal: boolean;
+  declare sender: User;
 }

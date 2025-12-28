@@ -20,11 +20,18 @@ import communityBoardRouter from "./routes/community.board.route";
 import emergencyRouter from "./routes/emergency.route";
 import supportRouter from "./routes/support.route";
 import adminSupportRouter from "./routes/admin.support.route";
+import legalRouter from "./routes/legal.route";
+import monitoringRouter from "./routes/monitoring.route";
+import chatRouter from "./routes/chat.route";
+import referralRouter from "./routes/referral.route";
+import planRouter from "./routes/plan.route";
+import webhookRouter from "./routes/webhook.route";
+import bulkUploadRouter from "./routes/bulk-upload.route";
 
 const router = Router();
 
 router.use("/user", userRouter);
-router.use("/log", loginRouter);
+router.use("/auth", loginRouter);
 router.use('/payment', paymentRouter);
 router.use('/estate', estateRouter);
 router.use('/role', roleRouter);
@@ -34,7 +41,7 @@ router.use('/address', addressRouter);
 router.use('/upload', uploadRouter);
 router.use('/dashboard', dashboardRouter);
 router.use('/analytics', analyticsRouter);
-router.use('/auth', googleAuthRouter);
+router.use('/auth/google', googleAuthRouter);
 router.use('/access-codes', accessCodeRouter);
 router.use('/faqs', faqRouter);
 router.use('/config', configRouter);
@@ -43,6 +50,18 @@ router.use('/community', communityBoardRouter);
 router.use('/emergency', emergencyRouter);
 router.use('/support', supportRouter);
 router.use('/admin/support', adminSupportRouter);
+router.use('/legal', legalRouter);
+router.use('/chat', chatRouter);
+router.use('/referral', referralRouter);
+router.use('/plan', planRouter);
+router.use('/bulk-upload', bulkUploadRouter);
+router.use('/monitoring', monitoringRouter);
+router.use('/webhooks', webhookRouter);
+
+router.use('/webhook', webhookRouter);
+
+// Legacy route for backward compatibility
+router.use("/log", loginRouter);
 
 
 

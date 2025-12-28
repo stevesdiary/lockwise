@@ -1,32 +1,16 @@
 import { Router } from 'express';
-import notificationController from '../controllers/notification.controller';
+import { notificationController } from '../controllers/notification.controller';
 import { authenticateJWT } from '../middlewares/authentication';
 
 const router = Router();
 
-router.post('/subscribe', 
-  authenticateJWT,
-  notificationController.subscribe
-);
+// Test endpoints
+router.post('/test/email', authenticateJWT, notificationController.sendTestEmail);
+router.post('/test/sms', authenticateJWT, notificationController.sendTestSMS);
+router.get('/test/email-connection', authenticateJWT, notificationController.testEmailConnection);
 
-router.get('/', 
-  authenticateJWT,
-  notificationController.getNotifications
-);
-
-router.put('/:notificationId/read', 
-  authenticateJWT,
-  notificationController.markAsRead
-);
-
-router.put('/read-all', 
-  authenticateJWT,
-  notificationController.markAllAsRead
-);
-
-router.post('/test', 
-  authenticateJWT,
-  notificationController.sendTestNotification
-);
+// Queue management
+router.get('/queue/stats', authenticateJWT, notificationController.getQueueStats);
+router.post('/bulk', authenticateJWT, notificationController.sendBulkNotification);
 
 export default router;

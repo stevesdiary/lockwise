@@ -40,17 +40,25 @@ export class UserService {
     }
   }
 
-  // async getUserByEmail(email: string, estateId: string): Promise<ApiResponse<User | null>> {
-  //   const user = await this.userRepository.findUserByEmail(email, estateId);
-  //   return {
-  //     status: user ? 'success' : 'fail',
-  //     statusCode: user ? 200 : 404,
-  //     message: user ? 'User retrieved successfully' : 'User not found',
-  //     data: user
-  //   };
-  // }
+  async getUserByEmail(email: string, estateId: string): Promise<ApiResponse<User | null>> {
+    const user = await User.findOne({
+      where: { email },
+      include: [{
+        model: Estate,
+        as: 'estate',
+        where: { estate_id: estateId },
+        attributes: []
+      }]
+    });
+    return {
+      status: user ? 'success' : 'fail',
+      statusCode: user ? 200 : 404,
+      message: user ? 'User retrieved successfully' : 'User not found',
+      data: user
+    };
+  }
 
-  async createUser(validatedData: any): Promise<ApiResponse<User>> {
+  async registerResident(validatedData: any): Promise<ApiResponse<User>> {
     try {
       const existingUser = await User.findOne({ where: { email: validatedData.email } });
       if (existingUser) {
@@ -61,31 +69,95 @@ export class UserService {
           data: null as any
         };
       }
-      let userData: any = { ...validatedData };
 
-      // Find role by name and set role_id
-      const roleRecord = await Role.findOne({ where: { role: validatedData.role } });
+      if (!validatedData.estate_code) {
+        return {
+          status: 'fail',
+          statusCode: 400,
+          message: 'Estate code is required for resident registration',
+          data: null as any
+        };
+      }
+
+      const estate = await Estate.findOne({ where: { estate_code: validatedData.estate_code } });
+      if (!estate) {
+        return {
+          status: 'fail',
+          statusCode: 400,
+          message: 'Invalid estate code',
+          data: null as any
+        };
+      }
+
+      const residentRole = await Role.findOne({ where: { role: 'resident' } });
+      if (!residentRole) {
+        return {
+          status: 'fail',
+          statusCode: 500,
+          message: 'Resident role not found in system',
+          data: null as any
+        };
+      }
+
+      const userData = {
+        ...validatedData,
+        role_id: residentRole.id,
+        estate_id: estate.estate_id
+      };
+      
+      delete userData.estate_code;
+      delete userData.confirm_password;
+
+      const user = await User.create(userData);
+      return {
+        status: 'success',
+        statusCode: 201,
+        message: 'Resident registered successfully',
+        data: user
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async registerStaffUser(validatedData: any, roleType: 'security' | 'admin' | 'manager'): Promise<ApiResponse<User>> {
+    try {
+      const existingUser = await User.findOne({ where: { email: validatedData.email } });
+      if (existingUser) {
+        return {
+          status: 'fail',
+          statusCode: 409,
+          message: 'User with this email already exists',
+          data: null as any
+        };
+      }
+
+      const roleRecord = await Role.findOne({ where: { role: roleType } });
       if (!roleRecord) {
         return {
           status: 'fail',
           statusCode: 400,
-          message: 'Invalid role specified',
+          message: `${roleType} role not found in system`,
           data: null as any
         };
       }
-      userData.role_id = roleRecord.id;
 
-      // Role-based registration logic
-      if (validatedData.role === 'resident') {
+      let userData: any = {
+        ...validatedData,
+        role_id: roleRecord.id
+      };
+
+      // Security staff need estate association
+      if (roleType === 'security') {
         if (!validatedData.estate_code) {
           return {
             status: 'fail',
             statusCode: 400,
-            message: 'Estate code is required for residents',
+            message: 'Estate code is required for security staff',
             data: null as any
           };
         }
-        
+
         const estate = await Estate.findOne({ where: { estate_code: validatedData.estate_code } });
         if (!estate) {
           return {
@@ -100,17 +172,32 @@ export class UserService {
       
       delete userData.estate_code;
       delete userData.confirm_password;
-      delete userData.role;
 
       const user = await User.create(userData);
       return {
         status: 'success',
         statusCode: 201,
-        message: `${validatedData.role} registered successfully`,
+        message: `${roleType} registered successfully`,
         data: user
       };
     } catch (error) {
       throw error;
+    }
+  }
+
+  async createUser(validatedData: any): Promise<ApiResponse<User>> {
+    // Legacy method - redirect to appropriate registration method
+    if (validatedData.role === 'resident') {
+      return this.registerResident(validatedData);
+    } else if (['security', 'admin', 'manager'].includes(validatedData.role)) {
+      return this.registerStaffUser(validatedData, validatedData.role);
+    } else {
+      return {
+        status: 'fail',
+        statusCode: 400,
+        message: 'Invalid role specified',
+        data: null as any
+      };
     }
   }
 

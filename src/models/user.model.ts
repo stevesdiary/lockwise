@@ -2,7 +2,7 @@ import { Table, Model, Column, DataType, BelongsTo, HasMany, ForeignKey, HasOne 
 import { Estate } from './estate.model';
 import { Role } from '../models/role.model';
 import { Resident } from '../models/resident.model';
-import { Access } from '../models/access.model';
+import { AccessLog } from '../models/access.log.model';
 import { Payment } from '../models/payment.model';
 
 @Table({
@@ -74,12 +74,24 @@ export class User extends Model<User> {
   })
   declare verified: boolean;
   
-  // @Column({
-  //   type: DataType.ENUM('active', 'inactive', 'suspended', 'pending'),
-  //   allowNull: false,
-  //   defaultValue: 'pending'
-  // })
-  // declare status: string;
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  declare reset_token: string | null;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  declare reset_expires: Date | null;
+  
+  @Column({
+    type: DataType.ENUM('active', 'inactive', 'suspended', 'pending'),
+    allowNull: false,
+    defaultValue: 'pending'
+  })
+  declare status: string;
 
   @ForeignKey(() => Role)
   @Column(DataType.UUID)
@@ -101,8 +113,8 @@ export class User extends Model<User> {
   })
   declare residentProfile: Resident;
 
-  @HasMany(() => Access)
-  declare Accesss: Access[];
+  @HasMany(() => AccessLog)
+  declare accessLogs: AccessLog[];
 
   @HasMany(() => Payment)
   declare payments: Payment[];

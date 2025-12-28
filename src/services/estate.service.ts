@@ -1,6 +1,7 @@
 import { EstateCreationAttributes, ApiResponse } from '../types/estate.type';
 import { EstateRepository } from '../repositories/estate.repository';
 import { Estate } from '../models/estate.model';
+import { Referrer } from '../models/referrer.model';
 
 class EstateService {
   private estateRepository: EstateRepository;
@@ -8,9 +9,25 @@ class EstateService {
   constructor() {
     this.estateRepository = new EstateRepository();
   }
-  async createEstate(data: EstateCreationAttributes): Promise<ApiResponse> {
+  async createEstate(data: EstateCreationAttributes & { referral_code?: string }): Promise<ApiResponse> {
     try {
-      const estate = await this.estateRepository.create(data);
+      let estateData: any = { ...data };
+      
+      // Handle referral code if provided
+      if (data.referral_code) {
+        const referrer = await Referrer.findOne({ 
+          where: { referral_code: data.referral_code } 
+        });
+        
+        if (referrer) {
+          estateData.referrer_id = referrer.id;
+        }
+      }
+      
+      // Remove referral_code from estate data
+      delete estateData.referral_code;
+      
+      const estate = await this.estateRepository.create(estateData);
       if (!estate) {
         throw new Error('Failed to create estate');
       }
@@ -111,6 +128,24 @@ class EstateService {
         message: 'Estate record deleted successfully',
         data: null
       }
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getEstatesByReferrer(referrerId: string): Promise<ApiResponse> {
+    try {
+      const estates = await Estate.findAll({
+        where: { referrer_id: referrerId },
+        include: [{ model: Referrer }]
+      });
+      
+      return {
+        statusCode: 200,
+        status: 'success',
+        message: 'Referred estates retrieved successfully',
+        data: estates
+      };
     } catch (error) {
       throw error;
     }

@@ -10,7 +10,7 @@ class EmergencyService {
     description: string;
     location: string;
   }) {
-    const alert = await EmergencyAlert.create(data);
+    const alert = await EmergencyAlert.create({ ...data, status: 'active' });
 
     // Notify all estate residents and security
     await this.notifyEmergencyAlert(alert);

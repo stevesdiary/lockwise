@@ -21,7 +21,19 @@ export class Address extends Model<AddressAttributes, AddressCreationAttributes>
   @ForeignKey(() => Estate)
   @Column({
     allowNull: false,
-    type: DataType.STRING
+    type: DataType.UUID,
+    validate: {
+      notNull: {
+        msg: 'Estate ID is required'
+      },
+      notEmpty: {
+        msg: 'Estate ID cannot be empty'
+      },
+      isUUID: {
+        args: 4,
+        msg: 'Estate ID must be a valid UUID'
+      }
+    }
   })
   declare estate_id: string;
 
