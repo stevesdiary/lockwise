@@ -58,8 +58,6 @@ router.use('/bulk-upload', bulkUploadRouter);
 router.use('/monitoring', monitoringRouter);
 router.use('/webhooks', webhookRouter);
 
-router.use('/webhook', webhookRouter);
-
 // Legacy route for backward compatibility
 router.use("/log", loginRouter);
 
