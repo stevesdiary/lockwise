@@ -23,7 +23,7 @@ module.exports = {
         allowNull: true,
         references: {
           model: 'estates',
-          key: 'id'
+          key: 'estate_id'
         },
         onDelete: 'CASCADE'
       },

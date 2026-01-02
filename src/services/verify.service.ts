@@ -5,6 +5,7 @@ import { ResidentRepository } from '../repositories/resident.repository';
 import { ApiResponse } from "../types/estate.type";
 import { getFromRedis, saveToRedis, deleteFromRedis} from '../core/redis';
 import { customAlphabet } from "nanoid";
+import { response } from 'express';
 
 
 const nanoid = customAlphabet("1234567890");
@@ -76,16 +77,12 @@ export class VerifyService {
     const verification_code =  nanoid(6);
     await saveToRedis(key, verification_code, 15 * 60);
     
-    await sendEmail({
-      to: user.email,
-      subject: 'Verification Code',
-      text: `Your new verification code is ${verification_code}`
-    });
+    const sendNotification = await sendEmail.sendVerificationEmail(user.email, user.first_name, verification_code);
 
     return {
       statusCode: 200,
       status: 'success',
-      message: 'Verification code resent successfully',
+      message: 'Verification code resent successfully' + sendNotification,
       data: null
     };
   }
