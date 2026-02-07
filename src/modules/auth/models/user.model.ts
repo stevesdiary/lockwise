@@ -1,9 +1,9 @@
 import { Table, Model, Column, DataType, BelongsTo, HasMany, ForeignKey, HasOne } from 'sequelize-typescript';
-import { Estate } from './estate.model';
-import { Role } from '../models/role.model';
-import { Resident } from '../models/resident.model';
-import { AccessLog } from '../models/access.log.model';
-import { Payment } from '../models/payment.model';
+import { Estate } from '../../estate/models/estate.model';
+import { Role } from '../../auth/models/role.model';
+import { Resident } from '../../estate/models/resident.model';
+import AccessLog from '../../access/models/access-log.model';
+import { Payment } from '../../payment/models/payment.model';
 
 @Table({
   tableName: 'users',
@@ -112,9 +112,6 @@ export class User extends Model<User> {
     as: 'residentProfile' 
   })
   declare residentProfile: Resident;
-
-  @HasMany(() => AccessLog)
-  declare accessLogs: AccessLog[];
 
   @HasMany(() => Payment)
   declare payments: Payment[];

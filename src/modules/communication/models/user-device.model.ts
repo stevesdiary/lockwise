@@ -1,5 +1,5 @@
 import { DataTypes, Model, Optional } from 'sequelize';
-import { sequelize } from '../core/database.optimized';
+import db from '../../../shared/core/database';
 
 interface UserDeviceAttributes {
   id: string;
@@ -62,7 +62,7 @@ UserDevice.init(
     },
   },
   {
-    sequelize,
+    sequelize: db,
     tableName: 'user_devices',
     timestamps: true,
     underscored: true,
