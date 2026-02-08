@@ -9,13 +9,13 @@ const options = {
       version: '1.0.0',
       description: 'Lockwise Access Management System API Documentation - Complete API for property access management, visitor control, payments, community features, and estate operations.',
       contact: {
-        name: 'Stephen Oyeyemi',
+        name: 'Stephen O.',
         email: 'support@lockwise.com'
       }
     },
     servers: [
       {
-        url: process.env.API_BASE_URL || 'http://localhost:3000/api/v1',
+        url: process.env.API_BASE_URL || 'http://localhost:3001/api/v1',
         description: 'Development server'
       },
       {

@@ -1,119 +1,70 @@
-# Lockwise API - Postman Documentation
+# Lockwise API Postman Collection
 
-## Import Collection
+## Import
+Import `Lockwise-API-Complete.postman_collection.json` into Postman
 
-1. Open Postman
-2. Click **Import** button
-3. Select `Lockwise-API.postman_collection.json`
-4. Collection will be imported with all endpoints
+## Variables
+- `baseUrl`: http://localhost:3000/api/v1
+- `accessToken`: Auto-set after login
+- `estateId`: Set manually or from response
+- `userId`: Set manually or from response
 
-## Setup
+## Collections (15 modules, 50+ endpoints)
 
-### Environment Variables
-- `baseUrl`: `http://localhost:3000/api/v1`
-- `accessToken`: Auto-populated after login
+### 1. Authentication
+- Login (auto-saves token)
+- Refresh Token
+- Logout
+- Google OAuth
 
-## Registration Flow
+### 2. Users
+- Register (Manager/Resident/Security)
+- Get All Users
+- Get/Update/Delete User
 
-### 1. Register Referrer (Optional)
-```
-POST /referrers
-{
-  "name": "John Doe",
-  "email": "john@example.com",
-  "phone": "08012345678",
-  "referral_code": "REF123"
-}
-```
+### 3. Estates
+- Create/Get/Update/Delete Estate
 
-### 2. Register Estate
-```
-POST /estate
-{
-  "name": "Lekki Gardens",
-  "address": "Admiralty Way, Lagos",
-  "type": "residential",
-  "contact_phone": "08012345678",
-  "contact_email": "info@estate.com",
-  "total_number_of_apartments": 100,
-  "city": "Lagos",
-  "state": "Lagos",
-  "country": "Nigeria",
-  "referrer_id": "uuid-from-step-1"
-}
-```
+### 4. Access Codes
+- Generate/Custom/Refresh
 
-### 3. Register Manager
-```
-POST /user/register
-{
-  "title": "Mr",
-  "first_name": "James",
-  "last_name": "Smith",
-  "email": "manager@estate.com",
-  "password": "SecurePass123!",
-  "confirm_password": "SecurePass123!",
-  "phone": "08012345678",
-  "role": "manager",
-  "estate_code": "EST123"
-}
-```
+### 5. Access Logs
+- Create/Get Access Logs
 
-### 4. Register Residents
-```
-POST /user/register
-{
-  "title": "Mrs",
-  "first_name": "Jane",
-  "last_name": "Doe",
-  "email": "resident@example.com",
-  "password": "SecurePass123!",
-  "confirm_password": "SecurePass123!",
-  "phone": "08012345678",
-  "role": "resident",
-  "estate_code": "EST123"
-}
-```
+### 6. Payments
+- Initiate/Verify Payment
 
-### 5. Register Security Personnel
-```
-POST /user/register
-{
-  "title": "Mr",
-  "first_name": "Mike",
-  "last_name": "Security",
-  "email": "security@estate.com",
-  "password": "SecurePass123!",
-  "confirm_password": "SecurePass123!",
-  "phone": "08012345678",
-  "role": "security",
-  "estate_code": "EST123"
-}
-```
+### 7. Roles & Permissions
+- Manage Roles/Permissions
 
-## User Roles
+### 8. Dashboard & Analytics
+- Manager/Admin Dashboards
 
-- **super_admin**: Full system access
-- **admin**: Estate-level administration
-- **manager**: Estate management
-- **resident**: Resident access
-- **security**: Security personnel access
+### 9. Community Board
+- Posts/Comments
 
-## Authentication
+### 10. Emergency
+- Alerts/Contacts
 
-All authenticated endpoints require Bearer token:
-```
-Authorization: Bearer <accessToken>
-```
+### 11. Support
+- Tickets Management
 
-## Password Requirements
+### 12. Notifications
+- Get/Mark as Read
 
-- Minimum 8 characters
-- At least one uppercase letter
-- At least one lowercase letter
-- At least one number
-- At least one special character
+### 13. FAQs
+- Get/Create FAQs
 
-## Phone Number Format
+### 14. Upload
+- File Upload
 
-Nigerian format: `08012345678` or `+2348012345678`
+### 15. Legal
+- Terms/Privacy
+
+### 16. Monitoring
+- Health/Metrics
+
+## Usage
+1. Run Login request
+2. Token auto-saved
+3. All authenticated requests use token automatically

@@ -17,7 +17,7 @@ userRouter.post(
   auditLogger,
   analyticsMiddleware("user_register"),
   async (req: ExpressRequest, res: Response) => {
-    res.status(501).json({ message: 'Not implemented' });
+    await userController.registerUser(req, res);
   }
 );
 
@@ -43,7 +43,7 @@ userRouter.get(
   auditLogger,
   analyticsMiddleware("users_list_viewed"),
   async (req: ExpressRequest, res: Response) => {
-    res.status(501).json({ message: 'Not implemented' });
+    await userController.getAllUsers(req, res);
   }
 );
 
@@ -65,7 +65,7 @@ userRouter.delete(
   requireAdmin,
   auditLogger,
   async (req: ExpressRequest, res: Response) => {
-    res.status(501).json({ message: 'Not implemented' });
+    await userController.deleteUser(req, res);
   }
 );
 

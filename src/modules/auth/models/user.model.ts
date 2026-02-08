@@ -2,7 +2,6 @@ import { Table, Model, Column, DataType, BelongsTo, HasMany, ForeignKey, HasOne 
 import { Estate } from '../../estate/models/estate.model';
 import { Role } from '../../auth/models/role.model';
 import { Resident } from '../../estate/models/resident.model';
-import AccessLog from '../../access/models/access-log.model';
 import { Payment } from '../../payment/models/payment.model';
 
 @Table({
@@ -92,6 +91,12 @@ export class User extends Model<User> {
     defaultValue: 'pending'
   })
   declare status: string;
+
+  @Column({
+    type: DataType.ENUM('resident', 'security', 'manager', 'admin'),
+    allowNull: false,
+  })
+  declare user_type: string;
 
   @ForeignKey(() => Role)
   @Column(DataType.UUID)

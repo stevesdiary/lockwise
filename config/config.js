@@ -18,10 +18,10 @@ module.exports = {
     database: process.env.DEV_DB_NAME,
     port: process.env.DEV_DB_PORT || 5432,
     dialectOptions: {
-      ssl: {
+      ssl: process.env.SSL === 'true' ? {
         require: true,
         rejectUnauthorized: false
-      }
+      } : false
     }
   },
   

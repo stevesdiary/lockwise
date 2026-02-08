@@ -29,10 +29,10 @@ const sequelize = new Sequelize({
   database: isProduction ? (process.env.PROD_DB_NAME || 'lockwise') : (process.env.DEV_DB_NAME || 'lockwise_dev'),
   models: [User, Estate, Resident, Role, Payment, Street, Permission, Unit, RolePermission, Plan, Referrer, ReferralBonus, Address, Subscription],
   dialectOptions: {
-    ssl: {
+    ssl: process.env.SSL === 'true' ? {
       require: true,
       rejectUnauthorized: false
-    },
+    } : false,
     keepAlive: true,
     statement_timeout: 60000,
     query_timeout: 60000,

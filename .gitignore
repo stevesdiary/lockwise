@@ -14,3 +14,4 @@ docs/SECURITY_AUDIT.md
 .env
 docs/
 coverage/
+lockwise-mobile/
