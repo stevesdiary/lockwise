@@ -21,8 +21,8 @@ export const userRegistrationSchema = yup.object().shape({
   title: yup
     .string()
     .trim()
-    .required('Title is required')
-    .oneOf(['Mr', 'Mrs', 'Ms', 'Dr', 'Prof', 'Alhj', 'Chief', 'HRH', 'HRM'], 'Invalid title'),
+    .optional()
+    .oneOf(['Mr', 'Mrs', 'Ms', 'Dr', 'Prof', 'Alhj', 'Hon.', 'Chief', 'HRH', 'HRM'], 'Invalid title'),
 
   first_name: yup
     .string()
@@ -137,13 +137,16 @@ export const hospitalVerificationSchema = yup.object().shape({
 export const createEstateSchema = yup.object().shape({
   name: yup.string().required('Estate name is required')
     .min(2, 'Estate name must be at least 2 characters'),
-  address: addressSchema,
+  address: addressSchema.optional().default(undefined),
   type: yup.string().required('Estate type is required')
     .oneOf(['residential', 'mixed', 'other', 'commercial'], 'Invalid estate type'),
   estate_code: yup.string().optional(),
   number_of_appartments: yup.number().optional()
     .min(1, 'Number of apartments must be at least 1'),
   total_number_of_floors: yup.number().optional().min(3, 'Number of floors must be at least 3'),
+  contact_address: addressSchema.optional(),
+  contact_phone: yup.string().optional(),
+  contact_email: yup.string().email('Invalid email').optional(),
 });
 
 export const searchSchema = yup.object({
@@ -217,7 +220,7 @@ export const createAccessSchema = yup.object().shape({
   date_out: yup.date().required('Exit date is required')
     .min(yup.ref('date_in'), 'Exit date must be after entry date'),
   estate_id: yup.string().required('Estate ID is required'),
-  access_type: yup.string().oneOf(['guest', 'resident', 'staff', 'delivery', 'maintenance', 'security', 'others']).required('Access type is required'),
+  access_type: yup.string().oneOf(['guest', 'resident', 'staff', 'delivery', 'maintenance', 'security', 'domestic_staff', 'service', 'others']).required('Access type is required'),
   verification_method: yup.string().oneOf(['RFID', 'QR_code', 'access_code', 'manual_approval']).optional().default('access_code'),
   vehicle_number: yup.string().optional(),
   status: yup.string().oneOf(['approved', 'pending', 'denied', 'cancelled', 'expired']).required('Status is required'),

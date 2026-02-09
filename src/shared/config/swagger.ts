@@ -114,8 +114,21 @@ const options = {
             city: { type: 'string', example: 'Lagos' },
             state: { type: 'string', example: 'Lagos' },
             country: { type: 'string', example: 'Nigeria' },
+            estate_code: { type: 'string', example: 'EST123456' },
             total_number_of_apartments: { type: 'number', example: 200 },
-            status: { type: 'string', enum: ['active', 'inactive'], example: 'active' }
+            total_floors: { type: 'number', example: 10 },
+            total_parking_spaces: { type: 'number', example: 250 },
+            number_of_staff: { type: 'number', example: 20 },
+            status: { type: 'string', enum: ['active', 'inactive', 'under_maintenance', 'suspended', 'pending'], example: 'pending' },
+            contact_phone: { type: 'string', example: '+2348012345678' },
+            contact_email: { type: 'string', example: 'info@sunsetgardens.com' },
+            contact_address: { type: 'string', example: '123 Main St, Lagos, Nigeria' },
+            approval_status: { type: 'string', enum: ['approved', 'pending', 'declined'], example: 'pending' },
+            approved_on: { type: 'string', format: 'date-time', example: '2024-01-15T10:30:00Z' },
+            approved_by: { type: 'string', example: 'admin-user-id' },
+            zip_code: { type: 'string', example: '100001' },
+            created_at: { type: 'string', format: 'date-time', example: '2024-01-15T10:30:00Z' },
+            updated_at: { type: 'string', format: 'date-time', example: '2024-01-15T10:30:00Z' }
           }
         },
         AccessRecord: {
@@ -125,11 +138,53 @@ const options = {
             access_code: { type: 'string', example: 'Dog47' },
             date_in: { type: 'string', format: 'date', example: '2024-01-15' },
             date_out: { type: 'string', format: 'date', example: '2024-01-15' },
-            access_type: { type: 'string', enum: ['guest', 'resident', 'service'], example: 'guest' },
+            access_type: { type: 'string', enum: ['guest', 'resident', 'staff', 'delivery', 'maintenance', 'security', 'domestic_staff', 'service', 'others'], example: 'domestic_staff' },
             is_multi_entry: { type: 'boolean', example: true },
             max_entries: { type: 'number', example: 5 },
             resident_id: { type: 'string' },
             remarks: { type: 'string', example: 'Birthday party guest' }
+          }
+        },
+        PhoneVerification: {
+          type: 'object',
+          required: ['phone'],
+          properties: {
+            phone: { type: 'string', example: '+2348012345678', description: 'Phone number in international format' }
+          }
+        },
+        OTPVerification: {
+          type: 'object',
+          required: ['phone', 'otp'],
+          properties: {
+            phone: { type: 'string', example: '+2348012345678', description: 'Phone number in international format' },
+            otp: { type: 'string', example: '123456', description: '6-digit OTP code' }
+          }
+        },
+        OTPResponse: {
+          type: 'object',
+          properties: {
+            message: { type: 'string', example: 'OTP sent successfully' },
+            expiresIn: { type: 'string', example: '10 minutes' }
+          }
+        },
+        VerificationResponse: {
+          type: 'object',
+          properties: {
+            message: { type: 'string', example: 'Phone verified successfully' },
+            verified: { type: 'boolean', example: true }
+          }
+        },
+        EstateListResponse: {
+          type: 'object',
+          properties: {
+            status: { type: 'string', example: 'success' },
+            message: { type: 'string', example: 'Pending estates retrieved successfully' },
+            data: {
+              type: 'array',
+              items: {
+                $ref: '#/components/schemas/Estate'
+              }
+            }
           }
         },
         SupportTicket: {
@@ -228,6 +283,156 @@ const options = {
             type: { type: 'string', enum: ['resident', 'guest', 'ev_charging'], example: 'resident' },
             is_occupied: { type: 'boolean', example: false },
             hourly_rate: { type: 'number', example: 200 }
+          }
+        }
+      }
+    },
+    paths: {
+      '/auth/phone/send-otp': {
+        post: {
+          tags: ['Authentication'],
+          summary: 'Send OTP for phone verification',
+          description: 'Send a 6-digit OTP code to the provided phone number for verification purposes',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/PhoneVerification'
+                }
+              }
+            }
+          },
+          responses: {
+            '200': {
+              description: 'OTP sent successfully',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/OTPResponse'
+                  }
+                }
+              }
+            },
+            '400': {
+              description: 'Bad request - phone number required',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '500': {
+              description: 'Internal server error',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/auth/phone/verify-otp': {
+        post: {
+          tags: ['Authentication'],
+          summary: 'Verify OTP for phone verification',
+          description: 'Verify the 6-digit OTP code sent to the phone number',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/OTPVerification'
+                }
+              }
+            }
+          },
+          responses: {
+            '200': {
+              description: 'Phone verified successfully',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/VerificationResponse'
+                  }
+                }
+              }
+            },
+            '400': {
+              description: 'Bad request - invalid or expired OTP',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '500': {
+              description: 'Internal server error',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/estate/estates/pending': {
+        get: {
+          tags: ['Estates'],
+          summary: 'Get pending estates',
+          description: 'Retrieve all estates with pending approval status. Requires admin authentication.',
+          security: [{ bearerAuth: [] }],
+          responses: {
+            '200': {
+              description: 'Pending estates retrieved successfully',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/EstateListResponse'
+                  }
+                }
+              }
+            },
+            '401': {
+              description: 'Unauthorized - Invalid or missing authentication token',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '403': {
+              description: 'Forbidden - Insufficient permissions (admin role required)',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '500': {
+              description: 'Internal server error',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            }
           }
         }
       }
