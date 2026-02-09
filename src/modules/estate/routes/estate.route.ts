@@ -1,6 +1,6 @@
 import { Router, Request as ExpressRequest, Response } from 'express';
 import estateController from '../controllers/estate.controller';
-import { authenticateToken } from '../../auth/middleware/auth.middleware';
+import { authenticateToken, requireManager } from '../../auth/middleware/auth.middleware';
 import { verifyUser } from '../../../shared/middleware/verify-user.middleware';
 
 const estateRouter = Router();
@@ -13,6 +13,7 @@ estateRouter.get('/health', (req: ExpressRequest, res: Response) => {
 // Estate routes - Requires authentication and verification
 estateRouter.post('/register', 
   authenticateToken,
+  requireManager,
   verifyUser,
   async (req: ExpressRequest, res: Response) => {
     await estateController.createEstate(req, res);
