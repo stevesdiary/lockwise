@@ -23,10 +23,18 @@ export const options = {
 let authToken = '';
 
 export function setup() {
-  // Login to get auth token
+  // Login to get auth token - credentials should be provided via environment variables
+  const email = __ENV.TEST_EMAIL;
+  const password = __ENV.TEST_PASSWORD;
+  
+  if (!email || !password) {
+    console.error('TEST_EMAIL and TEST_PASSWORD environment variables are required');
+    return { token: '' };
+  }
+  
   const loginRes = http.post(`${BASE_URL}/auth/login`, JSON.stringify({
-    email: 'admin@lockwise.com',
-    password: 'password123'
+    email: email,
+    password: password
   }), {
     headers: { 'Content-Type': 'application/json' },
   });

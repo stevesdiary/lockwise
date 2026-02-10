@@ -265,6 +265,32 @@ const options = {
             longitude: { type: 'number', example: 3.3792 }
           }
         },
+        AddressObject: {
+          type: 'object',
+          properties: {
+            number: { type: 'string', example: '12B', description: 'Plot/House number' },
+            street: { type: 'string', example: 'Palm Avenue', description: 'Street name' },
+            city: { type: 'string', example: 'Lekki', description: 'City name' },
+            country: { type: 'string', example: 'Nigeria', description: 'Country name' }
+          }
+        },
+        EstateCreationRequest: {
+          type: 'object',
+          required: ['name', 'type'],
+          properties: {
+            name: { type: 'string', example: 'Greenfield Estate' },
+            address: { $ref: '#/components/schemas/AddressObject' },
+            type: { type: 'string', enum: ['residential', 'commercial', 'mixed', 'other'], example: 'residential' },
+            state: { type: 'string', example: 'Lagos', description: 'State name (optional, defaults to city if not provided)' },
+            number_of_appartments: { type: 'number', example: 120, description: 'Total number of apartments' },
+            total_number_of_floors: { type: 'number', example: 6, description: 'Total number of floors' },
+            contact_phone: { type: 'string', example: '08012345678' },
+            contact_email: { type: 'string', format: 'email', example: 'estatemanager@mailinator.com' },
+            contact_address: { $ref: '#/components/schemas/AddressObject' },
+            estate_code: { type: 'string', example: 'EST123456', description: 'Custom estate code (optional)' },
+            referral_code: { type: 'string', example: 'REF123', description: 'Referral code (optional)' }
+          }
+        },
         Notification: {
           type: 'object',
           required: ['title', 'message', 'type'],
