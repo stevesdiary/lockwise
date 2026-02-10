@@ -38,9 +38,8 @@ module.exports = {
         type: Sequelize.STRING
       },
       user_type: {
-        type: Sequelize.ENUM('individual', 'organization'),
-        allowNull: true,
-        defaultValue: 'individual'
+        type: Sequelize.STRING,
+        allowNull: true
       },
       reset_token: {
         type: Sequelize.STRING,
