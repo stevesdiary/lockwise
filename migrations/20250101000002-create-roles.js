@@ -9,7 +9,7 @@ module.exports = {
         defaultValue: Sequelize.UUIDV4
       },
       role: {
-        type: Sequelize.ENUM('resident', 'admin', 'manager', 'security', 'super_admin', 'customer_service', 'domestic_staff'),
+        type: Sequelize.ENUM('master', 'admin', 'manager', 'security', 'resident', 'staff', 'customer_support'),
         allowNull: false,
         unique: true
       },

@@ -6,7 +6,7 @@ module.exports = {
       id: { type: Sequelize.UUID, defaultValue: Sequelize.literal('gen_random_uuid()'), primaryKey: true },
       card_uid: { type: Sequelize.STRING(50), allowNull: false, unique: true },
       user_id: { type: Sequelize.UUID, allowNull: false, references: { model: 'users', key: 'id' }, onDelete: 'CASCADE' },
-      estate_id: { type: Sequelize.UUID, allowNull: false, references: { model: 'estates', key: 'id' }, onDelete: 'CASCADE' },
+      estate_id: { type: Sequelize.UUID, allowNull: false, references: { model: 'estates', key: 'estate_id' }, onDelete: 'CASCADE' },
       status: { type: Sequelize.STRING(20), defaultValue: 'active' },
       issued_date: { type: Sequelize.DATEONLY, defaultValue: Sequelize.literal('CURRENT_DATE') },
       expiry_date: { type: Sequelize.DATEONLY },

@@ -4,7 +4,7 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.createTable('amenities', {
       id: { type: Sequelize.UUID, defaultValue: Sequelize.literal('gen_random_uuid()'), primaryKey: true },
-      estate_id: { type: Sequelize.UUID, allowNull: false, references: { model: 'estates', key: 'id' }, onDelete: 'CASCADE' },
+      estate_id: { type: Sequelize.UUID, allowNull: false, references: { model: 'estates', key: 'estate_id' }, onDelete: 'CASCADE' },
       name: { type: Sequelize.STRING(100), allowNull: false },
       description: { type: Sequelize.TEXT },
       type: { type: Sequelize.STRING(50), allowNull: false },

@@ -176,85 +176,108 @@ module.exports = {
         defaultValue: 'vacant'
       }, { transaction });
 
-      // Update unit_type enum
-      await queryInterface.sequelize.query(
-        `ALTER TYPE "enum_units_unit_type" ADD VALUE IF NOT EXISTS 'plot';`,
-        { transaction }
+      // Update unit_type enum - check if enum exists first
+      const enumExists = await queryInterface.sequelize.query(
+        `SELECT 1 FROM pg_type WHERE typname = 'enum_units_unit_type';`,
+        { type: Sequelize.QueryTypes.SELECT, transaction }
       );
-      await queryInterface.sequelize.query(
-        `ALTER TYPE "enum_units_unit_type" ADD VALUE IF NOT EXISTS 'house';`,
-        { transaction }
-      );
-      await queryInterface.sequelize.query(
-        `ALTER TYPE "enum_units_unit_type" ADD VALUE IF NOT EXISTS 'apartment';`,
-        { transaction }
-      );
+
+      if (enumExists.length > 0) {
+        await queryInterface.sequelize.query(
+          `ALTER TYPE "enum_units_unit_type" ADD VALUE IF NOT EXISTS 'plot';`,
+          { transaction }
+        );
+        await queryInterface.sequelize.query(
+          `ALTER TYPE "enum_units_unit_type" ADD VALUE IF NOT EXISTS 'house';`,
+          { transaction }
+        );
+        await queryInterface.sequelize.query(
+          `ALTER TYPE "enum_units_unit_type" ADD VALUE IF NOT EXISTS 'apartment';`,
+          { transaction }
+        );
+      }
 
       // ============ ACCESS LOGS TABLE UPDATES ============
-      await queryInterface.addColumn('access_logs', 'gate_id', {
-        type: Sequelize.UUID,
-        allowNull: true,
-        references: {
-          model: 'gates',
-          key: 'gate_id',
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'SET NULL',
-      }, { transaction });
+      const accessLogColumns = await queryInterface.describeTable('access_logs');
+      
+      if (!accessLogColumns.gate_id) {
+        await queryInterface.addColumn('access_logs', 'gate_id', {
+          type: Sequelize.UUID,
+          allowNull: true,
+          references: {
+            model: 'gates',
+            key: 'gate_id',
+          },
+          onUpdate: 'CASCADE',
+          onDelete: 'SET NULL',
+        }, { transaction });
+      }
 
-      await queryInterface.addColumn('access_logs', 'unit_id', {
-        type: Sequelize.UUID,
-        allowNull: true,
-        references: {
-          model: 'units',
-          key: 'id',
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'SET NULL',
-      }, { transaction });
+      if (!accessLogColumns.unit_id) {
+        await queryInterface.addColumn('access_logs', 'unit_id', {
+          type: Sequelize.UUID,
+          allowNull: true,
+          references: {
+            model: 'units',
+            key: 'id',
+          },
+          onUpdate: 'CASCADE',
+          onDelete: 'SET NULL',
+        }, { transaction });
+      }
 
-      await queryInterface.addColumn('access_logs', 'entry_gate_id', {
-        type: Sequelize.UUID,
-        allowNull: true,
-        references: {
-          model: 'gates',
-          key: 'gate_id',
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'SET NULL',
-      }, { transaction });
+      if (!accessLogColumns.entry_gate_id) {
+        await queryInterface.addColumn('access_logs', 'entry_gate_id', {
+          type: Sequelize.UUID,
+          allowNull: true,
+          references: {
+            model: 'gates',
+            key: 'gate_id',
+          },
+          onUpdate: 'CASCADE',
+          onDelete: 'SET NULL',
+        }, { transaction });
+      }
 
-      await queryInterface.addColumn('access_logs', 'exit_gate_id', {
-        type: Sequelize.UUID,
-        allowNull: true,
-        references: {
-          model: 'gates',
-          key: 'gate_id',
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'SET NULL',
-      }, { transaction });
+      if (!accessLogColumns.exit_gate_id) {
+        await queryInterface.addColumn('access_logs', 'exit_gate_id', {
+          type: Sequelize.UUID,
+          allowNull: true,
+          references: {
+            model: 'gates',
+            key: 'gate_id',
+          },
+          onUpdate: 'CASCADE',
+          onDelete: 'SET NULL',
+        }, { transaction });
+      }
 
-      await queryInterface.addColumn('access_logs', 'verification_method', {
-        type: Sequelize.ENUM('rfid', 'qr_code', 'access_code', 'biometric', 'manual'),
-        allowNull: true,
-      }, { transaction });
+      if (!accessLogColumns.verification_method) {
+        await queryInterface.addColumn('access_logs', 'verification_method', {
+          type: Sequelize.ENUM('rfid', 'qr_code', 'access_code', 'biometric', 'manual'),
+          allowNull: true,
+        }, { transaction });
+      }
 
-      await queryInterface.addColumn('access_logs', 'scanned_by', {
-        type: Sequelize.UUID,
-        allowNull: true,
-        references: {
-          model: 'users',
-          key: 'id',
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'SET NULL',
-      }, { transaction });
+      if (!accessLogColumns.scanned_by) {
+        await queryInterface.addColumn('access_logs', 'scanned_by', {
+          type: Sequelize.UUID,
+          allowNull: true,
+          references: {
+            model: 'users',
+            key: 'id',
+          },
+          onUpdate: 'CASCADE',
+          onDelete: 'SET NULL',
+        }, { transaction });
+      }
 
-      await queryInterface.addColumn('access_logs', 'visitor_details', {
-        type: Sequelize.JSONB,
-        allowNull: true,
-      }, { transaction });
+      if (!accessLogColumns.visitor_details) {
+        await queryInterface.addColumn('access_logs', 'visitor_details', {
+          type: Sequelize.JSONB,
+          allowNull: true,
+        }, { transaction });
+      }
 
       // Add indexes
       await queryInterface.addIndex('access_logs', ['gate_id'], {

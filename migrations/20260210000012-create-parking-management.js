@@ -4,7 +4,7 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.createTable('parking_slots', {
       id: { type: Sequelize.UUID, defaultValue: Sequelize.literal('gen_random_uuid()'), primaryKey: true },
-      estate_id: { type: Sequelize.UUID, allowNull: false, references: { model: 'estates', key: 'id' }, onDelete: 'CASCADE' },
+      estate_id: { type: Sequelize.UUID, allowNull: false, references: { model: 'estates', key: 'estate_id' }, onDelete: 'CASCADE' },
       slot_number: { type: Sequelize.STRING(20), allowNull: false },
       slot_type: { type: Sequelize.STRING(20), defaultValue: 'regular' },
       location: { type: Sequelize.STRING(100) },
@@ -59,7 +59,7 @@ module.exports = {
       rate_per_kwh: { type: Sequelize.DECIMAL(10, 2), defaultValue: 50.00 },
       total_cost: { type: Sequelize.DECIMAL(10, 2) },
       payment_status: { type: Sequelize.STRING(20), defaultValue: 'pending' },
-      payment_id: { type: Sequelize.UUID, references: { model: 'payments', key: 'id' } },
+      payment_id: { type: Sequelize.UUID, references: { model: 'payments', key: 'payment_id' } },
       status: { type: Sequelize.STRING(20), defaultValue: 'active' },
       created_at: { type: Sequelize.DATE, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
       updated_at: { type: Sequelize.DATE, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') }

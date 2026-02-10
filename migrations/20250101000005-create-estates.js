@@ -104,13 +104,7 @@ module.exports = {
       },
       created_by: {
         type: Sequelize.UUID,
-        allowNull: true,
-        references: {
-          model: 'users',
-          key: 'id'
-        },
-        onDelete: 'SET NULL',
-        onUpdate: 'CASCADE'
+        allowNull: true
       },
 
       total_floors: {
