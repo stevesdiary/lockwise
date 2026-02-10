@@ -6,12 +6,6 @@ const { type } = require('os');
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
-    /**
-     * Add altering commands here.
-     *
-     * Example:
-     * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
-     */
     await queryInterface.createTable('users', {
       id: {
         type: Sequelize.UUID,
@@ -42,6 +36,32 @@ module.exports = {
       },
       status: {
         type: Sequelize.STRING
+      },
+      user_type: {
+        type: Sequelize.ENUM('individual', 'organization'),
+        allowNull: true,
+        defaultValue: 'individual'
+      },
+      reset_token: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      reset_token_expires: {
+        type: Sequelize.DATE,
+        allowNull: true
+      },
+      verification_code: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      verification_expires: {
+        type: Sequelize.DATE,
+        allowNull: true
+      },
+      google_id: {
+        type: Sequelize.STRING,
+        allowNull: true,
+        unique: true
       },
       role_id: {
         type: Sequelize.UUID,
@@ -78,12 +98,6 @@ module.exports = {
   },
 
   async down (queryInterface, Sequelize) {
-    /**
-     * Add reverting commands here.
-     *
-     * Example:
-     * await queryInterface.dropTable('users');
-     */
     await queryInterface.dropTable('users');
   }
 };

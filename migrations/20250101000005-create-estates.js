@@ -102,6 +102,16 @@ module.exports = {
         type: Sequelize.UUID,
         allowNull: true
       },
+      created_by: {
+        type: Sequelize.UUID,
+        allowNull: true,
+        references: {
+          model: 'users',
+          key: 'id'
+        },
+        onDelete: 'SET NULL',
+        onUpdate: 'CASCADE'
+      },
 
       total_floors: {
         type: Sequelize.INTEGER
