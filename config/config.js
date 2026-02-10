@@ -17,12 +17,13 @@ module.exports = {
     password: process.env.DEV_DB_PASSWORD,
     database: process.env.DEV_DB_NAME,
     port: process.env.DEV_DB_PORT || 5432,
-    dialectOptions: {
-      ssl: process.env.SSL === 'true' ? {
+    dialectOptions: process.env.SSL === 'true' ? {
+      ssl: {
         require: true,
-        rejectUnauthorized: false
-      } : false
-    }
+        rejectUnauthorized: true,
+        ca: process.env.DB_SSL_CA
+      }
+    } : {}
   },
   
   production: {
