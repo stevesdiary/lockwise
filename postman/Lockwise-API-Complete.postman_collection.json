@@ -6,27 +6,2401 @@
     "version": "1.0.0"
   },
   "variable": [
-    {"key": "baseUrl", "value": "http://localhost:3001/api/v1"},
-    {"key": "accessToken", "value": ""}
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001/api/v1"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "estateId",
+      "value": ""
+    },
+    {
+      "key": "userId",
+      "value": ""
+    },
+    {
+      "key": "accessId",
+      "value": ""
+    },
+    {
+      "key": "gateId",
+      "value": ""
+    },
+    {
+      "key": "paymentId",
+      "value": ""
+    },
+    {
+      "key": "reference",
+      "value": ""
+    },
+    {
+      "key": "planId",
+      "value": ""
+    },
+    {
+      "key": "referralCode",
+      "value": ""
+    },
+    {
+      "key": "referrerId",
+      "value": ""
+    },
+    {
+      "key": "bonusId",
+      "value": ""
+    },
+    {
+      "key": "amenityId",
+      "value": ""
+    },
+    {
+      "key": "reservationId",
+      "value": ""
+    },
+    {
+      "key": "guestParkingId",
+      "value": ""
+    },
+    {
+      "key": "slotId",
+      "value": ""
+    },
+    {
+      "key": "sessionId",
+      "value": ""
+    },
+    {
+      "key": "ticketId",
+      "value": ""
+    },
+    {
+      "key": "chatId",
+      "value": ""
+    },
+    {
+      "key": "alertId",
+      "value": ""
+    },
+    {
+      "key": "postId",
+      "value": ""
+    },
+    {
+      "key": "faqId",
+      "value": ""
+    },
+    {
+      "key": "roleId",
+      "value": ""
+    },
+    {
+      "key": "permissionId",
+      "value": ""
+    },
+    {
+      "key": "keyId",
+      "value": ""
+    },
+    {
+      "key": "addressId",
+      "value": ""
+    },
+    {
+      "key": "templateType",
+      "value": "estates"
+    },
+    {
+      "key": "google_code",
+      "value": ""
+    }
   ],
   "auth": {
     "type": "bearer",
-    "bearer": [{"key": "token", "value": "{{accessToken}}"}]
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}"
+      }
+    ]
   },
   "item": [
     {
-      "name": "Users",
+      "name": "Auth",
       "item": [
         {
           "name": "Register User",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "{{baseUrl}}/user/register",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"email\": \"user@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"confirm_password\": \"SecurePass123!\"\n}"
+              "raw": "{\n  \"title\": \"Mr\",\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"email\": \"user@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"confirm_password\": \"SecurePass123!\",\n  \"phone\": \"08012345678\",\n  \"role\": \"manager\"\n}"
             },
-            "url": "{{baseUrl}}/user/register"
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Verify User",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/user/verify",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"code\": \"123456\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/user/all?estate_id={{estateId}}"
+          }
+        },
+        {
+          "name": "Get User",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/user/one/{{userId}}"
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/user/delete/{{userId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estate_id\": \"{{estateId}}\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Send OTP",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/phone/send-otp",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+2348012345678\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Verify OTP",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/phone/verify-otp",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+2348012345678\",\n  \"otp\": \"123456\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"SecurePass123!\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/logout",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Password Reset Request",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/password/request",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Password Reset",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/password/reset",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"reset-token\",\n  \"password\": \"NewSecurePass123!\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Google OAuth URL",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/auth/google/google/url"
+          }
+        },
+        {
+          "name": "Google OAuth Callback",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/auth/google/google/callback?code={{google_code}}"
+          }
+        },
+        {
+          "name": "Link Google Account",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/google/google/link",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"google_code\": \"{{google_code}}\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Unlink Google Account",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/auth/google/google/unlink"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Estate",
+      "item": [
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/estate/health"
+          }
+        },
+        {
+          "name": "Register Estate",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/estate/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Greenfield Estate\",\n  \"address\": {\n    \"number\": \"12B\",\n    \"street\": \"Palm Avenue\",\n    \"city\": \"Lekki\",\n    \"country\": \"Nigeria\"\n  },\n  \"type\": \"residential\",\n  \"number_of_appartments\": 120,\n  \"total_number_of_floors\": 6\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "List Estates",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/estate/estates"
+          }
+        },
+        {
+          "name": "Get Estate",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/estate/one/{{estateId}}"
+          }
+        },
+        {
+          "name": "Get Pending Estates",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/estate/estates/pending",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Approve Estate",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/estate/estates/{{estateId}}/approve",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Update Estate",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/estate/update/{{estateId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Greenfield Estate Phase 2\",\n  \"address\": \"Palm Avenue\",\n  \"city\": \"Lekki\",\n  \"state\": \"Lagos\",\n  \"country\": \"Nigeria\",\n  \"number_of_appartments\": 150,\n  \"number_of_floors\": 8\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Delete Estate",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/estate/delete/{{estateId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Access",
+      "item": [
+        {
+          "name": "Create Access Request",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/access",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"scheduled_entry_date\": \"2026-02-10T10:00:00Z\",\n  \"scheduled_exit_date\": \"2026-02-10T12:00:00Z\",\n  \"access_type\": \"domestic_staff\",\n  \"valid_from\": \"2026-02-10T00:00:00Z\",\n  \"valid_until\": \"2026-03-03T23:59:59Z\",\n  \"vehicle_number\": \"ABC-1234\",\n  \"remarks\": \"3-week domestic staff access - unlimited entries\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Get All Access",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/access/all?status=&limit=50&offset=0"
+          }
+        },
+        {
+          "name": "Get Active Access",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/access/active?user_id={{userId}}&estate_id={{estateId}}"
+          }
+        },
+        {
+          "name": "Approve Access",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/access/{{accessId}}/approve",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Record Entry",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/access/{{accessId}}/entry",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gate_id\": \"{{gateId}}\",\n  \"scanned_by\": \"{{userId}}\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Record Exit",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/access/{{accessId}}/exit",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Process Code Scan",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/access/scan",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"ABC123\",\n  \"gate_id\": \"{{gateId}}\",\n  \"scanned_by\": \"{{userId}}\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Get Entry Statistics",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/access/{{accessId}}/statistics"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Access Codes",
+      "item": [
+        {
+          "name": "Generate Access Code",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/access-codes/generate",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Validate Access Code",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/access-codes/validate",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"access_code\": \"ABC123\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "NFC",
+      "item": [
+        {
+          "name": "Validate Access",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/nfc/validate",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"card_uid\": \"04AABBCCDD\",\n  \"access_point\": \"Gate A\",\n  \"access_type\": \"resident\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "My Card",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/nfc/my-card"
+          }
+        },
+        {
+          "name": "My History",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/nfc/my-history"
+          }
+        },
+        {
+          "name": "Report Lost",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/nfc/report-lost",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "Initiate Payment",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/payment/initiate",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 5000,\n  \"email\": \"user@example.com\",\n  \"currency\": \"NGN\",\n  \"paymentProvider\": \"paystack\",\n  \"paymentMethod\": \"card\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Verify Payment",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/payment/verify/{{reference}}"
+          }
+        },
+        {
+          "name": "List Payments",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/payment/all?page=1&limit=50&status="
+          }
+        },
+        {
+          "name": "Get Payment By ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/payment/id/{{paymentId}}"
+          }
+        },
+        {
+          "name": "Get Payment By Reference",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/payment/ref/{{reference}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Plans",
+      "item": [
+        {
+          "name": "List Plans",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/plan"
+          }
+        },
+        {
+          "name": "Get Plan",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/plan/{{planId}}"
+          }
+        },
+        {
+          "name": "Create Plan",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/plan",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Premium\",\n  \"description\": \"Full access plan\",\n  \"billing_cycle\": \"monthly\",\n  \"category\": \"premium\",\n  \"price\": 20000,\n  \"price_paid\": 0,\n  \"currency\": \"NGN\",\n  \"features\": {\n    \"access\": [\n      \"access_code\",\n      \"nfc\"\n    ],\n    \"amenities\": [\n      \"gym\",\n      \"pool\"\n    ],\n    \"services\": [\n      \"customer_support\"\n    ]\n  }\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Update Plan",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/plan/{{planId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated description\",\n  \"price\": 25000\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Delete Plan",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/plan/{{planId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Referrals",
+      "item": [
+        {
+          "name": "Register Referrer",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/referral/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Doe\",\n  \"phone\": \"08012345678\",\n  \"email\": \"jane@example.com\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Get Referrer",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/referral/{{referralCode}}"
+          }
+        },
+        {
+          "name": "List Referrers",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/referral"
+          }
+        },
+        {
+          "name": "Delete Referrer",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/referral/delete/{{referrerId}}"
+          }
+        },
+        {
+          "name": "Get Unpaid Bonuses",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/referral/bonuses/unpaid"
+          }
+        },
+        {
+          "name": "Get Referrer Bonuses",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/referral/referrer/{{referrerId}}/bonuses"
+          }
+        },
+        {
+          "name": "Mark Bonus As Paid",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/referral/bonuses/{{bonusId}}/pay",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payment_reference\": \"PAY_REF_123\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Webhooks",
+      "item": [
+        {
+          "name": "Paystack Webhook",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/webhooks/paystack",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event\": \"charge.success\",\n  \"data\": {\n    \"reference\": \"PAYSTACK_REF\"\n  }\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Flutterwave Webhook",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/webhooks/flutterwave",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event\": \"charge.completed\",\n  \"data\": {\n    \"tx_ref\": \"FLW_REF\"\n  }\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Amenities",
+      "item": [
+        {
+          "name": "Get Estate Amenities",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/amenities/estate/{{estateId}}"
+          }
+        },
+        {
+          "name": "Create Amenity",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/amenities/estate/{{estateId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Swimming Pool\",\n  \"description\": \"Olympic size pool\",\n  \"type\": \"pool\",\n  \"capacity\": 40,\n  \"hourly_rate\": 2000,\n  \"status\": \"active\",\n  \"operating_hours\": {\n    \"open\": \"08:00\",\n    \"close\": \"20:00\"\n  },\n  \"rules\": \"No diving\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Update Amenity",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/amenities/{{amenityId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated description\",\n  \"status\": \"active\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Delete Amenity",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/amenities/{{amenityId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reservations",
+      "item": [
+        {
+          "name": "Create Reservation",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/reservations",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amenity_id\": \"{{amenityId}}\",\n  \"start_time\": \"2026-02-10T10:00:00Z\",\n  \"end_time\": \"2026-02-10T12:00:00Z\",\n  \"guests_count\": 2,\n  \"notes\": \"Birthday party\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "My Reservations",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/reservations/my"
+          }
+        },
+        {
+          "name": "Cancel Reservation",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/reservations/{{reservationId}}/cancel",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Change of plans\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Get Available Slots",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/reservations/amenities/{{amenityId}}/available?date=2026-02-10"
+          }
+        },
+        {
+          "name": "Get Estate Reservations",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/reservations/estate/{{estateId}}?start_date=2026-02-01&end_date=2026-02-28"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Parking",
+      "item": [
+        {
+          "name": "My Slot",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/parking/my-slot"
+          }
+        },
+        {
+          "name": "Release Slot To Guest",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/parking/guest-release",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"guest_name\": \"Visitor One\",\n  \"guest_phone\": \"08012345678\",\n  \"guest_vehicle_plate\": \"ABC-1234\",\n  \"start_time\": \"2026-02-10T10:00:00Z\",\n  \"end_time\": \"2026-02-10T12:00:00Z\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "My Guest Parkings",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/parking/guest-parkings"
+          }
+        },
+        {
+          "name": "Cancel Guest Parking",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/parking/guest-parkings/{{guestParkingId}}/cancel",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Estate Slots",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/parking/estate/{{estateId}}/slots"
+          }
+        }
+      ]
+    },
+    {
+      "name": "EV Charging",
+      "item": [
+        {
+          "name": "Get Charging Slots",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/ev-charging/estate/{{estateId}}/slots"
+          }
+        },
+        {
+          "name": "Start Session",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/ev-charging/sessions/start",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slot_id\": \"{{slotId}}\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Stop Session",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/ev-charging/sessions/{{sessionId}}/stop",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"energy_consumed\": 12.5\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "My Sessions",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/ev-charging/sessions/my"
+          }
+        },
+        {
+          "name": "Active Session",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/ev-charging/sessions/active"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Support",
+      "item": [
+        {
+          "name": "Create Ticket",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/support/tickets",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subject\": \"Access issue\",\n  \"description\": \"Cannot generate access code\",\n  \"category\": \"access\",\n  \"priority\": \"high\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "My Tickets",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/support/tickets/my"
+          }
+        },
+        {
+          "name": "Get Ticket Messages",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/support/tickets/{{ticketId}}/messages"
+          }
+        },
+        {
+          "name": "Send Ticket Message",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/support/tickets/{{ticketId}}/messages",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Any update?\",\n  \"is_internal\": false\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Open Tickets",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/support/tickets/open"
+          }
+        },
+        {
+          "name": "Assigned Tickets",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/support/tickets/assigned"
+          }
+        },
+        {
+          "name": "Assign Ticket",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/support/tickets/{{ticketId}}/assign",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Update Ticket Status",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/support/tickets/{{ticketId}}/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"in_progress\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Support",
+      "item": [
+        {
+          "name": "All Tickets",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/support/tickets?status=&priority=&category=&page=1&limit=20"
+          }
+        },
+        {
+          "name": "Assign Ticket",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/admin/support/tickets/{{ticketId}}/assign",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assigned_to\": \"{{userId}}\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Update Ticket Status",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/admin/support/tickets/{{ticketId}}/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"resolved\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Add Admin Message",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/admin/support/tickets/{{ticketId}}/messages",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"We are on it\",\n  \"is_internal\": true\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Ticket Stats",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/support/stats"
+          }
+        },
+        {
+          "name": "Search Tickets",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/support/search?query=access"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Send Test Email",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/notifications/test/email",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"name\": \"John Doe\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Send Test SMS",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/notifications/test/sms",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"08012345678\",\n  \"name\": \"John Doe\",\n  \"code\": \"123456\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Test Email Connection",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/notifications/test/email-connection"
+          }
+        },
+        {
+          "name": "Queue Stats",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/notifications/queue/stats"
+          }
+        },
+        {
+          "name": "Send Bulk Notification",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/notifications/bulk",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipients\": [\n    {\n      \"name\": \"John Doe\",\n      \"email\": \"john@example.com\"\n    },\n    {\n      \"name\": \"Jane Doe\",\n      \"phone\": \"08012345678\"\n    }\n  ],\n  \"type\": \"email\",\n  \"template\": \"welcome\",\n  \"data\": {\n    \"title\": \"Welcome\"\n  },\n  \"priority\": \"normal\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Chat",
+      "item": [
+        {
+          "name": "Create Support Chat",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/chat/create",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"subject\": \"Issue with access\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Send Message",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/chat/send",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"chatId\": \"{{chatId}}\",\n  \"message\": \"Hello\",\n  \"senderId\": \"{{userId}}\",\n  \"type\": \"user\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Chat History",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/chat/history/{{chatId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Emergency",
+      "item": [
+        {
+          "name": "Create Alert",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/emergency/alerts",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"medical\",\n  \"description\": \"Need assistance\",\n  \"location\": \"Block A, Flat 2\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Get Alerts",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/emergency/alerts?status=open"
+          }
+        },
+        {
+          "name": "Resolve Alert",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/emergency/alerts/{{alertId}}/resolve",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Get Contacts",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/emergency/contacts"
+          }
+        },
+        {
+          "name": "Create Contact",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/emergency/contacts",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Local Police\",\n  \"type\": \"police\",\n  \"phone\": \"112\",\n  \"email\": \"police@example.com\",\n  \"address\": \"Central Station\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Setup Default Contacts",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/emergency/contacts/setup-defaults",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Community",
+      "item": [
+        {
+          "name": "Get Posts",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/community/posts?type=&limit=50"
+          }
+        },
+        {
+          "name": "Create Post",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/community/posts",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"announcement\",\n  \"title\": \"Maintenance Notice\",\n  \"content\": \"Water supply will be off on Friday.\",\n  \"attachments\": []\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Add Comment",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/community/posts/{{postId}}/comments",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Thanks for the update.\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Get Chat",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/community/chat?limit=100"
+          }
+        },
+        {
+          "name": "Send Chat Message",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/community/chat",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Hello neighbors!\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Create Announcement",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/community/announcements",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Security Update\",\n  \"content\": \"Please update your access codes.\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Create Meeting",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/community/meetings",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Residents Meeting\",\n  \"content\": \"Monthly meeting\",\n  \"meeting_date\": \"2026-02-15T18:00:00Z\",\n  \"meeting_link\": \"https://meet.example.com/room\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "FAQs",
+      "item": [
+        {
+          "name": "Get FAQs",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/faqs?category=&search="
+          }
+        },
+        {
+          "name": "Create FAQ",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/faqs",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"How do I reset my password?\",\n  \"answer\": \"Use the password reset flow.\",\n  \"category\": \"account\",\n  \"order_index\": 1\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Update FAQ",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/faqs/{{faqId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"How do I reset my password?\",\n  \"answer\": \"Go to the reset page.\",\n  \"category\": \"account\",\n  \"is_active\": true,\n  \"order_index\": 1\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Delete FAQ",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/faqs/{{faqId}}"
+          }
+        },
+        {
+          "name": "Admin FAQs",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/faqs/admin"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "item": [
+        {
+          "name": "Dashboard",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/analytics/dashboard?days=30"
+          }
+        },
+        {
+          "name": "User Analytics",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/analytics/user/{{userId}}?days=30"
+          }
+        },
+        {
+          "name": "Performance Report",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/analytics/performance"
+          }
+        },
+        {
+          "name": "System Status",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/analytics/system"
+          }
+        },
+        {
+          "name": "Track Event",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/analytics/track",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event\": \"button_click\",\n  \"properties\": {\n    \"screen\": \"home\",\n    \"label\": \"cta\"\n  }\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Revenue (Legacy)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/analytics/revenue"
+          }
+        },
+        {
+          "name": "Stats (Legacy)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/analytics/stats"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Admin Overview",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/dashboard/admin/overview"
+          }
+        },
+        {
+          "name": "Admin Payments",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/dashboard/admin/payments"
+          }
+        },
+        {
+          "name": "Admin Users",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/dashboard/admin/users"
+          }
+        },
+        {
+          "name": "Admin Access Logs",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/dashboard/admin/access-logs"
+          }
+        },
+        {
+          "name": "Admin Analytics",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/dashboard/admin/analytics"
+          }
+        },
+        {
+          "name": "Manager Overview",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/dashboard/manager/{{estateId}}/overview"
+          }
+        },
+        {
+          "name": "Manager Residents",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/dashboard/manager/{{estateId}}/residents"
+          }
+        },
+        {
+          "name": "Manager Access Logs",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/dashboard/manager/{{estateId}}/access-logs"
+          }
+        },
+        {
+          "name": "Manager Payments",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/dashboard/manager/{{estateId}}/payments"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Dashboard",
+      "item": [
+        {
+          "name": "Dashboard Home",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/dashboard/"
+          }
+        },
+        {
+          "name": "Estates",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/dashboard/estates"
+          }
+        },
+        {
+          "name": "Resident Stats",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/dashboard/stats/residents"
+          }
+        },
+        {
+          "name": "Access Code Stats",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/dashboard/stats/access-codes"
+          }
+        },
+        {
+          "name": "Referrer Stats",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/dashboard/stats/referrers"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Monitoring",
+      "item": [
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/monitoring/health"
+          }
+        },
+        {
+          "name": "Metrics",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/monitoring/metrics"
+          }
+        },
+        {
+          "name": "Reset Metrics",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/monitoring/metrics/reset",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Upload",
+      "item": [
+        {
+          "name": "Upload File",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/upload/upload",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                },
+                {
+                  "key": "tenant_id",
+                  "type": "text",
+                  "value": "{{estateId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Test Upload",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/upload/test-upload",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Files",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/upload/files?tenant_id={{estateId}}"
+          }
+        },
+        {
+          "name": "Get Test Files",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/upload/test-files"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bulk Upload",
+      "item": [
+        {
+          "name": "Bulk Upload Estates",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/bulk-upload/estates",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Bulk Upload Residents",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/bulk-upload/residents",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Bulk Upload Addresses",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/bulk-upload/addresses",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                },
+                {
+                  "key": "estateId",
+                  "type": "text",
+                  "value": "{{estateId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Upload Template",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/bulk-upload/template/{{templateType}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Location",
+      "item": [
+        {
+          "name": "Update Address Location",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/address/location/{{addressId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"latitude\": 6.5244,\n  \"longitude\": 3.3792,\n  \"formatted_address\": \"Lagos, Nigeria\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Get Address Location",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/address/location/{{addressId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mobile",
+      "item": [
+        {
+          "name": "Register Device",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/mobile/device/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"deviceId\": \"device-123\",\n  \"fcmToken\": \"fcm-token\",\n  \"platform\": \"android\",\n  \"appVersion\": \"1.0.0\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Sync Data",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/mobile/sync?lastSync=2026-02-01T00:00:00Z"
+          }
+        },
+        {
+          "name": "Upload Pending Changes",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/mobile/sync/upload",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"changes\": [\n    {\n      \"action\": \"create\",\n      \"data\": {\n        \"type\": \"note\",\n        \"text\": \"Offline change\"\n      }\n    }\n  ]\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Generate Deep Link",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/mobile/deep-link",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"access_code\",\n  \"params\": {\n    \"codeId\": \"code_123\",\n    \"code\": \"ABC123\"\n  }\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Test Push Notification",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/mobile/push/test",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Test\",\n  \"body\": \"Push notification test\",\n  \"data\": {\n    \"key\": \"value\"\n  }\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Register Admin",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/admin/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Admin\",\n  \"last_name\": \"User\",\n  \"email\": \"admin@example.com\",\n  \"phone\": \"08012345678\",\n  \"password\": \"SecurePass123!\",\n  \"admin_secret\": \"SECRET_KEY\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Create Agent",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/admin/agents/create",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Support\",\n  \"last_name\": \"Agent\",\n  \"email\": \"agent@example.com\",\n  \"phone\": \"08012345678\",\n  \"password\": \"SecurePass123!\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Roles",
+      "item": [
+        {
+          "name": "List Roles",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/role/all"
+          }
+        },
+        {
+          "name": "Create Role",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/role/create",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"manager\",\n  \"description\": \"Estate manager role\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Get Role",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/role/{{roleId}}"
+          }
+        },
+        {
+          "name": "Update Role",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/role/update/{{roleId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"manager\",\n  \"description\": \"Updated role description\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Delete Role",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/role/delete/{{roleId}}"
+          }
+        },
+        {
+          "name": "Assign Permissions",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/role/assign-permissions/{{roleId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permission_ids\": [\n    \"{{permissionId}}\"\n  ]\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Permissions",
+      "item": [
+        {
+          "name": "Create Permission",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/permission/create",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permission\": \"support.tickets.update\",\n  \"description\": \"Can update support tickets\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "List Permissions",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/permission/all"
+          }
+        },
+        {
+          "name": "Get Permission",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/permission/{{permissionId}}"
+          }
+        },
+        {
+          "name": "Update Permission",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/permission/{{permissionId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permission\": \"support.tickets.update\",\n  \"description\": \"Updated description\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Delete Permission",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/permission/{{permissionId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "API Keys",
+      "item": [
+        {
+          "name": "Generate API Key",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api-key/generate",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Integration Key\",\n  \"permissions\": [\n    \"payments.read\",\n    \"users.read\"\n  ]\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "List API Keys",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api-key/list"
+          }
+        },
+        {
+          "name": "Revoke API Key",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api-key/{{keyId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Config",
+      "item": [
+        {
+          "name": "Map Config",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/config/map"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Legal",
+      "item": [
+        {
+          "name": "Terms & Conditions",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/legal/terms"
+          }
+        },
+        {
+          "name": "Privacy Policy",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/legal/privacy"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Legacy",
+      "item": [
+        {
+          "name": "Legacy Login",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/log/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"SecurePass123!\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Legacy Logout",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/log/logout",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Legacy Password Reset Request",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/log/password/request",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Legacy Password Reset",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/log/password/reset",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"reset-token\",\n  \"password\": \"NewSecurePass123!\"\n}"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
           }
         }
       ]

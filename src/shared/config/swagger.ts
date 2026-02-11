@@ -187,6 +187,16 @@ const options = {
             }
           }
         },
+        EstateApprovalResponse: {
+          type: 'object',
+          properties: {
+            status: { type: 'string', example: 'success' },
+            message: { type: 'string', example: 'Estate approved successfully' },
+            data: {
+              $ref: '#/components/schemas/Estate'
+            }
+          }
+        },
         SupportTicket: {
           type: 'object',
           required: ['subject', 'description', 'priority'],
@@ -282,8 +292,52 @@ const options = {
             address: { $ref: '#/components/schemas/AddressObject' },
             type: { type: 'string', enum: ['residential', 'commercial', 'mixed', 'other'], example: 'residential' },
             state: { type: 'string', example: 'Lagos', description: 'State name (optional, defaults to city if not provided)' },
+            country: { type: 'string', example: 'Nigeria', description: 'Country name' },
+            country_code: { type: 'string', example: 'NG', description: 'ISO country code (2 letters)', default: 'NG' },
+            timezone: { type: 'string', example: 'Africa/Lagos', description: 'Timezone identifier', default: 'Africa/Lagos' },
+            currency_code: { type: 'string', example: 'NGN', description: 'ISO currency code (3 letters)', default: 'NGN' },
             number_of_appartments: { type: 'number', example: 120, description: 'Total number of apartments' },
             total_number_of_floors: { type: 'number', example: 6, description: 'Total number of floors' },
+            postal_code: { type: 'string', example: '100001', description: 'Postal/ZIP code' },
+            plus_code: { type: 'string', example: '6FRW+C2 Lagos, Nigeria', description: 'Google Plus Code' },
+            digital_address: { type: 'string', example: 'GA-123-4567', description: 'Digital address (Ghana specific)' },
+            landmark: { type: 'string', example: 'Near Central Park', description: 'Landmark for easier location identification' },
+            coordinates: {
+              type: 'object',
+              properties: {
+                lat: { type: 'number', example: 6.4572, description: 'Latitude coordinate' },
+                lng: { type: 'number', example: 3.3928, description: 'Longitude coordinate' }
+              },
+              description: 'Geographic coordinates (both lat and lng required if provided)'
+            },
+            access_points: {
+              type: 'array',
+              items: {
+                type: 'object',
+                required: ['gate_name', 'type'],
+                properties: {
+                  gate_name: { type: 'string', example: 'Main Entrance', description: 'Name of the access point/gate' },
+                  type: { type: 'string', example: 'vehicle', description: 'Type of access point' },
+                  is_active: { type: 'boolean', example: true, description: 'Whether the access point is active', default: true }
+                }
+              },
+              description: 'List of estate access points/gates'
+            },
+            geo_fencing: {
+              type: 'object',
+              properties: {
+                center: {
+                  type: 'object',
+                  properties: {
+                    lat: { type: 'number', example: 6.4572, description: 'Center latitude' },
+                    lng: { type: 'number', example: 3.3928, description: 'Center longitude' }
+                  },
+                  description: 'Center coordinates for geofencing (both required if provided)'
+                },
+                radius_meters: { type: 'number', example: 500, description: 'Radius in meters for geofencing' }
+              },
+              description: 'Geofencing configuration (requires complete center coordinates)'
+            },
             contact_phone: { type: 'string', example: '08012345678' },
             contact_email: { type: 'string', format: 'email', example: 'estatemanager@mailinator.com' },
             contact_address: { $ref: '#/components/schemas/AddressObject' },
@@ -441,6 +495,87 @@ const options = {
             },
             '403': {
               description: 'Forbidden - Insufficient permissions (admin role required)',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '500': {
+              description: 'Internal server error',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/estate/estates/{estateId}/approve': {
+        patch: {
+          tags: ['Estates'],
+          summary: 'Approve estate',
+          description: 'Approve a pending estate registration. Requires admin authentication.',
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            {
+              name: 'estateId',
+              in: 'path',
+              required: true,
+              schema: {
+                type: 'string'
+              },
+              description: 'ID of the estate to approve'
+            }
+          ],
+          responses: {
+            '200': {
+              description: 'Estate approved successfully',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/EstateApprovalResponse'
+                  }
+                }
+              }
+            },
+            '400': {
+              description: 'Bad request - estate ID required',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '401': {
+              description: 'Unauthorized - Invalid or missing authentication token',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '403': {
+              description: 'Forbidden - Insufficient permissions (admin role required)',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '404': {
+              description: 'Not found - Estate not found',
               content: {
                 'application/json': {
                   schema: {
