@@ -143,10 +143,38 @@ export const createEstateSchema = yup.object().shape({
   estate_code: yup.string().optional(),
   number_of_appartments: yup.number().optional()
     .min(1, 'Number of apartments must be at least 1'),
-  total_number_of_floors: yup.number().optional().min(3, 'Number of floors must be at least 3'),
+  total_number_of_floors: yup.number().optional().min(1, 'Number of floors must be at least 1'),
+  state: yup.string().optional(),
+  country: yup.string().optional(),
+  country_code: yup.string().length(2).optional().default('NG'),
+  timezone: yup.string().optional().default('Africa/Lagos'),
+  currency_code: yup.string().length(3).optional().default('NGN'),
   contact_address: addressSchema.optional(),
   contact_phone: yup.string().optional(),
   contact_email: yup.string().email('Invalid email').optional(),
+  referral_code: yup.string().optional(),
+  postal_code: yup.string().optional(),
+  plus_code: yup.string().optional(),
+  digital_address: yup.string().optional(),
+  landmark: yup.string().optional(),
+  coordinates: yup.object().shape({
+    lat: yup.number(),
+    lng: yup.number()
+  }).optional().default(null),
+  access_points: yup.array().of(
+    yup.object().shape({
+      gate_name: yup.string().required(),
+      type: yup.string().required(),
+      is_active: yup.boolean().default(true)
+    })
+  ).optional(),
+  geo_fencing: yup.object().shape({
+    center: yup.object().shape({
+      lat: yup.number(),
+      lng: yup.number()
+    }).optional().default(undefined),
+    radius_meters: yup.number().optional()
+  }).optional().default(undefined),
 });
 
 export const searchSchema = yup.object({
