@@ -198,6 +198,29 @@
           }
         },
         {
+          "name": "Link User to Estate",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/user/link-estate",
+            "description": "Link authenticated user to an estate using estate code",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estate_code\": \"{{estateCode}}\"\n}"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
           "name": "Send OTP",
           "request": {
             "method": "POST",
@@ -438,6 +461,22 @@
           "request": {
             "method": "DELETE",
             "url": "{{baseUrl}}/estate/delete/{{estateId}}"
+          }
+        },
+        {
+          "name": "Search Estate by Code",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/estate/search/{{estateCode}}",
+            "description": "Search for an estate using its unique estate code"
+          }
+        },
+        {
+          "name": "Validate Estate Invitation",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/estate/invitations/validate/{{invitationToken}}",
+            "description": "Validate an estate invitation token"
           }
         }
       ]
