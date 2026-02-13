@@ -5,3 +5,6 @@ code,guest_name,guest_phone,guest_email,valid_from,valid_until,access_type,creat
 "AC456789","Daniel Green","+2348045678901","daniel.green@email.com","2024-01-18 14:00:00","2024-01-18 17:00:00","visitor","sarah.brown@email.com","Abuja Central Plaza","Family visit"
 "AC567890","Emma Black","+2348056789012","emma.black@email.com","2024-01-19 07:00:00","2024-01-19 19:00:00","service","michael.davis@email.com","GRA Estate Kano","Cleaning service"
 "AC678901","Frank Blue","+2348067890123","frank.blue@email.com","2024-01-20 11:00:00","2024-01-20 15:00:00","visitor","jennifer.miller@email.com","Port Harcourt Gardens","Social visit"
+"AC789012","Grace Housekeeper","+2348078901234","grace.house@email.com","2024-02-01 00:00:00","2024-02-21 23:59:59","domestic_staff","manager@email.com","Sunset Gardens Estate","3-week domestic staff - unlimited entries"
+"AC890123","Henry Maintenance","+2348089012345","henry.tech@email.com","2024-02-05 00:00:00","2024-02-19 23:59:59","maintenance","admin@email.com","Victoria Island Towers","Bi-weekly maintenance - unlimited access"
+"AC901234","Ivy Cleaner","+2348090123456","ivy.clean@email.com","2024-02-10 00:00:00","2024-02-24 23:59:59","service","manager@email.com","Lekki Phase 1 Homes","Weekly cleaning service - unlimited entries"

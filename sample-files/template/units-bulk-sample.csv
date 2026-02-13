@@ -1,0 +1,26 @@
+street_id,unit_identifier,block,floor,unit_type,status,plot_number,house_number,digital_address,landmark,lat,lng
+"660e8400-e29b-41d4-a716-446655440000","A101","Block A",1,"flat","vacant","Plot 12A","House 15","","Near Main Gate",6.5244,3.3792
+"660e8400-e29b-41d4-a716-446655440000","A102","Block A",1,"flat","occupied","Plot 12B","House 16","","Near Playground",6.5245,3.3793
+"660e8400-e29b-41d4-a716-446655440000","A103","Block A",1,"flat","vacant","Plot 12C","House 17","","Near Security Post",6.5246,3.3794
+"660e8400-e29b-41d4-a716-446655440000","A201","Block A",2,"duplex","occupied","Plot 13A","House 18","","Near Swimming Pool",6.5247,3.3795
+"660e8400-e29b-41d4-a716-446655440000","A202","Block A",2,"duplex","vacant","Plot 13B","House 19","","Near Club House",6.5248,3.3796
+"660e8400-e29b-41d4-a716-446655440000","B101","Block B",1,"apartment","occupied","Plot 14A","House 20","","Near Entrance",6.5249,3.3797
+"660e8400-e29b-41d4-a716-446655440000","B102","Block B",1,"apartment","vacant","Plot 14B","House 21","","Near Garden",6.5250,3.3798
+"660e8400-e29b-41d4-a716-446655440000","B201","Block B",2,"apartment","occupied","Plot 15A","House 22","","Near Parking",6.5251,3.3799
+"660e8400-e29b-41d4-a716-446655440000","B202","Block B",2,"apartment","vacant","Plot 15B","House 23","","Near Gate B",6.5252,3.3800
+"660e8400-e29b-41d4-a716-446655440000","C101","Block C",1,"chalet","reserved","Plot 16A","House 24","","Near Tennis Court",6.5253,3.3801
+"660e8400-e29b-41d4-a716-446655440000","C102","Block C",1,"chalet","under_construction","Plot 16B","House 25","","Near Basketball Court",6.5254,3.3802
+"660e8400-e29b-41d4-a716-446655440000","D101","Block D",1,"house","occupied","Plot 17A","House 26","","Near Mosque",6.5255,3.3803
+"660e8400-e29b-41d4-a716-446655440000","D102","Block D",1,"house","vacant","Plot 17B","House 27","","Near Church",6.5256,3.3804
+"660e8400-e29b-41d4-a716-446655440000","E101","Block E",1,"terrace","occupied","Plot 18A","House 28","","Near School",6.5257,3.3805
+"660e8400-e29b-41d4-a716-446655440000","E102","Block E",1,"terrace","vacant","Plot 18B","House 29","","Near Market",6.5258,3.3806
+"660e8400-e29b-41d4-a716-446655440001","F101","Block F",1,"flat","occupied","Plot 19A","House 30","","Near Hospital",6.5259,3.3807
+"660e8400-e29b-41d4-a716-446655440001","F102","Block F",1,"flat","vacant","Plot 19B","House 31","","Near Pharmacy",6.5260,3.3808
+"660e8400-e29b-41d4-a716-446655440001","G101","Block G",1,"duplex","occupied","Plot 20A","House 32","","Near Bank",6.5261,3.3809
+"660e8400-e29b-41d4-a716-446655440001","G102","Block G",1,"duplex","vacant","Plot 20B","House 33","","Near ATM",6.5262,3.3810
+"660e8400-e29b-41d4-a716-446655440001","H101","Block H",1,"apartment","occupied","Plot 21A","House 34","","Near Restaurant",6.5263,3.3811
+"660e8400-e29b-41d4-a716-446655440001","H102","Block H",1,"apartment","vacant","Plot 21B","House 35","","Near Supermarket",6.5264,3.3812
+"660e8400-e29b-41d4-a716-446655440001","I101","Block I",1,"plot","reserved","Plot 22A","","GA-123-4567","Near Park",6.5265,3.3813
+"660e8400-e29b-41d4-a716-446655440001","I102","Block I",1,"plot","under_construction","Plot 22B","","CC-789-0123","Near Lake",6.5266,3.3814
+"660e8400-e29b-41d4-a716-446655440001","J101","Block J",1,"other","occupied","Plot 23A","Building 5","","Near Office",6.5267,3.3815
+"660e8400-e29b-41d4-a716-446655440001","J102","Block J",1,"other","vacant","Plot 23B","Building 6","","Near Factory",6.5268,3.3816
