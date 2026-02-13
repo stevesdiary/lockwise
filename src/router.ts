@@ -5,6 +5,8 @@ import userRouter from "./modules/auth/routes/user.route";
 import loginRouter from "./modules/auth/routes/login.route";
 import googleAuthRouter from "./modules/auth/routes/google-auth.route";
 import passwordResetRouter from "./modules/auth/routes/password-reset.route";
+import phoneVerificationRouter from "./modules/auth/routes/phone-verification.route";
+import emailVerificationRouter from "./modules/auth/routes/email-verification.route";
 
 // Estate Module
 import estateRouter from "./modules/estate/routes/estate.route";
@@ -36,6 +38,7 @@ import adminSupportRouter from "./modules/support/routes/admin.support.route";
 import notificationRouter from "./modules/communication/routes/notification.route";
 import chatRouter from "./modules/communication/routes/chat.route";
 import emergencyRouter from "./modules/communication/routes/emergency.route";
+import communityRouter from "./modules/communication/routes/community.route";
 
 // Community Module
 import communityBoardRouter from "./modules/community/routes/community.board.route";
@@ -63,6 +66,7 @@ import roleRouter from "./modules/admin/routes/role.router";
 import permissionRouter from "./modules/admin/routes/permission.route";
 import apiKeyRouter from "./modules/admin/routes/api-key.route";
 import configRouter from "./modules/admin/routes/config.route";
+import userRoleRouter from "./modules/admin/routes/user-role.route";
 
 // Legal Module
 import legalRouter from "./modules/legal/routes/legal.route";
@@ -74,6 +78,8 @@ router.use("/user", userRouter);
 router.use("/auth", loginRouter);
 router.use('/auth/google', googleAuthRouter);
 router.use('/auth/password', passwordResetRouter);
+router.use('/auth/phone', phoneVerificationRouter);
+router.use('/auth/email', emailVerificationRouter);
 
 // Estate Routes
 router.use('/estate', estateRouter);
@@ -105,6 +111,7 @@ router.use('/admin/support', adminSupportRouter);
 router.use('/notifications', notificationRouter);
 router.use('/chat', chatRouter);
 router.use('/emergency', emergencyRouter);
+router.use('/community', communityRouter);
 
 // Community Routes
 router.use('/community', communityBoardRouter);
@@ -132,6 +139,7 @@ router.use('/role', roleRouter);
 router.use('/permission', permissionRouter);
 router.use('/api-key', apiKeyRouter);
 router.use('/config', configRouter);
+router.use('/admin', userRoleRouter);
 
 // Legal Routes
 router.use('/legal', legalRouter);
