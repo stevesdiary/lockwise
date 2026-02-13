@@ -4,6 +4,9 @@ import { authenticateToken } from '../../auth/middleware/auth.middleware';
 
 const router = Router();
 
+// CSRF Protection: All POST routes use JWT tokens in Authorization header (not cookies)
+// which inherently protects against CSRF attacks as browsers don't auto-send custom headers
+
 // General posts
 router.get('/posts', 
   authenticateToken,

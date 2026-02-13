@@ -11,17 +11,59 @@ class EstateController {
       const validatedData = await createEstateSchema.validate(req.body, {
         abortEarly: false});
       
+      const addressData = validatedData.address || validatedData.contact_address;
+      
+      // Filter out coordinates if incomplete
+      const coordinates = validatedData.coordinates?.lat && validatedData.coordinates?.lng
+        ? {
+            lat: validatedData.coordinates.lat,
+            lng: validatedData.coordinates.lng
+          }
+        : undefined;
+      
+      // Filter out geo_fencing if center coordinates are incomplete
+      const geoFencing = validatedData.geo_fencing?.center?.lat && validatedData.geo_fencing?.center?.lng
+        ? {
+            center: {
+              lat: validatedData.geo_fencing.center.lat,
+              lng: validatedData.geo_fencing.center.lng
+            },
+            radius_meters: validatedData.geo_fencing.radius_meters
+          }
+        : undefined;
+      
       const estateCreationData = {
-        estate_name: validatedData.name,
-        address: validatedData.address.street,
+        name: validatedData.name,
         type: validatedData.type,
-        city: validatedData.address.city,
-        state: validatedData.address.city,
-        country: validatedData.address.country,
+        city: addressData?.city || '',
+        state: validatedData.state || addressData?.city || '',
+        country: addressData?.country || 'Nigeria',
+        country_code: validatedData.country_code || 'NG',
+        timezone: validatedData.timezone || 'Africa/Lagos',
+        currency_code: validatedData.currency_code || 'NGN',
         estate_code: `EST${Date.now()}`,
-        total_number_of_apartments: validatedData.number_of_appartments,
-        total_number_of_floors: validatedData.total_number_of_floors,
-        created_by: req.user!.id
+        total_number_of_apartments: validatedData.number_of_appartments || 0,
+        total_floors: validatedData.total_number_of_floors,
+        location_details: {
+          street_address: addressData?.street || '',
+          area_district: addressData?.number || '',
+          administrative_area: validatedData.state,
+          postal_code: validatedData.postal_code,
+          plus_code: validatedData.plus_code,
+          digital_address: validatedData.digital_address,
+          landmark: validatedData.landmark,
+          coordinates: coordinates,
+          format: validatedData.country_code === 'GH' ? 'GH-POST' : 'STANDARD'
+        },
+        contact_info: {
+          phone: validatedData.contact_phone,
+          email: validatedData.contact_email,
+          address: addressData ? `${addressData.number ? addressData.number + ' ' : ''}${addressData.street}` : ''
+        },
+        access_points: validatedData.access_points || [],
+        geo_fencing: geoFencing,
+        created_by: req.user!.id,
+        referral_code: validatedData.referral_code
       };
 
       const estate = await estateService.createEstate(estateCreationData);
@@ -35,10 +77,10 @@ class EstateController {
   async getAllEstates(req: ExpressRequest, res: Response) {
     try {
       const estates = await estateService.getAllEstates();
-      return res.status(200).json({
-        status: 'success',
-        message: 'Estates retrieved successfully',
-        data: estates
+      return res.status(estates.statusCode || 200).json({
+        status: estates.success ? 'success' : 'fail',
+        message: estates.message,
+        data: estates.data
       });
     } catch (error) {
       console.error('Get all estates error:', error);
@@ -67,6 +109,44 @@ class EstateController {
     }
   }
 
+  async getEstateByCode(req: ExpressRequest, res: Response): Promise<Response> {
+    try {
+      const { estate_code } = req.params;
+      if (!estate_code) {
+        return res.status(400).json({
+          status: 'fail',
+          message: 'Estate code is required'
+        });
+      }
+      const estate = await estateService.getEstateByCode(estate_code);
+      return res.status(estate.statusCode || 200).json({
+        status: estate.success ? 'success' : 'fail',
+        message: estate.message,
+        data: estate.data
+      });
+    } catch (error) {
+      console.error('Get estate by code error:', error);
+      return handleControllerError(error, res);
+    }
+  }
+
+  async searchEstate(req: ExpressRequest, res: Response): Promise<Response> {
+    try {
+      const { estate_code } = req.params;
+      if (!estate_code) {
+        return res.status(400).json({ success: false, message: 'Estate code is required' });
+      }
+      const estate = await estateService.getEstateByCode(estate_code);
+      if (estate.success && estate.data) {
+        return res.json({ success: true, message: 'Estate found', data: estate.data });
+      }
+      return res.status(404).json({ success: false, message: 'Estate not found' });
+    } catch (error) {
+      console.error('Search estate error:', error);
+      return res.status(500).json({ success: false, message: 'Failed to search estate' });
+    }
+  }
+
   async updateEstate(req: ExpressRequest, res: Response): Promise<Response> {
     // const estateId = await idSchema.validate(req.params.estate_id)
     const estateId = req.user?.estateId
@@ -87,6 +167,44 @@ class EstateController {
       return res.json( estate );
     } catch (error) {
       console.error('Update estate error:', error);
+      return handleControllerError(error, res);
+    }
+  }
+
+  async getPendingEstates(req: ExpressRequest, res: Response): Promise<Response> {
+    try {
+      const estates = await estateService.getEstatesByStatus('pending');
+      return res.status(estates.statusCode || 200).json({
+        status: estates.success ? 'success' : 'fail',
+        message: estates.message,
+        data: estates.data
+      });
+    } catch (error) {
+      console.error('Get pending estates error:', error);
+      return handleControllerError(error, res);
+    }
+  }
+
+  async approveEstate(req: ExpressRequest, res: Response): Promise<Response> {
+    try {
+      const { estateId } = req.params;
+      const approvedBy = req.user!.id;
+
+      if (!estateId) {
+        return res.status(400).json({
+          status: 'fail',
+          message: 'Estate ID is required'
+        });
+      }
+
+      const result = await estateService.approveEstate(estateId, approvedBy);
+      return res.status(result.statusCode || 200).json({
+        status: result.success ? 'success' : 'fail',
+        message: result.message,
+        data: result.data
+      });
+    } catch (error) {
+      console.error('Approve estate error:', error);
       return handleControllerError(error, res);
     }
   }

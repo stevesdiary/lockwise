@@ -77,6 +77,18 @@ export class User extends Model<User> {
     type: DataType.STRING,
     allowNull: true,
   })
+  declare verification_code: string | null;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  declare verification_expires: Date | null;
+  
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
   declare reset_token: string | null;
 
   @Column({
@@ -95,8 +107,15 @@ export class User extends Model<User> {
   @Column({
     type: DataType.ENUM('resident', 'security', 'manager', 'admin'),
     allowNull: false,
+    defaultValue: 'resident'
   })
   declare user_type: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  declare profile_picture: string | null;
 
   @ForeignKey(() => Role)
   @Column(DataType.UUID)

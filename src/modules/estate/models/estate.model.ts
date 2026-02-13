@@ -1,6 +1,7 @@
 import { Table, Model, Column, DataType, Index, BelongsTo, HasMany, ForeignKey } from 'sequelize-typescript';
 import { EstateAttributes, EstateCreationAttributes } from '../types/estate.types';
 import { Street } from './street.model';
+import { Gate } from './gate.model';
 import { User } from '../../auth/models/user.model';
 import AccessLog from '../../access/models/access-log.model';
 import { Referrer } from '../../payment/models/referrer.model';
@@ -45,12 +46,6 @@ export class Estate extends Model<EstateAttributes, EstateCreationAttributes> {
   declare name: string;
 
   @Column({
-    type: DataType.STRING,
-    allowNull: false,
-  })
-  declare address: string;
-
-  @Column({
     type: DataType.ENUM('residential', 'mixed', 'other', 'commercial'),
     allowNull: false,
   })
@@ -75,49 +70,102 @@ export class Estate extends Model<EstateAttributes, EstateCreationAttributes> {
   declare country: string;
 
   @Column({
-    type: DataType.NUMBER,
+    type: DataType.STRING(2),
+    allowNull: false,
+    defaultValue: 'NG'
+  })
+  declare country_code: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    defaultValue: 'Africa/Lagos'
+  })
+  declare timezone: string;
+
+  @Column({
+    type: DataType.STRING(3),
+    allowNull: false,
+    defaultValue: 'NGN'
+  })
+  declare currency_code: string;
+
+  @Column({
+    type: DataType.JSONB,
+    allowNull: true,
+    defaultValue: {}
+  })
+  declare location_details: {
+    street_address?: string;
+    area_district?: string;
+    administrative_area?: string;
+    postal_code?: string;
+    plus_code?: string;
+    digital_address?: string;
+    landmark?: string;
+    coordinates?: { lat: number; lng: number };
+    format?: string;
+  };
+
+  @Column({
+    type: DataType.JSONB,
+    allowNull: true,
+    defaultValue: []
+  })
+  declare access_points: Array<{
+    gate_id?: string;
+    gate_name: string;
+    type: string;
+    is_active: boolean;
+  }>;
+
+  @Column({
+    type: DataType.JSONB,
+    allowNull: true
+  })
+  declare geo_fencing: {
+    center?: { lat: number; lng: number };
+    radius_meters?: number;
+  };
+
+  @Column({
+    type: DataType.INTEGER,
     allowNull: false,
   })
   declare total_number_of_apartments: number;
 
   @Column({
-    type: DataType.NUMBER
+    type: DataType.INTEGER
   })
   declare total_floors: number;
 
   @Column({
-    type: DataType.NUMBER
+    type: DataType.INTEGER
   })
   declare total_parking_spaces: number;
 
   @Column({
-    type: DataType.NUMBER,
+    type: DataType.INTEGER,
     allowNull: true
   })
   declare number_of_staff: number;
 
   @Column({
     type: DataType.ENUM('active', 'inactive', 'under_maintenance', 'suspended', 'pending'),
+    defaultValue: 'pending'
   })
   declare status: string;
 
   @Column({
-    type: DataType.STRING,
-    allowNull: false,
+    type: DataType.JSONB,
+    allowNull: true,
+    defaultValue: {}
   })
-  declare contact_phone: string;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-  })
-  declare contact_email: string;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-  })
-  declare contact_address: string;
+  declare contact_info: {
+    phone?: string;
+    email?: string;
+    address?: string;
+  };
 
   @Column({
     type: DataType.ENUM('approved', 'pending', 'declined'),
@@ -136,16 +184,14 @@ export class Estate extends Model<EstateAttributes, EstateCreationAttributes> {
   })
   declare approved_by: string;
 
-  @Column({
-    type: DataType.STRING
-  })
-  declare zip_code: string;
-
   @HasMany(() => User, {as: 'users'})
   declare users: User[];
 
   @HasMany(() => Street)
   declare streets: Street[];
+
+  @HasMany(() => Gate)
+  declare gates: Gate[];
 
   @ForeignKey(() => Referrer)
   @Column({
