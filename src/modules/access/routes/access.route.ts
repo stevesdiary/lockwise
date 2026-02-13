@@ -1,25 +1,31 @@
-import express from 'express';
-import {
-  createAccessRecord,
-  recordEntry,
-  recordExit,
-  approveAccess,
-  getAllAccess,
-  getActiveAccess
+import { Router } from 'express';
+import { authenticateToken, requireManager } from '../../auth/middleware/auth.middleware';
+import { 
+  createAccessRecord, 
+  processCodeScan,
+  // getEntryStatistics,
+  approveAccess, 
+  getAllAccess, 
+  getActiveAccess 
 } from '../controllers/access.controller';
-import { authenticateToken } from '../../auth/middleware/auth.middleware';
-import { authorizeRoles } from '../../auth/middleware/permission.middleware';
 
-const router = express.Router();
+const router = Router();
 
-// Access management routes
-router.post('/', authenticateToken, createAccessRecord);
-router.get('/all', authenticateToken, getAllAccess);
-router.get('/active', authenticateToken, getActiveAccess);
+// CSRF Protection: POST/PATCH routes use JWT tokens in Authorization header (not cookies)
+// which inherently protects against CSRF attacks as browsers don't auto-send custom headers
+// /scan endpoint validates access codes cryptographically
 
-// Access approval and logging
-router.put('/:accessId/approve', authenticateToken, authorizeRoles(['admin', 'security']), approveAccess);
-router.post('/:accessId/entry', authenticateToken, recordEntry);
-router.post('/:accessId/exit', authenticateToken, recordExit);
+// Public routes
+router.post('/scan', processCodeScan); // Process code scan with entry validation
+
+// Protected routes
+router.use(authenticateToken);
+
+// Access record management
+router.post('/', createAccessRecord);
+router.get('/', getAllAccess);
+router.get('/active', getActiveAccess);
+// router.get('/:accessId/statistics', getEntryStatistics);
+router.patch('/:accessId/approve', requireManager, approveAccess);
 
 export default router;
