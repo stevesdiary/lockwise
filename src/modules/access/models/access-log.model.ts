@@ -1,44 +1,53 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../../../shared/core/database';
+import { User } from '../../auth/models/user.model';
 
 class AccessLog extends Model {
-  public log_id!: number;
-  public user_id?: number;
-  public estate_id!: number;
-  public access_type!: string;
-  public entry_time?: Date;
-  public exit_time?: Date;
+  public id!: string;
+  public user_id?: string;
+  public estate_id!: string;
   public status!: string;
+  public access_code?: string;
+  public valid_until?: Date;
+  public approved_by?: string;
+  public guest_name?: string;
   public created_at?: Date;
   public updated_at?: Date;
+  public user?: User;
 }
 
 AccessLog.init({
-  log_id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true
   },
   user_id: {
-    type: DataTypes.INTEGER
+    type: DataTypes.UUID
   },
   estate_id: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.UUID,
     allowNull: false
-  },
-  access_type: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  entry_time: {
-    type: DataTypes.DATE
-  },
-  exit_time: {
-    type: DataTypes.DATE
   },
   status: {
-    type: DataTypes.STRING,
+    type: DataTypes.ENUM('pending', 'approved', 'rejected', 'expired'),
     defaultValue: 'pending'
+  },
+  access_code: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  valid_until: {
+    type: DataTypes.DATE,
+    allowNull: true
+  },
+  approved_by: {
+    type: DataTypes.UUID,
+    allowNull: true
+  },
+  guest_name: {
+    type: DataTypes.STRING,
+    allowNull: true
   }
 }, {
   sequelize,
@@ -46,5 +55,7 @@ AccessLog.init({
   timestamps: true,
   underscored: true
 });
+
+AccessLog.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
 export default AccessLog;
