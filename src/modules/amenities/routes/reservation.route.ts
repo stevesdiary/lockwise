@@ -6,6 +6,9 @@ import { UserRole } from '../../auth/types/user.types';
 
 const router = Router();
 
+// Note: CSRF protection provided by JWT authentication in Authorization header
+// (not vulnerable to CSRF attacks like cookie-based auth)
+
 // Resident routes
 router.post(
   '/',
