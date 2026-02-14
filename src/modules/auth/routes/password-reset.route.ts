@@ -3,6 +3,9 @@ import { passwordResetController } from '../controllers/password-reset.controlle
 
 const router = Router();
 
+// CSRF Protection: /request endpoint is public (no auth required)
+// /reset endpoint uses JWT token from email link in Authorization header (not cookies)
+// JWT tokens in custom headers inherently protect against CSRF attacks
 router.post('/request', passwordResetController.requestReset);
 router.post('/reset', passwordResetController.resetPassword);
 
