@@ -1,5 +1,156 @@
-import nodemailer from "nodemailer";
 import { emailTemplates } from "../../../shared/templates/email.templates";
+
+export type EmailAddress = { email: string; name?: string };
+
+export type EmailPayload = {
+  sender?: EmailAddress;
+  to: EmailAddress[];
+  subject: string;
+  htmlContent: string;
+  textContent?: string;
+  replyTo?: EmailAddress;
+  cc?: EmailAddress[];
+  bcc?: EmailAddress[];
+  tags?: string[];
+};
+
+export interface EmailProvider {
+  send(payload: EmailPayload): Promise<void>;
+}
+
+type RecipientInput = string | EmailAddress | Array<string | EmailAddress>;
+
+type BrevoProviderOptions = {
+  apiKey: string;
+  apiUrl?: string;
+  defaultSender: EmailAddress;
+  timeoutMs?: number;
+};
+
+const DEFAULT_API_URL = 'https://api.brevo.com/v3/smtp/email';
+const DEFAULT_TIMEOUT_MS = 15000;
+
+const normalizeRecipient = (recipient: string | EmailAddress): EmailAddress => {
+  if (typeof recipient === 'string') {
+    return { email: recipient };
+  }
+  return recipient;
+};
+
+const normalizeRecipients = (recipients: RecipientInput): EmailAddress[] => {
+  const list = Array.isArray(recipients) ? recipients : [recipients];
+  return list
+    .filter(recipient => Boolean(recipient))
+    .map(recipient => normalizeRecipient(recipient as string | EmailAddress))
+    .filter(item => item.email);
+};
+
+const toErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) return error.message;
+  return String(error);
+};
+
+const parseJson = (value: string): Record<string, any> | null => {
+  if (!value) return null;
+  try {
+    return JSON.parse(value) as Record<string, any>;
+  } catch {
+    return null;
+  }
+};
+
+class BrevoEmailProvider implements EmailProvider {
+  private apiKey: string;
+  private apiUrl: string;
+  private defaultSender: EmailAddress;
+  private timeoutMs: number;
+
+  constructor(options: BrevoProviderOptions) {
+    this.apiKey = options.apiKey;
+    this.apiUrl = options.apiUrl ?? DEFAULT_API_URL;
+    this.defaultSender = options.defaultSender;
+    this.timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  }
+
+  async send(payload: EmailPayload): Promise<void> {
+    if (!this.apiKey) {
+      console.warn('Brevo API key not configured. Email not sent.');
+      return;
+    }
+
+    if (!payload.to?.length) {
+      throw new Error('Email payload "to" is required.');
+    }
+
+    if (!payload.subject || !payload.htmlContent) {
+      throw new Error('Email payload must include "subject" and "htmlContent".');
+    }
+
+    const body: Record<string, any> = {
+      sender: payload.sender ?? this.defaultSender,
+      to: payload.to,
+      subject: payload.subject,
+      htmlContent: payload.htmlContent
+    };
+
+    if (payload.textContent) body.textContent = payload.textContent;
+    if (payload.replyTo) body.replyTo = payload.replyTo;
+    if (payload.cc?.length) body.cc = payload.cc;
+    if (payload.bcc?.length) body.bcc = payload.bcc;
+    if (payload.tags?.length) body.tags = payload.tags;
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
+
+    try {
+      const response = await fetch(this.apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'api-key': this.apiKey
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal
+      });
+
+      const responseText = await response.text();
+
+      if (!response.ok) {
+        const errorJson = parseJson(responseText);
+        const detail =
+          (errorJson?.message as string | undefined) ||
+          (errorJson?.error as string | undefined) ||
+          responseText ||
+          response.statusText;
+        const errorMessage = `Brevo API error (${response.status}): ${detail}`;
+        console.error('Brevo email send failed', {
+          status: response.status,
+          error: errorMessage,
+          to: payload.to.map(item => item.email),
+          subject: payload.subject
+        });
+        throw new Error(errorMessage);
+      }
+
+      const responseJson = parseJson(responseText);
+      console.log('Email sent successfully', {
+        // to: payload.to.map(item => item.email),
+        subject: payload.subject,
+        messageId: responseJson?.messageId
+      });
+    } catch (error) {
+      const message = toErrorMessage(error);
+      console.error('Failed to send email', {
+        error: message,
+        to: payload.to.map(item => item.email),
+        subject: payload.subject
+      });
+      throw error;
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+}
 
 interface EmailData {
   to: string;
@@ -9,17 +160,18 @@ interface EmailData {
 }
 
 class EmailService {
-  private transporter: nodemailer.Transporter;
+  private provider: EmailProvider;
+  private defaultSender: EmailAddress;
 
   constructor() {
-    this.transporter = nodemailer.createTransport({
-      host: process.env.SMTP_SERVER || "smtp-relay.brevo.com",
-      port: parseInt(process.env.SMTP_PORT || "587"),
-      secure: false,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_KEY,
-      },
+    this.defaultSender = {
+      name: 'Lockwise',
+      email: process.env.SMTP_FROM || 'noreply@lockwise.com'
+    };
+
+    this.provider = new BrevoEmailProvider({
+      apiKey: process.env.BREVO_API_KEY || '',
+      defaultSender: this.defaultSender
     });
   }
 
@@ -27,19 +179,16 @@ class EmailService {
     try {
       const template = emailTemplates[emailData.template](emailData.data);
 
-      const mailOptions = {
-        from:
-          emailData.from || process.env.SMTP_SENDER || "noreply@lockwise.com",
-        to: emailData.to,
+      await this.provider.send({
+        sender: emailData.from ? { email: emailData.from } : this.defaultSender,
+        to: normalizeRecipients(emailData.to),
         subject: template.subject,
-        html: template.html,
-      };
+        htmlContent: template.html
+      });
 
-      const result = await this.transporter.sendMail(mailOptions);
-      console.log(`Email sent successfully: ${result.messageId}`);
       return true;
     } catch (error) {
-      console.error("Email sending failed:", error);
+      console.error('Email sending failed:', error);
       return false;
     }
   }
@@ -51,7 +200,7 @@ class EmailService {
   ): Promise<boolean> {
     return this.sendEmail({
       to,
-      template: "welcome",
+      template: 'welcome',
       data: { name, estate_name },
     });
   }
@@ -63,7 +212,7 @@ class EmailService {
   ): Promise<boolean> {
     return this.sendEmail({
       to,
-      template: "verification",
+      template: 'verification',
       data: { name, code },
     });
   }
@@ -75,7 +224,7 @@ class EmailService {
   ): Promise<boolean> {
     return this.sendEmail({
       to,
-      template: "passwordReset",
+      template: 'passwordReset',
       data: { name, reset_link },
     });
   }
@@ -88,7 +237,7 @@ class EmailService {
   ): Promise<boolean> {
     return this.sendEmail({
       to,
-      template: "accessCode",
+      template: 'accessCode',
       data: { name, access_code, valid_until },
     });
   }
@@ -101,20 +250,9 @@ class EmailService {
   ): Promise<boolean> {
     return this.sendEmail({
       to,
-      template: "paymentSuccess",
+      template: 'paymentSuccess',
       data: { name, amount, reference },
     });
-  }
-
-  async testConnection(): Promise<boolean> {
-    try {
-      await this.transporter.verify();
-      console.log("Email service connection verified");
-      return true;
-    } catch (error) {
-      console.error("Email service connection failed:", error);
-      return false;
-    }
   }
 }
 
