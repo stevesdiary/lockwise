@@ -35,7 +35,7 @@ analyticsRouter.get('/system',
   analyticsController.getSystemStatus
 );
 
-// Event tracking
+// Event tracking (CSRF-protected via JWT authentication)
 analyticsRouter.post('/track',
   rateLimiters.api,
   authenticateToken,

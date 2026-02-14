@@ -26,10 +26,14 @@ import loginRouter from './routes/login.route';
 import googleAuthRouter from './routes/google-auth.route';
 import passwordResetRouter from './routes/password-reset.route';
 import userRouter from './routes/user.route';
+import phoneVerificationRouter from './routes/phone-verification.route';
+import emailVerificationRouter from './routes/email-verification.route';
 
 export const authRoutes = {
   loginRouter,
   googleAuthRouter,
   passwordResetRouter,
-  userRouter
+  userRouter,
+  phoneVerificationRouter,
+  emailVerificationRouter
 };
