@@ -70,6 +70,22 @@ module.exports = {
         type: Sequelize.BOOLEAN,
         defaultValue: false,
       },
+      max_entries: {
+        type: Sequelize.INTEGER,
+        allowNull: true
+      },
+      used_entries: {
+        type: Sequelize.INTEGER,
+        defaultValue: 0
+      },
+      valid_from: {
+        type: Sequelize.DATE,
+        allowNull: true
+      },
+      valid_until: {
+        type: Sequelize.DATE,
+        allowNull: true
+      },
       remarks: Sequelize.TEXT,
       created_by: {
         type: Sequelize.UUID,

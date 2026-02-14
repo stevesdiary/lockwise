@@ -1,4 +1,4 @@
 import 'dotenv/config';
-import startServer from "./core";
+import startServer from "./shared/core";
 
 startServer();

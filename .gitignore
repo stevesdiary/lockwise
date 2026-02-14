@@ -1,4 +1,5 @@
 node_modules
+.vscode
 .eslintcache
 .env
 .env.local
@@ -11,3 +12,7 @@ uploads/
 .DS_Store
 docs/SECURITY_AUDIT.md
 .env
+docs/
+coverage/
+lockwise-mobile/
+logs/

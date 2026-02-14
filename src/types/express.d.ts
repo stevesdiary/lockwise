@@ -1,21 +1,20 @@
-import { JwtPayload } from '../../modules/types/type'
+import { UserRole } from '../modules/auth/types/user.types';
 
 declare global {
   namespace Express {
+    interface User {
+      id: string;
+      email: string;
+      role: UserRole;
+      sessionId: string;
+      estate_id?: string;
+    }
+    
     interface Request {
-      user?: JwtPayload;
+      user?: User;
+      startTime?: number;
     }
   }
 }
 
-declare namespace Express {
-  export interface Request {
-    user?: {
-      id: string;
-      email: string,
-      role: string,
-      verified: boolean
-    };
-  }
-}
-export { JwtPayload };
+export {};

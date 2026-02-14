@@ -102,6 +102,10 @@ module.exports = {
         type: Sequelize.UUID,
         allowNull: true
       },
+      created_by: {
+        type: Sequelize.UUID,
+        allowNull: true
+      },
 
       total_floors: {
         type: Sequelize.INTEGER

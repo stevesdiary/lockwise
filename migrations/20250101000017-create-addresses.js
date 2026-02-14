@@ -45,6 +45,14 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true
       },
+      latitude: {
+        type: Sequelize.DECIMAL(10, 8),
+        allowNull: true
+      },
+      longitude: {
+        type: Sequelize.DECIMAL(11, 8),
+        allowNull: true
+      },
       available: {
         type: Sequelize.BOOLEAN,
         allowNull: false,

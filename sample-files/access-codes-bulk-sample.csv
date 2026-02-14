@@ -1,7 +1,0 @@
-guest_name,guest_phone,guest_email,valid_from,valid_until,access_type,created_by_email,estate_name,notes
-"Alice Cooper","+2348012345678","alice.cooper@email.com","2024-01-15 09:00:00","2024-01-15 18:00:00","visitor","john.doe@email.com","Sunset Gardens Estate","Visiting for business meeting"
-"Bob Smith","+2348023456789","bob.smith@email.com","2024-01-16 10:00:00","2024-01-16 16:00:00","delivery","mary.johnson@email.com","Victoria Island Towers","Package delivery"
-"Carol White","+2348034567890","carol.white@email.com","2024-01-17 08:00:00","2024-01-17 20:00:00","contractor","david.wilson@email.com","Lekki Phase 1 Homes","Plumbing maintenance"
-"Daniel Green","+2348045678901","daniel.green@email.com","2024-01-18 14:00:00","2024-01-18 17:00:00","visitor","sarah.brown@email.com","Abuja Central Plaza","Family visit"
-"Emma Black","+2348056789012","emma.black@email.com","2024-01-19 07:00:00","2024-01-19 19:00:00","service","michael.davis@email.com","GRA Estate Kano","Cleaning service"
-"Frank Blue","+2348067890123","frank.blue@email.com","2024-01-20 11:00:00","2024-01-20 15:00:00","visitor","jennifer.miller@email.com","Port Harcourt Gardens","Social visit"
