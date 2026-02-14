@@ -1,9 +1,11 @@
 import { Router, Request as ExpressRequest, Response } from "express";
+import multer from "multer";
 import * as userController from "../controllers/user.controller";
 import {
   authenticateToken,
   requireAdmin,
   requireManager,
+  AuthRequest,
 } from "../middleware/auth.middleware";
 import { rateLimiters } from "../middleware/rate-limit.middleware";
 import { auditLogger } from "../middleware/audit.middleware";
@@ -11,11 +13,23 @@ import { analyticsMiddleware } from "../middleware/analytics.middleware";
 
 const userRouter = Router();
 
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit for avatars
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'));
+    }
+  }
+});
+
 userRouter.post(
   "/register",
   rateLimiters.auth,
-  auditLogger,
-  analyticsMiddleware("user_register"),
+  auditLogger as any,
+  analyticsMiddleware("user_register") as any,
   async (req: ExpressRequest, res: Response) => {
     await userController.registerUser(req, res);
   }
@@ -24,35 +38,28 @@ userRouter.post(
 userRouter.post(
   "/verify",
   rateLimiters.strict,
-  auditLogger,
+  auditLogger as any,
   async (req: ExpressRequest, res: Response) => {
     res.status(501).json({ message: 'Not implemented' });
   }
 );
 
-// userRouter.post("/resendcode",
-//   async (req: ExpressRequest, res: Response) => {
-//   await userController.resendCode(req, res);
-// });
-
 userRouter.get(
   "/all",
   rateLimiters.api,
-  authenticateToken,
-  requireManager,
-  auditLogger,
-  analyticsMiddleware("users_list_viewed"),
+  authenticateToken as any,
+  requireManager as any,
+  auditLogger as any,
+  analyticsMiddleware("users_list_viewed") as any,
   async (req: ExpressRequest, res: Response) => {
     await userController.getAllUsers(req, res);
   }
 );
 
-// userRouter.post('/refresh', refreshAccessToken);
-
 userRouter.get(
   "/one/:id",
-  authenticateToken,
-  requireManager,
+  authenticateToken as any,
+  requireManager as any,
   async (req: ExpressRequest, res: Response) => {
     await userController.getUser(req, res);
   }
@@ -61,11 +68,39 @@ userRouter.get(
 userRouter.delete(
   "/delete/:id",
   rateLimiters.strict,
-  authenticateToken,
-  requireAdmin,
-  auditLogger,
+  authenticateToken as any,
+  requireAdmin as any,
+  auditLogger as any,
   async (req: ExpressRequest, res: Response) => {
     await userController.deleteUser(req, res);
+  }
+);
+
+userRouter.post(
+  "/link-estate",
+  rateLimiters.api,
+  authenticateToken as any,
+  auditLogger as any,
+  analyticsMiddleware("user_estate_linked") as any,
+  async (req: ExpressRequest, res: Response) => {
+    await userController.linkUserToEstate(req, res);
+  }
+);
+
+userRouter.post(
+  "/avatar",
+  authenticateToken as any,
+  upload.single('avatar'),
+  async (req: ExpressRequest, res: Response) => {
+    await userController.uploadAvatar(req, res);
+  }
+);
+
+userRouter.put(
+  "/profile",
+  authenticateToken as any,
+  async (req: ExpressRequest, res: Response) => {
+    await userController.updateProfile(req, res);
   }
 );
 
