@@ -23,6 +23,20 @@ export class Role extends Model<Role> {
   })
   declare role: string;
 
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    unique: true
+  })
+  declare description: string;
+
+  // @Column({
+  //   type: DataType.BOOLEAN,
+  //   allowNull: false,
+  //   defaultValue: true
+  // })
+  // declare is_active: boolean;
+
   @BelongsToMany(() => Permission, () => RolePermission)
   declare permissions: Permission[];
 }

@@ -23,14 +23,19 @@ export const loginService = async (email: string, password: string, deviceInfo?:
   });
 
   // Short-lived access token (15 minutes)
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) {
+    throw new Error('JWT_SECRET environment variable is not configured');
+  }
+  
   const accessToken = jwt.sign(
     { 
-      id: user.id, 
+      userId: user.id, 
       email: user.email,
       sessionId,
       role: user.role?.role
     }, 
-    process.env.JWT_SECRET || 'secret',
+    jwtSecret,
     { expiresIn: '15m' }
   );
 
@@ -62,13 +67,25 @@ export const refreshTokenService = async (refreshToken: string) => {
   }
 
   // Generate new access token
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) {
+    throw new Error('JWT_SECRET environment variable is not configured');
+  }
+  
+  // Get user email for token
+  const user = await User.findByPk(session.userId);
+  if (!user) {
+    return { statusCode: 401, message: 'User not found' };
+  }
+
   const accessToken = jwt.sign(
     { 
-      id: session.userId, 
+      userId: session.userId, 
+      email: user.email,
       sessionId: result.sessionId,
       role: session.role
     }, 
-    process.env.JWT_SECRET || 'secret',
+    jwtSecret,
     { expiresIn: '15m' }
   );
 
