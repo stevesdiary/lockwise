@@ -1,11 +1,25 @@
 import * as XLSX from 'xlsx';
 import fs from 'fs';
+import path from 'path';
 import sequelize from '../../../shared/core/database';
 import { Street } from '../../estate/models/street.model';
 import { Unit } from '../../estate/models/unit.model';
 
 export async function importStreetsAndUnits(filePath: string, estateId: string) {
-  const workbook = XLSX.readFile(filePath);
+  // Validate file path to prevent path traversal
+  const normalizedPath = path.normalize(filePath);
+  const uploadDir = path.resolve(process.cwd(), 'uploads');
+  
+  if (!normalizedPath.startsWith(uploadDir)) {
+    throw new Error('Invalid file path: Path traversal detected');
+  }
+  
+  // Verify file exists and is readable
+  if (!fs.existsSync(normalizedPath)) {
+    throw new Error('File not found');
+  }
+  
+  const workbook = XLSX.readFile(normalizedPath);
   const streetsSheet = workbook.Sheets['Streets'];
   const unitsSheet = workbook.Sheets['Units'];
 
@@ -54,9 +68,9 @@ export async function importStreetsAndUnits(filePath: string, estateId: string) 
       }
 
       const [unit] = await Unit.findOrCreate({
-        where: { number, street_id: street.id },
+        where: { unit_identifier: number, street_id: street.id },
         defaults: {
-          number,
+          unit_identifier: number,
           block: row['Block'] || null,
           floor: row['Floor'] || null,
           unit_type: row['Type'] || 'flat',
@@ -69,12 +83,18 @@ export async function importStreetsAndUnits(filePath: string, estateId: string) 
     }
 
     await transaction.commit();
-    fs.unlinkSync(filePath);
+    // Securely delete file after processing
+    if (fs.existsSync(normalizedPath)) {
+      fs.unlinkSync(normalizedPath);
+    }
     return result;
 
   } catch (err) {
     await transaction.rollback();
-    fs.unlinkSync(filePath);
+    // Securely delete file on error
+    if (fs.existsSync(normalizedPath)) {
+      fs.unlinkSync(normalizedPath);
+    }
     throw err;
   }
 }

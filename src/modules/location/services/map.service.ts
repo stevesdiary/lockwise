@@ -33,11 +33,10 @@ class MapService {
 
       // Geocode estate main address if not already done
       let estateCoords = { latitude: 0, longitude: 0 };
-      if (estate.address) {
-        const geocoded = await geocodingService.geocodeAddress(estate.address);
-        if (geocoded) {
-          estateCoords = { latitude: geocoded.latitude, longitude: geocoded.longitude };
-        }
+      const estateAddress = estate.location_details?.street_address || `${estate.city}, ${estate.state}, ${estate.country}`;
+      const geocoded = await geocodingService.geocodeAddress(estateAddress);
+      if (geocoded) {
+        estateCoords = { latitude: geocoded.latitude, longitude: geocoded.longitude };
       }
 
       const locations: MapLocation[] = addresses.map(addr => ({
@@ -51,7 +50,7 @@ class MapService {
       return {
         estate: {
           name: estate.name,
-          address: estate.address,
+          address: estateAddress,
           latitude: estateCoords.latitude,
           longitude: estateCoords.longitude
         },
@@ -94,7 +93,7 @@ class MapService {
       address.apartment_number,
       address.building,
       address.street,
-      estate.address,
+      estate.location_details?.street_address,
       estate.city,
       estate.state,
       estate.country
