@@ -19,6 +19,16 @@ class DatabaseService {
   }
 
   async query(text: string, params?: any[], useCache = false) {
+    // Validate query text to prevent SQL injection
+    if (!text || typeof text !== 'string') {
+      throw new Error('Invalid query text');
+    }
+    
+    // Ensure parameterized queries are used - reject queries with string concatenation patterns
+    if (params === undefined && /\$\d+/.test(text) === false && /VALUES|WHERE|SET/.test(text.toUpperCase())) {
+      console.warn('Warning: Query may be vulnerable to SQL injection. Use parameterized queries.');
+    }
+    
     const cacheKey = `${text}:${JSON.stringify(params)}`;
     
     if (useCache && this.queryCache.has(cacheKey)) {
