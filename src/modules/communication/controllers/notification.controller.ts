@@ -84,20 +84,20 @@ export const notificationController = {
     }
   },
 
-  async testEmailConnection(req: Request, res: Response) {
-    try {
-      const isConnected = await EmailService.testConnection();
+  // async testEmailConnection(req: Request, res: Response) {
+  //   try {
+  //     const isConnected = await EmailService.testConnection();
       
-      res.status(200).json({
-        status: 'success',
-        connected: isConnected,
-        message: isConnected ? 'Email service connected' : 'Email service connection failed'
-      });
-    } catch (error: any) {
-      res.status(500).json({
-        status: 'error',
-        message: error.message
-      });
-    }
-  }
+  //     res.status(200).json({
+  //       status: 'success',
+  //       connected: isConnected,
+  //       message: isConnected ? 'Email service connected' : 'Email service connection failed'
+  //     });
+  //   } catch (error: any) {
+  //     res.status(500).json({
+  //       status: 'error',
+  //       message: error.message
+  //     });
+  //   }
+  // }
 };

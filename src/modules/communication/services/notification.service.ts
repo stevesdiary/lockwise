@@ -15,16 +15,16 @@ class NotificationService {
   private smsQueue: Bull.Queue;
 
   constructor() {
+    const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+    
     const redisConfig = {
       redis: {
-        host: process.env.REDIS_HOST?.split(':')[0] || 'localhost',
-        port: parseInt(process.env.REDIS_PORT || '6379'),
-        password: process.env.REDIS_PASSWORD,
+        maxRetriesPerRequest: null,
       },
     };
 
-    this.emailQueue = new Bull('email notifications', redisConfig);
-    this.smsQueue = new Bull('sms notifications', redisConfig);
+    this.emailQueue = new Bull('email notifications', redisUrl, redisConfig);
+    this.smsQueue = new Bull('sms notifications', redisUrl, redisConfig);
 
     this.setupProcessors();
   }
@@ -33,7 +33,7 @@ class NotificationService {
     // Email processor
     this.emailQueue.process(async (job) => {
       const { to, template, data } = job.data;
-      console.log(`Processing email job: ${template} to ${to}`);
+      // console.log(`Processing email job: ${template} to ${to}`);
       
       const success = await EmailService.sendEmail({ to, template, data });
       if (!success) {
@@ -45,10 +45,22 @@ class NotificationService {
 
     // SMS processor
     this.smsQueue.process(async (job) => {
-      const { to, template, data } = job.data;
-      console.log(`Processing SMS job: ${template} to ${to}`);
+      const { to, data } = job.data;
+      // Format message based on template type
+      let message = '';
+      if (data.code) {
+        message = `${data.name}, your LOCKWISE verification code is: ${data.code}. Valid for 10 minutes.`;
+      } else if (data.access_code) {
+        message = `${data.name}, your LOCKWISE access code is: ${data.access_code}. Valid until: ${data.valid_until}`;
+      } else if (data.alert_type) {
+        message = `LOCKWISE EMERGENCY ALERT: ${data.alert_type} at ${data.location}. Please respond immediately.`;
+      } else if (data.amount) {
+        message = `${data.name}, your LOCKWISE payment of ${data.amount} was ${data.reference ? 'successful' : 'failed'}.`;
+      } else {
+        message = `LOCKWISE: ${JSON.stringify(data)}`;
+      }
       
-      const success = await SMSService.sendSMS({ to, template, data });
+      const success = await SMSService.sendSMS(to, message);
       if (!success) {
         throw new Error('SMS sending failed');
       }
