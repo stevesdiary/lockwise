@@ -5,6 +5,9 @@ import { rateLimiters } from '../../admin/middleware/rate-limit.middleware';
 
 const router = Router();
 
+// CSRF Protection: All POST routes use JWT tokens in Authorization header (not cookies)
+// which inherently protects against CSRF attacks as browsers don't auto-send custom headers
+
 router.post('/device/register', 
   rateLimiters.api,
   authenticateToken,

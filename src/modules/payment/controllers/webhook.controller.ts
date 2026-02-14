@@ -30,12 +30,13 @@ export const webhookController = {
           await handleSubscriptionDisabled(event.data);
           break;
         default:
-          console.log(`Unhandled Paystack event: ${event.event}`);
+          console.log('Unhandled Paystack event:', event.event?.replace(/[\r\n]/g, '') || 'unknown');
       }
 
       res.status(200).json({ status: 'success' });
-    } catch (error) {
-      console.error('Paystack webhook error:', error);
+    } catch (error: any) {
+      const sanitizedError = error?.message?.replace(/[\r\n]/g, '') || 'Unknown error';
+      console.error('Paystack webhook error:', sanitizedError);
       res.status(500).json({ error: 'Webhook processing failed' });
     }
   },
@@ -51,21 +52,20 @@ export const webhookController = {
 
       const payload = req.body;
 
-      switch (payload.event) {
-        case 'charge.completed':
-          if (payload.data.status === 'successful') {
-            await handleSuccessfulPayment(payload.data);
-          } else {
-            await handleFailedPayment(payload.data);
-          }
-          break;
-        default:
-          console.log(`Unhandled Flutterwave event: ${payload.event}`);
+      if (payload.event === 'charge.completed') {
+        if (payload.data.status === 'successful') {
+          await handleSuccessfulPayment(payload.data);
+        } else {
+          await handleFailedPayment(payload.data);
+        }
+      } else {
+        console.log('Unhandled Flutterwave event:', payload.event?.replace(/[\r\n]/g, '') || 'unknown');
       }
 
       res.status(200).json({ status: 'success' });
-    } catch (error) {
-      console.error('Flutterwave webhook error:', error);
+    } catch (error: any) {
+      const sanitizedError = error?.message?.replace(/[\r\n]/g, '') || 'Unknown error';
+      console.error('Flutterwave webhook error:', sanitizedError);
       res.status(500).json({ error: 'Webhook processing failed' });
     }
   }
@@ -78,9 +78,11 @@ async function handleSuccessfulPayment(data: any) {
     await paymentService.verifyPayment({ reference });
     
     // Send success notification
-    console.log(`Payment successful: ${reference}`);
-  } catch (error) {
-    console.error('Error handling successful payment:', error);
+    const sanitizedRef = reference?.replace(/[\r\n]/g, '') || 'unknown';
+    console.log('Payment successful:', sanitizedRef);
+  } catch (error: any) {
+    const sanitizedError = error?.message?.replace(/[\r\n]/g, '') || 'Unknown error';
+    console.error('Error handling successful payment:', sanitizedError);
   }
 }
 
@@ -92,9 +94,12 @@ async function handleFailedPayment(data: any) {
     await paymentService.handlePaymentFailure(reference, reason);
     
     // Send failure notification
-    console.log(`Payment failed: ${reference} - ${reason}`);
-  } catch (error) {
-    console.error('Error handling failed payment:', error);
+    const sanitizedRef = reference?.replace(/[\r\n]/g, '') || 'unknown';
+    const sanitizedReason = reason?.replace(/[\r\n]/g, '') || 'unknown';
+    console.log('Payment failed:', sanitizedRef, '-', sanitizedReason);
+  } catch (error: any) {
+    const sanitizedError = error?.message?.replace(/[\r\n]/g, '') || 'Unknown error';
+    console.error('Error handling failed payment:', sanitizedError);
   }
 }
 
@@ -102,8 +107,9 @@ async function handleSubscriptionCreated(data: any) {
   try {
     console.log('Subscription created:', data);
     // Handle subscription creation logic
-  } catch (error) {
-    console.error('Error handling subscription creation:', error);
+  } catch (error: any) {
+    const sanitizedError = error?.message?.replace(/[\r\n]/g, '') || 'Unknown error';
+    console.error('Error handling subscription creation:', sanitizedError);
   }
 }
 
@@ -111,7 +117,8 @@ async function handleSubscriptionDisabled(data: any) {
   try {
     console.log('Subscription disabled:', data);
     // Handle subscription cancellation logic
-  } catch (error) {
-    console.error('Error handling subscription cancellation:', error);
+  } catch (error: any) {
+    const sanitizedError = error?.message?.replace(/[\r\n]/g, '') || 'Unknown error';
+    console.error('Error handling subscription cancellation:', sanitizedError);
   }
 }
