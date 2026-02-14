@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import { createServer } from 'http';
 import rateLimit from 'express-rate-limit';
 
@@ -9,6 +10,7 @@ import { swaggerUi, specs } from '../config/swagger';
 import WebSocketService from '../../modules/communication/services/websocket.service';
 import { errorHandler, notFound } from '../middleware/error-handler.middleware';
 import realTimeNotificationService from '../../modules/analytics/services/realtime-notification.service';
+import { startAccessCodeExpiryJob } from '../jobs/access-code-expiry.job';
 
 const server = express();
 const httpServer = createServer(server);
@@ -18,6 +20,14 @@ const webSocketService = new WebSocketService(httpServer);
 realTimeNotificationService.setWebSocketService(webSocketService);
 
 const port = process.env.LOCAL_PORT || 3000;
+
+// CORS configuration
+server.use(cors({
+  origin: '*',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 server.use(express.json());
 server.use(monitoringService.middleware());
@@ -44,17 +54,41 @@ server.use(errorHandler);
 
 const startServer = async () => {
   try {
+    // 1 Connect to database
     await sequelize.authenticate();
     console.log('Database connected.');
 
+    // 2️ Use migrations instead of sync
+    console.log('Run migrations');
+
+    // 3 Start HTTP + WebSocket server
     httpServer.listen(port, () => {
       console.log(`Server running on port ${port}`);
       console.log(`WebSocket server initialized`);
     });
+
+    // 4 Start cron jobs
+    startAccessCodeExpiryJob();
+
   } catch (error) {
-    console.error('Unable to connect to the database:', error);
+    console.error('Unable to start server:', error);
+    process.exit(1);
   }
 };
+
+// const startServer = async () => {
+//   try {
+//     await sequelize.authenticate();
+//     console.log('Database connected.');
+
+//     httpServer.listen(port, () => {
+//       console.log(`Server running on port ${port}`);
+//       console.log(`WebSocket server initialized`);
+//     });
+//   } catch (error) {
+//     console.error('Unable to connect to the database:', error);
+//   }
+// };
 
 export default startServer;
 export { webSocketService, server, httpServer };

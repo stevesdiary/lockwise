@@ -1,4 +1,5 @@
 export enum UserRole {
+  MASTER = 'master',
   SUPER_ADMIN = 'super_admin',
   ADMIN = 'admin',
   MANAGER = 'manager',
@@ -38,6 +39,26 @@ export enum Resource {
 }
 
 export const ROLE_PERMISSIONS: Record<UserRole, Record<Resource, Permission[]>> = {
+  [UserRole.MASTER]: {
+    [Resource.USERS]: [Permission.APPROVE, Permission.READ, Permission.CREATE, Permission.UPDATE, Permission.DELETE],
+    [Resource.ESTATES]: [Permission.APPROVE, Permission.READ, Permission.CREATE, Permission.UPDATE, Permission.DELETE],
+    [Resource.RESIDENTS]: [Permission.APPROVE, Permission.READ, Permission.CREATE, Permission.UPDATE, Permission.DELETE],
+    [Resource.ACCESS_CODES]: [Permission.READ, Permission.CREATE, Permission.UPDATE, Permission.DELETE],
+    [Resource.ACCESS_LOGS]: [Permission.READ, Permission.DELETE],
+    [Resource.PAYMENTS]: [Permission.APPROVE, Permission.READ, Permission.CREATE, Permission.UPDATE, Permission.DELETE],
+    [Resource.SUBSCRIPTIONS]: [Permission.APPROVE, Permission.READ, Permission.CREATE, Permission.UPDATE, Permission.DELETE],
+    [Resource.ROLES]: [Permission.READ, Permission.CREATE, Permission.UPDATE, Permission.DELETE],
+    [Resource.PERMISSIONS]: [Permission.READ, Permission.CREATE, Permission.UPDATE, Permission.DELETE],
+    [Resource.STREETS]: [Permission.READ, Permission.CREATE, Permission.UPDATE, Permission.DELETE],
+    [Resource.UNITS]: [Permission.READ, Permission.CREATE, Permission.UPDATE, Permission.DELETE],
+    [Resource.NOTIFICATIONS]: [Permission.READ, Permission.CREATE, Permission.UPDATE, Permission.DELETE],
+    [Resource.SUPPORT_TICKETS]: [Permission.READ, Permission.CREATE, Permission.UPDATE, Permission.DELETE],
+    [Resource.EMERGENCY_ALERTS]: [Permission.READ, Permission.CREATE, Permission.UPDATE, Permission.DELETE],
+    [Resource.COMMUNITY_BOARD]: [Permission.APPROVE, Permission.READ, Permission.CREATE, Permission.UPDATE, Permission.DELETE],
+    [Resource.ANALYTICS]: [Permission.READ],
+    [Resource.REPORTS]: [Permission.READ, Permission.CREATE],
+    [Resource.SETTINGS]: [Permission.READ, Permission.UPDATE]
+  },
   [UserRole.SUPER_ADMIN]: {
     [Resource.USERS]: [Permission.APPROVE, Permission.READ, Permission.CREATE, Permission.UPDATE, Permission.DELETE],
     [Resource.ESTATES]: [Permission.APPROVE, Permission.READ, Permission.CREATE, Permission.UPDATE, Permission.DELETE],
@@ -88,7 +109,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Record<Resource, Permission[]>> 
     [Resource.ACCESS_LOGS]: [Permission.READ],
     [Resource.PAYMENTS]: [Permission.READ, Permission.CREATE],
     [Resource.SUBSCRIPTIONS]: [Permission.READ],
-    [Resource.ROLES]: [Permission.READ],
+    [Resource.ROLES]: [Permission.READ, Permission.UPDATE],
     [Resource.PERMISSIONS]: [Permission.READ],
     [Resource.STREETS]: [Permission.READ, Permission.CREATE, Permission.UPDATE],
     [Resource.UNITS]: [Permission.READ, Permission.CREATE, Permission.UPDATE],
