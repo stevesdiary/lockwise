@@ -11,9 +11,9 @@ googleAuthRouter.get('/google/url', googleAuthController.initiateGoogleAuth);
 googleAuthRouter.get('/google/callback', googleAuthController.handleGoogleCallback);
 
 // Link Google account (requires authentication)
-googleAuthRouter.post('/google/link', authenticateToken, googleAuthController.linkGoogle);
+googleAuthRouter.post('/google/link', authenticateToken as any, googleAuthController.linkGoogle);
 
 // Unlink Google account (requires authentication)
-googleAuthRouter.delete('/google/unlink', authenticateToken, googleAuthController.unlinkGoogle);
+googleAuthRouter.delete('/google/unlink', authenticateToken as any, googleAuthController.unlinkGoogle);
 
 export default googleAuthRouter;

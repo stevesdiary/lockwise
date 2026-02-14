@@ -3,6 +3,7 @@ import jwt, { SignOptions } from "jsonwebtoken";
 import cookieParser from "cookie-parser";
 import { Response } from "express";
 import { User } from "../models/user.model";
+import { Role } from "../models/role.model";
 import { saveToRedis } from "../../../shared/core/redis";
 import sessionService from "./session.service";
 
@@ -15,7 +16,8 @@ const refreshSecret: string = process.env.REFRESH_TOKEN_SECRET || 'refresh_secre
 export const loginUser = async (email: string, password: string) => {
   try {
     const user = await User.findOne({ 
-      where: { email }
+      where: { email },
+      include: [{ model: Role, as: 'role' }]
     });
     
     if (!user) {
@@ -50,7 +52,8 @@ export const loginUser = async (email: string, password: string) => {
       { 
         userId: user.id, 
         email: user.email, 
-        role: user.role,
+        role: user.role?.role,
+        estate_id: user.estate_id,
         sessionId: sessionData.sessionId
       },
       process.env.JWT_SECRET || 'default_secret',
@@ -60,13 +63,17 @@ export const loginUser = async (email: string, password: string) => {
     return {
       statusCode: 200,
       message: 'Login successful',
-      token,
-      refreshToken: sessionData.refreshToken,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.first_name,
-        role: user.role
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          phone_number: user.phone,
+          estate_id: user.estate_id,
+          role: user.role?.role
+        },
+        token
       }
     };
   } catch (error) {

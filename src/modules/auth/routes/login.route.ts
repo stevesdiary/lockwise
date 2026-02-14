@@ -33,8 +33,8 @@ const loginRouter = Router();
  */
 loginRouter.post("/login", 
   rateLimiters.auth,
-  auditLogger,
-  analyticsMiddleware('user_login'),
+  auditLogger as any,
+  analyticsMiddleware('user_login') as any,
   (req: Request, res: Response) => { login(req, res);
 });
 
@@ -54,10 +54,10 @@ loginRouter.post("/login",
  */
 loginRouter.post("/logout", 
   rateLimiters.api,
-  authenticateToken, 
-  auditLogger,
-  analyticsMiddleware('user_logout'),
-  (req: Request, res: Response) => { logout(req, res);
+  authenticateToken as any, 
+  auditLogger as any,
+  analyticsMiddleware('user_logout') as any,
+  (req: Request, res: Response) => { logout(req as any, res);
 });
 
 // Password reset routes
