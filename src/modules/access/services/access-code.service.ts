@@ -9,23 +9,30 @@ export class AccessCodeService {
       status: 'pending'
     });
 
-    if (data.guest_phone && data.guest_name) {
-      const sent = await whatsappService.sendAccessCode(
-        data.guest_phone,
-        data.code,
-        data.guest_name,
-        data.valid_until
-      );
-      
-      if (sent) {
-        await accessLog.update({
-          whatsapp_sent: true,
-          whatsapp_sent_at: new Date()
-        });
-      }
-    }
+    // TODO: Uncomment when guest_phone is added to AccessLog model
+    // if (data.guest_phone && data.guest_name) {
+    //   const message = data.message || this.formatAccessCodeMessage(
+    //     data.code,
+    //     data.guest_name,
+    //     data.valid_until
+    //   );
+    //   
+    //   const sent = await whatsappService.sendMessage(data.guest_phone, message);
+    //   
+    //   if (sent) {
+    //     await accessLog.update({
+    //       whatsapp_sent: true,
+    //       whatsapp_sent_at: new Date()
+    //     });
+    //   }
+    // }
 
     return accessLog;
+  }
+
+  private formatAccessCodeMessage(code: string, guestName: string, validUntil: Date): string {
+    const validUntilStr = new Date(validUntil).toLocaleString();
+    return `Hello ${guestName},\n\nYour access code is: *${code}*\n\nValid until: ${validUntilStr}\n\nPlease present this code at the gate.\n\nThank you!`;
   }
 
   async validateCode(code: string) {
@@ -39,7 +46,14 @@ export class AccessCodeService {
       return null;
     }
 
-    const message = `Hello ${accessLog.guest_name || 'Guest'},\n\nYour access code is: *${accessLog.access_code}*\n\nValid until: ${new Date(accessLog.valid_until!).toLocaleString()}\n\nPlease present this code at the gate.\n\nThank you!`;
+    // TODO: Uncomment when guest_phone is added to AccessLog model
+    // const message = this.formatAccessCodeMessage(
+    //   accessLog.access_code,
+    //   accessLog.guest_name || 'Guest',
+    //   accessLog.valid_until!
+    // );
+    // 
+    // return whatsappService.getWhatsAppUrl(accessLog.guest_phone || '', message);
     
     return null;
   }
