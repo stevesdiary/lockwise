@@ -114,6 +114,15 @@ class FileValidationService {
   }
 
   private performSecurityScan(buffer: Buffer, filename: string): FileValidationResult {
+    // Sanitize and validate filename first
+    const sanitizedFilename = filename.replace(/[\/\\]/g, '').replace(/\.\./g, '');
+    if (sanitizedFilename !== filename) {
+      return {
+        isValid: false,
+        error: 'Invalid filename: path traversal attempt detected'
+      };
+    }
+    
     const content = buffer.toString('utf8', 0, Math.min(buffer.length, 1024));
     
     // Check for suspicious patterns
@@ -124,7 +133,10 @@ class FileValidationService {
       /onload=/i,
       /onerror=/i,
       /eval\(/i,
-      /document\.write/i
+      /document\.write/i,
+      /<iframe/i,
+      /<embed/i,
+      /<object/i
     ];
 
     for (const pattern of suspiciousPatterns) {
@@ -136,8 +148,15 @@ class FileValidationService {
       }
     }
 
-    // Check filename for suspicious extensions
-    const dangerousExtensions = ['.exe', '.bat', '.cmd', '.scr', '.pif', '.com', '.js', '.vbs'];
+    // Check filename for suspicious extensions and null bytes
+    if (filename.includes('\0')) {
+      return {
+        isValid: false,
+        error: 'Invalid filename: null byte detected'
+      };
+    }
+    
+    const dangerousExtensions = ['.exe', '.bat', '.cmd', '.scr', '.pif', '.com', '.js', '.vbs', '.jar', '.app', '.deb', '.rpm'];
     const hasDoubleExtension = dangerousExtensions.some(ext => 
       filename.toLowerCase().includes(ext)
     );

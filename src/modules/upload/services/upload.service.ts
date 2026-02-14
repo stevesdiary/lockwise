@@ -1,8 +1,18 @@
 import { PutObjectCommand, ListObjectsV2Command, _Object } from '@aws-sdk/client-s3';
 import objectStorage from '../../../shared/core/object.storage';
 import { nanoid } from 'nanoid';
+import path from 'path';
 
 const BUCKET_NAME = process.env.S3_BUCKET_NAME || 'lockwise-uploads';
+
+// Sanitize filename to prevent path traversal
+function sanitizeFilename(filename: string): string {
+  // Remove path separators and parent directory references
+  return filename
+    .replace(/\.\./g, '')
+    .replace(/[\/\\]/g, '')
+    .replace(/[^a-zA-Z0-9._-]/g, '_');
+}
 
 export const uploadService = {
   async uploadFile(file: Express.Multer.File, tenantId?: string, tenantName?: string) {
@@ -13,7 +23,9 @@ export const uploadService = {
         folderPath = `${tenantId}_${sanitizedName}/`;
       }
       
-      const key = `${folderPath}${Date.now()}-${nanoid()}-${file.originalname}`;
+      // Sanitize filename to prevent path traversal attacks
+      const safeFilename = sanitizeFilename(file.originalname);
+      const key = `${folderPath}${Date.now()}-${nanoid()}-${safeFilename}`;
       
       const command = new PutObjectCommand({
         Bucket: BUCKET_NAME,
