@@ -17,7 +17,7 @@ function generateId(): string {
 
 async function generateAccessCode(estateId: string): Promise<string> {
   const result = await AccessCodeService.generateCode({ estate_id: estateId });
-  return result.code;
+  return result.access_code || '';
 }
 
 function generateCustomAccessCode(eventName: string): string {
