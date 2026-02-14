@@ -15,6 +15,7 @@ import { Referrer } from '../../modules/payment/models/referrer.model';
 import { ReferralBonus } from '../../modules/payment/models/referral.bonus.model';
 import { Subscription } from '../../modules/payment/models/subscription.model';
 import { Address } from '../../modules/location/models/address.model';
+import { Gate } from '../../modules/estate/models/gate.model';
 
 const env = process.env.NODE_ENV || 'development';
 const isProduction = env === 'production';
@@ -27,23 +28,18 @@ const sequelize = new Sequelize({
   username: isProduction ? (process.env.PROD_DB_USER || 'postgres') : (process.env.DEV_DB_USER || 'postgres'),
   password: isProduction ? (process.env.PROD_DB_PASSWORD || '') : (process.env.DEV_DB_PASSWORD || ''),
   database: isProduction ? (process.env.PROD_DB_NAME || 'lockwise') : (process.env.DEV_DB_NAME || 'lockwise_dev'),
-  models: [User, Estate, Resident, Role, Payment, Street, Permission, Unit, RolePermission, Plan, Referrer, ReferralBonus, Address, Subscription],
+  models: [User, Estate, Resident, Role, Payment, Street, Permission, Unit, RolePermission, Plan, Referrer, ReferralBonus, Address, Subscription, Gate],
   dialectOptions: {
     ssl: process.env.SSL === 'true' ? {
       require: true,
       rejectUnauthorized: false
-    } : false,
-    keepAlive: true,
-    statement_timeout: 60000,
-    query_timeout: 60000,
-    connectionTimeoutMillis: 60000,
+    } : false
   },
   pool: {
-    max: isProduction ? 50 : 20,
-    min: isProduction ? 10 : 2,
-    acquire: 120000,
-    idle: 60000,
-    evict: 1000,
+    max: isProduction ? 50 : 5,
+    min: isProduction ? 10 : 0,
+    acquire: 30000,
+    idle: 10000
   },
   benchmark: !isProduction,
   logging: isProduction ? false : (sql, timing) => {
