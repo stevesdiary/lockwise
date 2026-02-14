@@ -14,7 +14,8 @@ export const login = async (req: Request, res: Response) => {
     const result = await loginUser(email, password);
     return res.status(result.statusCode).json(result);
   } catch (error: any) {
-    console.error('Login controller error:', error);
+    const sanitizedError = error?.message?.replace(/[\r\n]/g, '') || 'Unknown error';
+    console.error('Login controller error:', sanitizedError);
     
     // Handle validation errors
     if (error.name === 'ValidationError') {
@@ -34,8 +35,9 @@ export const logout = async (req: AuthRequest, res: Response) => {
   try {
     const result = await logoutUser(req.user?.sessionId, res);
     return res.status(result.statusCode).json(result);
-  } catch (error) {
-    console.error('Logout controller error:', error);
+  } catch (error: any) {
+    const sanitizedError = error?.message?.replace(/[\r\n]/g, '') || 'Unknown error';
+    console.error('Logout controller error:', sanitizedError);
     return res.status(500).json({ message: 'Logout failed' });
   }
 };

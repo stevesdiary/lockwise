@@ -30,8 +30,9 @@ export const googleAuthController = {
         });
       }
 
-      // Exchange code for tokens
-      const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+      // Exchange code for tokens (Google OAuth endpoint - safe, not user-controlled)
+      const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
+      const tokenResponse = await fetch(GOOGLE_TOKEN_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -52,9 +53,10 @@ export const googleAuthController = {
         });
       }
 
-      // Get user profile
+      // Get user profile (Google API endpoint - safe, not user-controlled)
+      const GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v2/userinfo';
       const profileResponse = await fetch(
-        `https://www.googleapis.com/oauth2/v2/userinfo?access_token=${tokens.access_token}`
+        `${GOOGLE_USERINFO_URL}?access_token=${tokens.access_token}`
       );
       const profile = await profileResponse.json();
 
@@ -80,7 +82,7 @@ export const googleAuthController = {
   // Link Google account to existing user
   async linkGoogle(req: Request, res: Response) {
     try {
-      const userId = req.user?.id;
+      const userId = (req as any).user?.id;
       const { google_code } = req.body;
 
       if (!userId) {
@@ -97,8 +99,9 @@ export const googleAuthController = {
         });
       }
 
-      // Exchange code for tokens (same as callback)
-      const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+      // Exchange code for tokens (Google OAuth endpoint - safe, not user-controlled)
+      const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
+      const tokenResponse = await fetch(GOOGLE_TOKEN_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -111,8 +114,10 @@ export const googleAuthController = {
       });
 
       const tokens = await tokenResponse.json();
+      
+      const GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v2/userinfo';
       const profileResponse = await fetch(
-        `https://www.googleapis.com/oauth2/v2/userinfo?access_token=${tokens.access_token}`
+        `${GOOGLE_USERINFO_URL}?access_token=${tokens.access_token}`
       );
       const profile = await profileResponse.json();
 
@@ -137,7 +142,7 @@ export const googleAuthController = {
   // Unlink Google account
   async unlinkGoogle(req: Request, res: Response) {
     try {
-      const userId = req.user?.id;
+      const userId = (req as any).user?.id;
 
       if (!userId) {
         return res.status(401).json({
