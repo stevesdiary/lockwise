@@ -10,12 +10,16 @@
     "estates": {
       "list": "/estates",
       "create": "/estates",
-      "upload_bulk": "/estates/bulk-upload"
+      "upload_bulk": "/estates/bulk-upload",
+      "search_by_code": "/estate/search/{estate_code}",
+      "approve": "/estate/estates/{estateId}/approve",
+      "validate_invitation": "/estate/invitations/validate/{token}"
     },
     "users": {
       "list": "/users/all",
       "create": "/users/register",
-      "bulk_upload": "/users/bulk-upload"
+      "bulk_upload": "/users/bulk-upload",
+      "link_estate": "/user/link-estate"
     },
     "access_codes": {
       "generate": "/access-codes/generate",
@@ -61,6 +65,112 @@
         "valid_until": "2024-12-31T23:59:59Z",
         "access_type": "visitor"
       }
+    },
+    "Create Unlimited Access (Domestic Staff)": {
+      "method": "POST",
+      "url": "/api/v1/access",
+      "headers": {
+        "Authorization": "Bearer YOUR_JWT_TOKEN"
+      },
+      "body": {
+        "access_type": "domestic_staff",
+        "valid_from": "2024-02-01T00:00:00Z",
+        "valid_until": "2024-02-21T23:59:59Z",
+        "remarks": "3-week domestic staff access - unlimited entries"
+      }
+    },
+    "Process Code Scan": {
+      "method": "POST",
+      "url": "/api/v1/access/scan",
+      "body": {
+        "code": "ABC123",
+        "gate_id": "gate_001",
+        "scanned_by": "user_123"
+      }
+    },
+    "Get Entry Statistics": {
+      "method": "GET",
+      "url": "/api/v1/access/{accessId}/statistics",
+      "headers": {
+        "Authorization": "Bearer YOUR_JWT_TOKEN"
+      }
+    },
+    "Create Estate": {
+      "method": "POST",
+      "url": "/api/v1/estate/register",
+      "headers": {
+        "Authorization": "Bearer YOUR_JWT_TOKEN",
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "name": "Greenfield Estate",
+        "address": {
+          "number": "12B",
+          "street": "Palm Avenue",
+          "city": "Lekki",
+          "country": "Nigeria"
+        },
+        "type": "residential",
+        "state": "Lagos",
+        "number_of_appartments": 120,
+        "total_number_of_floors": 6,
+        "contact_phone": "08012345678",
+        "contact_email": "estatemanager@mailinator.com",
+        "contact_address": {
+          "number": "12B",
+          "street": "Palm Avenue",
+          "city": "Lekki",
+          "country": "Nigeria"
+        }
+      }
+    }
+  },
+  "Send OTP": {
+    "method": "POST",
+    "url": "/api/v1/auth/phone/send-otp",
+    "body": {
+      "phone": "+2348012345678"
+    }
+  },
+  "Verify OTP": {
+    "method": "POST",
+    "url": "/api/v1/auth/phone/verify-otp",
+    "body": {
+      "phone": "+2348012345678",
+      "otp": "123456"
+    }
+  },
+  "Get Pending Estates": {
+    "method": "GET",
+    "url": "/api/v1/estate/estates/pending",
+    "headers": {
+      "Authorization": "Bearer YOUR_JWT_TOKEN"
+    }
+  },
+  "Approve Estate": {
+    "method": "PATCH",
+    "url": "/api/v1/estate/estates/{estateId}/approve",
+    "headers": {
+      "Authorization": "Bearer YOUR_JWT_TOKEN"
+    }
+  },
+  "Search Estate by Code": {
+    "method": "GET",
+    "url": "/api/v1/estate/search/EST123456"
+  },
+  "Validate Estate Invitation": {
+    "method": "GET",
+    "url": "/api/v1/estate/invitations/validate/INVITATION_TOKEN_HERE"
+  },
+  "Link User to Estate": {
+    "method": "POST",
+    "url": "/api/v1/user/link-estate",
+    "headers": {
+      "Authorization": "Bearer YOUR_JWT_TOKEN",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "estate_code": "EST123456"
     }
   }
 }

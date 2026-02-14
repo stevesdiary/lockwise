@@ -197,6 +197,48 @@ const options = {
             }
           }
         },
+        EstateSearchResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            message: { type: 'string', example: 'Estate found' },
+            data: {
+              $ref: '#/components/schemas/Estate'
+            }
+          }
+        },
+        EstateLinkingRequest: {
+          type: 'object',
+          required: ['estate_code'],
+          properties: {
+            estate_code: { type: 'string', example: 'EST123456', description: 'Estate code to link user to' }
+          }
+        },
+        EstateLinkingResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            message: { type: 'string', example: 'User linked to estate successfully' },
+            data: {
+              type: 'object',
+              properties: {
+                estate: {
+                  $ref: '#/components/schemas/Estate'
+                }
+              }
+            }
+          }
+        },
+        InvitationValidationResponse: {
+          type: 'object',
+          properties: {
+            valid: { type: 'boolean', example: true },
+            message: { type: 'string', example: 'Invitation is valid' },
+            estate: {
+              $ref: '#/components/schemas/Estate'
+            }
+          }
+        },
         SupportTicket: {
           type: 'object',
           required: ['subject', 'description', 'priority'],
@@ -576,6 +618,186 @@ const options = {
             },
             '404': {
               description: 'Not found - Estate not found',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '500': {
+              description: 'Internal server error',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/estate/search/{estate_code}': {
+        get: {
+          tags: ['Estates'],
+          summary: 'Search estate by code',
+          description: 'Search for an estate using its unique estate code',
+          parameters: [
+            {
+              name: 'estate_code',
+              in: 'path',
+              required: true,
+              schema: {
+                type: 'string'
+              },
+              description: 'Unique estate code to search for'
+            }
+          ],
+          responses: {
+            '200': {
+              description: 'Estate found successfully',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/EstateSearchResponse'
+                  }
+                }
+              }
+            },
+            '404': {
+              description: 'Estate not found',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '500': {
+              description: 'Internal server error',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/user/link-estate': {
+        post: {
+          tags: ['Users'],
+          summary: 'Link user to estate',
+          description: 'Link authenticated user to an estate using estate code',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/EstateLinkingRequest'
+                }
+              }
+            }
+          },
+          responses: {
+            '200': {
+              description: 'User linked to estate successfully',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/EstateLinkingResponse'
+                  }
+                }
+              }
+            },
+            '400': {
+              description: 'Bad request - estate code required',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '401': {
+              description: 'Unauthorized - Invalid or missing authentication token',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '404': {
+              description: 'Estate not found',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '500': {
+              description: 'Internal server error',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/estate/invitations/validate/{token}': {
+        get: {
+          tags: ['Estates'],
+          summary: 'Validate estate invitation',
+          description: 'Validate an estate invitation token',
+          parameters: [
+            {
+              name: 'token',
+              in: 'path',
+              required: true,
+              schema: {
+                type: 'string'
+              },
+              description: 'Invitation token to validate'
+            }
+          ],
+          responses: {
+            '200': {
+              description: 'Invitation validated successfully',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/InvitationValidationResponse'
+                  }
+                }
+              }
+            },
+            '400': {
+              description: 'Bad request - token required',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '404': {
+              description: 'Invitation not found or expired',
               content: {
                 'application/json': {
                   schema: {
