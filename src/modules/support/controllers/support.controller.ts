@@ -19,6 +19,20 @@ export const supportController = {
     }
   },
 
+  async getSupportInfo(req: AuthRequest, res: Response) {
+    try {
+      const estateId = req.user?.estate_id;
+      const data = await supportService.getSupportInfo(estateId);
+
+      res.json({
+        success: true,
+        data
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch support info' });
+    }
+  },
+
   async getMyTickets(req: AuthRequest, res: Response) {
     try {
       const tickets = await supportService.getUserTickets(req.user!.id);

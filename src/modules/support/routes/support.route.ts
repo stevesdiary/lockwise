@@ -7,6 +7,14 @@ import { Resource, Permission } from '../../../shared/constants/permissions';
 
 const router = Router();
 
+// Get support contact info
+router.get(
+  '/info',
+  rateLimiters.api,
+  authenticateToken,
+  supportController.getSupportInfo
+);
+
 // Customer routes (residents, managers)
 router.post(
   '/tickets',

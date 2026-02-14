@@ -1,10 +1,32 @@
 import { SupportTicket, SupportMessage } from '../../support/models/support.model';
 import { User } from '../../auth/models/user.model';
 import { Role } from '../../auth/models/role.model';
+import { Estate } from '../../estate/models/estate.model';
 import notificationService from '../../communication/services/notification.service';
 import { pushNotificationService } from '../../communication/services/push-notification.service';
 
 export const supportService = {
+  async getSupportInfo(estateId?: string) {
+    const supportWhatsapp = process.env.SUPPORT_WHATSAPP || '';
+    
+    let estateContact = null;
+    if (estateId) {
+      const estate = await Estate.findByPk(estateId);
+      if (estate?.contact_info) {
+        estateContact = {
+          phone: estate.contact_info.phone,
+          email: estate.contact_info.email,
+          name: estate.name
+        };
+      }
+    }
+
+    return {
+      supportWhatsapp,
+      estateContact
+    };
+  },
+
   async createTicket(userId: string, data: { subject: string; description: string; category: string; priority?: string }) {
     const ticket = await SupportTicket.create({
       user_id: userId,
