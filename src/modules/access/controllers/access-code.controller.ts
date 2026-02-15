@@ -5,6 +5,7 @@ import AccessLog from '../models/access-log.model';
 import { User } from '../../auth/models/user.model';
 import logger from '../../../shared/utils/logger';
 import { getResidentFullAddress, formatAccessCodeMessage } from '../../../shared/utils/address.util';
+import notificationService from '../../../shared/services/notification.service';
 
 export const accessCodeController = {
   async getAccessCodes(req: AuthRequest, res: Response) {
@@ -48,7 +49,7 @@ export const accessCodeController = {
         return res.status(400).json({ message: 'visitor_name and valid_until are required' });
       }
 
-      const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
       const validFromDate = valid_from ? new Date(valid_from) : new Date();
       const validUntilDate = new Date(valid_until);
       
@@ -129,7 +130,10 @@ export const accessCodeController = {
         return res.status(400).json({ success: false, message: 'Code is required' });
       }
 
-      const accessLog = await AccessLog.findOne({ where: { access_code: code, status: 'pending' } });
+      const accessLog = await AccessLog.findOne({ 
+        where: { access_code: code, status: 'pending' },
+        include: [{ model: User, as: 'user', attributes: ['phone'] }]
+      });
 
       if (!accessLog) {
         return res.status(404).json({ success: false, message: 'Access code not found' });
@@ -140,6 +144,16 @@ export const accessCodeController = {
         entry_time: new Date(),
         scanned_by: securityId
       });
+
+      // Send real-time notification to resident
+      if (accessLog.user?.phone) {
+        notificationService.sendEntryNotification(
+          accessLog.user.phone,
+          accessLog.guest_name || 'Guest',
+          code,
+          'approved'
+        ).catch(err => logger.error('Notification error:', err));
+      }
 
       return res.status(200).json({
         success: true,
@@ -161,7 +175,10 @@ export const accessCodeController = {
         return res.status(400).json({ success: false, message: 'Code is required' });
       }
 
-      const accessLog = await AccessLog.findOne({ where: { access_code: code, status: 'pending' } });
+      const accessLog = await AccessLog.findOne({ 
+        where: { access_code: code, status: 'pending' },
+        include: [{ model: User, as: 'user', attributes: ['phone'] }]
+      });
 
       if (!accessLog) {
         return res.status(404).json({ success: false, message: 'Access code not found' });
@@ -172,6 +189,16 @@ export const accessCodeController = {
         scanned_by: securityId,
         remark: reason
       });
+
+      // Send real-time notification to resident
+      if (accessLog.user?.phone) {
+        notificationService.sendEntryNotification(
+          accessLog.user.phone,
+          accessLog.guest_name || 'Guest',
+          code,
+          'rejected'
+        ).catch(err => logger.error('Notification error:', err));
+      }
 
       return res.status(200).json({
         success: true,

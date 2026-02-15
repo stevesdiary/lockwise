@@ -47,7 +47,21 @@ export const emailTemplates = {
         <p>If you didn't request this verification, please ignore this email.</p>
         <p>Best regards,<br>The Lockwise Team</p>
       </div>
-    `)
+    `),
+    text: `Verify Your Email - Lockwise
+
+Hello ${data.name || 'there'},
+
+Thank you for registering with Lockwise. To complete your registration, please use the verification code below:
+
+${data.code || data}
+
+This code will expire in 10 minutes for security reasons.
+
+If you didn't request this verification, please ignore this email.
+
+Best regards,
+The Lockwise Team`
   }),
   
   passwordReset: (data: any) => ({
@@ -65,7 +79,21 @@ export const emailTemplates = {
         <p>If you didn't request a password reset, please ignore this email or contact support if you have concerns.</p>
         <p>Best regards,<br>The Lockwise Team</p>
       </div>
-    `)
+    `),
+    text: `Reset Your Password - Lockwise
+
+Hello ${data.name || 'there'},
+
+We received a request to reset your password for your Lockwise account.
+
+Reset your password: ${data.reset_link || data}
+
+This link will expire in 1 hour for security reasons.
+
+If you didn't request a password reset, please ignore this email or contact support if you have concerns.
+
+Best regards,
+The Lockwise Team`
   }),
   
   welcome: (data: any) => ({
@@ -86,7 +114,25 @@ export const emailTemplates = {
         <p>If you have any questions, our support team is here to help!</p>
         <p>Best regards,<br>The Lockwise Team</p>
       </div>
-    `)
+    `),
+    text: `Welcome to Lockwise - Your Smart Estate Management Solution
+
+Hello ${data.name || 'there'},
+
+We're thrilled to have you join ${data.estate_name || 'Lockwise'}!
+
+Lockwise is your comprehensive estate management solution, providing:
+• 🔐 Secure access control and visitor management
+• 📱 Real-time notifications and updates
+• 💳 Seamless payment processing
+• 🏘️ Community engagement tools
+
+Get started by logging into your account and exploring all the features we have to offer.
+
+If you have any questions, our support team is here to help!
+
+Best regards,
+The Lockwise Team`
   }),
   
   accessCode: (data: any) => ({
@@ -104,7 +150,23 @@ export const emailTemplates = {
         <p>For security reasons, this code is unique and should not be shared publicly.</p>
         <p>Best regards,<br>The Lockwise Team</p>
       </div>
-    `)
+    `),
+    text: `Access Code Generated - Lockwise
+
+Hello ${data.name || 'there'},
+
+An access code has been generated for ${data.guest_name || 'your guest'}:
+
+${data.access_code || data.code}
+
+Valid until: ${data.valid_until || 'the specified date'}
+
+Please share this code with your guest. They will need it to gain entry to the estate.
+
+For security reasons, this code is unique and should not be shared publicly.
+
+Best regards,
+The Lockwise Team`
   }),
 
   paymentSuccess: (data: any) => ({
@@ -122,6 +184,21 @@ export const emailTemplates = {
         <p>If you have any questions about this transaction, please contact our support team.</p>
         <p>Best regards,<br>The Lockwise Team</p>
       </div>
-    `)
+    `),
+    text: `Payment Successful - Lockwise
+
+Hello ${data.name || 'there'},
+
+Your payment has been successfully processed!
+
+Amount: ${data.amount}
+Reference: ${data.reference}
+
+Thank you for your payment. A receipt has been generated for your records.
+
+If you have any questions about this transaction, please contact our support team.
+
+Best regards,
+The Lockwise Team`
   })
 };
