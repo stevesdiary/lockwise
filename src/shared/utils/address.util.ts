@@ -34,6 +34,13 @@ export const getResidentFullAddress = async (userId: string): Promise<string> =>
     }
 
     const resident = user.residentProfile as any;
+    
+    // Return stored address if available
+    if (resident.address) {
+      return resident.address;
+    }
+
+    // Fallback to constructed address
     const unit = resident.unit;
     const street = unit?.street;
     const estate = resident.estate;
