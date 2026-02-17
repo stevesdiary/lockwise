@@ -171,17 +171,41 @@ async function approveAccess(req: Request, res: Response) {
   }
 }
 
+// Revoke access request
+async function revokeAccess(req: Request, res: Response) {
+  try {
+    const accessId = req.params.accessId as string;
+    const revokedBy = req.user?.id;
+
+    if (!accessId || !revokedBy) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Access ID and revoker ID are required'
+      });
+    }
+
+    await accessLogService.revokeAccess(accessId, revokedBy);
+    
+    return res.status(200).json({
+      status: 'success',
+      message: 'Access revoked successfully'
+    });
+  } catch (error) {
+    return handleControllerError(error, res);
+  }
+}
+
 // Get all access logs
 async function getAllAccess(req: Request, res: Response) {
   try {
     const { estate_id, user_id, status, limit, offset } = req.query;
     
     const accessLogs = await accessLogService.getAccessLogs({
-      estate_id: estate_id as string || req.user?.estate_id,
-      user_id: user_id as string,
-      status: status as string,
-      limit: limit ? parseInt(limit as string) : undefined,
-      offset: offset ? parseInt(offset as string) : undefined
+      estate_id: (typeof estate_id === 'string' ? estate_id : undefined) || req.user?.estate_id,
+      user_id: typeof user_id === 'string' ? user_id : undefined,
+      status: typeof status === 'string' ? status : undefined,
+      limit: limit && typeof limit === 'string' ? parseInt(limit) : undefined,
+      offset: offset && typeof offset === 'string' ? parseInt(offset) : undefined
     });
     
     return res.status(200).json({
@@ -206,8 +230,8 @@ async function getActiveAccess(req: Request, res: Response) {
     }
 
     const activeAccess = await accessLogService.getActiveAccess({ 
-      user_id: user_id as string, 
-      estate_id: estate_id as string 
+      user_id: typeof user_id === 'string' ? user_id : '', 
+      estate_id: typeof estate_id === 'string' ? estate_id : '' 
     });
     
     return res.status(200).json({
@@ -225,6 +249,7 @@ export {
   recordExit,
   processCodeScan,
   approveAccess,
+  revokeAccess,
   getAllAccess,
   getActiveAccess
 };

@@ -30,8 +30,8 @@ AccessLog.init({
     allowNull: false
   },
   status: {
-    type: DataTypes.ENUM('pending', 'approved', 'rejected', 'expired'),
-    defaultValue: 'pending'
+    type: DataTypes.ENUM('active', 'used', 'approved', 'rejected', 'expired', 'revoked'),
+    defaultValue: 'active'
   },
   access_code: {
     type: DataTypes.STRING,

@@ -20,15 +20,43 @@ export class AccessLogService {
   }
 
   async logExit(logId: string) {
-    return await AccessLog.update({ exit_time: new Date() }, { where: { log_id: logId } });
+    return await AccessLog.update({ exit_time: new Date() }, { where: { id: logId } });
   }
 
   async approveAccess(data: any) {
-    return await AccessLog.update({ status: 'approved', approved_by: data.approved_by }, { where: { log_id: data.access_id } });
+    return await AccessLog.update({ status: 'approved', approved_by: data.approved_by }, { where: { id: data.access_id } });
+  }
+
+  async revokeAccess(accessId: string, revokedBy: string) {
+    const accessLog = await AccessLog.findByPk(accessId);
+    if (!accessLog) {
+      throw new Error('Access record not found');
+    }
+    
+    if (accessLog.status === 'used' || accessLog.status === 'expired' || accessLog.status === 'revoked') {
+      throw new Error(`Cannot revoke access that is already ${accessLog.status}`);
+    }
+    
+    return await AccessLog.update({ 
+      status: 'revoked', 
+      approved_by: revokedBy 
+    }, { 
+      where: { id: accessId } 
+    });
   }
 
   async getActiveAccess(filters: any) {
     return await AccessLog.findAll({ where: { ...filters, status: 'active' } });
+  }
+
+  async getAccessByCode(accessCode: string) {
+    const accessLog = await AccessLog.findOne({ where: { access_code: accessCode } });
+    
+    if (!accessLog) {
+      throw new Error('Access code not found');
+    }
+
+    return accessLog;
   }
 
   async processCodeScan(code: string, gateId?: string, scannedBy?: string) {
@@ -48,7 +76,7 @@ export class AccessLogService {
     }
 
     await accessLog.update({
-      status: 'approved',
+      status: 'used',
       scanned_by: scannedBy,
       // used_entries: accessLog.used_entries + 1
     });
