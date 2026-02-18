@@ -1,6 +1,7 @@
 import { Router } from "express";
 import multer from "multer";
 import { uploadController } from "../controllers/upload.controller";
+import { serveFile } from "../controllers/file.controller";
 import { authenticateToken } from "../../auth/middleware/auth.middleware";
 
 const router = Router();
@@ -18,5 +19,6 @@ router.post(
 router.post("/test-upload", upload.single("file"), uploadController.uploadFile); // Test endpoint without auth
 router.get("/files", authenticateToken, uploadController.getFiles);
 router.get("/test-files", uploadController.getFiles); // Test endpoint without auth
+router.get("/file/:folder/:filename", serveFile);
 
 export default router;

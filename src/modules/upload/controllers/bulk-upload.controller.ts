@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import bulkUploadService from '../services/bulk-upload.service';
 import fileUploadService from '../services/file-upload.service';
 import { asyncHandler } from '../../../shared/middleware/error-handler.middleware';
+import { asString } from '../../../shared/utils/param.util';
 
 interface BulkUploadRequest extends Request {
   file?: Express.Multer.File;
@@ -116,7 +117,7 @@ const bulkUploadController = {
   }),
 
   getUploadTemplate: asyncHandler(async (req: Request, res: Response) => {
-    const { type } = req.params;
+    const type = asString(req.params.type);
     
     const templates = {
       estates: {
