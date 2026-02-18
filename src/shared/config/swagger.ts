@@ -239,6 +239,52 @@ const options = {
             }
           }
         },
+        InvitationLinkResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            link: { type: 'string', example: 'lockwise://register?invite=eyJlc3RhdGVfaWQiOiI...' },
+            message: { type: 'string', example: 'Invitation link generated successfully' }
+          }
+        },
+        BulkInvitationRequest: {
+          type: 'object',
+          required: ['emails'],
+          properties: {
+            emails: { 
+              type: 'array',
+              items: { type: 'string', format: 'email' },
+              example: ['resident1@example.com', 'resident2@example.com'],
+              description: 'Array of email addresses to invite'
+            }
+          }
+        },
+        ResendInvitationRequest: {
+          type: 'object',
+          required: ['email'],
+          properties: {
+            email: { 
+              type: 'string', 
+              format: 'email', 
+              example: 'resident@example.com',
+              description: 'Email address to resend invitation to'
+            }
+          }
+        },
+        BulkInvitationResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            message: { type: 'string', example: 'Invitation emails processed' },
+            invited: { type: 'number', example: 3 },
+            failed: { type: 'number', example: 0 },
+            links: { 
+              type: 'array',
+              items: { type: 'string' },
+              example: ['lockwise://register?invite=link1', 'lockwise://register?invite=link2']
+            }
+          }
+        },
         SupportTicket: {
           type: 'object',
           required: ['subject', 'description', 'priority'],
@@ -798,6 +844,217 @@ const options = {
             },
             '404': {
               description: 'Invitation not found or expired',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '500': {
+              description: 'Internal server error',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/estate/invite/{estateId}': {
+        post: {
+          tags: ['Estates'],
+          summary: 'Generate estate invitation link',
+          description: 'Generate a secure invitation link for estate residents. Requires manager authentication and estate association.',
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            {
+              name: 'estateId',
+              in: 'path',
+              required: true,
+              schema: {
+                type: 'string'
+              },
+              description: 'ID of the estate to generate invitation for'
+            }
+          ],
+          responses: {
+            '200': {
+              description: 'Invitation link generated successfully',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/InvitationLinkResponse'
+                  }
+                }
+              }
+            },
+            '400': {
+              description: 'Bad request - estate not found',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '401': {
+              description: 'Unauthorized - authentication required',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '403': {
+              description: 'Forbidden - manager role required or not linked to estate',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '500': {
+              description: 'Internal server error',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/estate/residents/bulk-invite': {
+        post: {
+          tags: ['Estates'],
+          summary: 'Send bulk estate invitations',
+          description: 'Send invitation emails to multiple residents at once. Requires manager authentication and estate association.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/BulkInvitationRequest'
+                }
+              }
+            }
+          },
+          responses: {
+            '200': {
+              description: 'Bulk invitations processed successfully',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/BulkInvitationResponse'
+                  }
+                }
+              }
+            },
+            '400': {
+              description: 'Bad request - invalid email array',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '401': {
+              description: 'Unauthorized - authentication required',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '403': {
+              description: 'Forbidden - manager role required or not linked to estate',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '500': {
+              description: 'Internal server error',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/estate/residents/resend-invite': {
+        post: {
+          tags: ['Estates'],
+          summary: 'Resend estate invitation',
+          description: 'Resend invitation email to a specific resident. Requires manager authentication and estate association.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/ResendInvitationRequest'
+                }
+              }
+            }
+          },
+          responses: {
+            '200': {
+              description: 'Invitation resent successfully',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/BulkInvitationResponse'
+                  }
+                }
+              }
+            },
+            '400': {
+              description: 'Bad request - email required or invalid',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '401': {
+              description: 'Unauthorized - authentication required',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '403': {
+              description: 'Forbidden - manager role required or not linked to estate',
               content: {
                 'application/json': {
                   schema: {
