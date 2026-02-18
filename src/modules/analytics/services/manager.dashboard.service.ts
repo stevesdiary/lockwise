@@ -2,21 +2,38 @@ import { Payment } from '../../payment/models/payment.model';
 import { User } from '../../auth/models/user.model';
 import { Subscription } from '../../payment/models/subscription.model';
 import accessLogService from '../../access/services/access-log.service';
+import AccessLog from '../../access/models/access-log.model';
+import sequelize from '../../../shared/core/database';
+import { QueryTypes } from 'sequelize';
 
 export const managerDashboardService = {
   getEstateOverview: async (estate_id: string) => {
-    const [totalResidents, totalPayments, totalRevenue, activeSubscriptions] = await Promise.all([
-      User.count({ where: { estate_id }}),
+    const [totalResidents, totalPayments, totalRevenue, activeSubscribersResult] = await Promise.all([
+      User.count({ where: { estate_id, user_type: 'resident' } }),
       Payment.count({ where: { estate_id }}),
       Payment.sum('amount', { where: { estate_id, payment_status: 'completed' }}),
-      Subscription.count({ where: { estate_id, status: 'active' }})
+      sequelize.query<{ count: string }>(
+        `SELECT COUNT(*)::text as count
+         FROM subscriptions
+         WHERE estate_id = $1
+           AND status = 'active'`,
+        {
+          bind: [estate_id],
+          type: QueryTypes.SELECT,
+          plain: true
+        }
+      )
     ]);
+
+    const activeSubscribers = Number(activeSubscribersResult?.count || 0);
 
     return {
       totalResidents,
+      activeSubscribers,
+      // Backward compatibility for existing mobile client shape
+      activeSubscriptions: activeSubscribers,
       totalPayments,
-      totalRevenue: totalRevenue || 0,
-      activeSubscriptions
+      totalRevenue: totalRevenue || 0
     };
   },
 
@@ -34,6 +51,20 @@ export const managerDashboardService = {
       limit: filters.limit || 50,
       offset: filters.offset || 0,
       order: [['createdAt', 'DESC']]
+    });
+  },
+
+  getPendingEstateResidents: async (estate_id: string, filters: { limit?: number; offset?: number }) => {
+    return await User.findAll({
+      where: {
+        estate_id,
+        user_type: 'resident',
+        status: 'pending',
+      },
+      attributes: ['id', 'first_name', 'last_name', 'email', 'phone', 'status', 'createdAt'],
+      limit: filters.limit || 50,
+      offset: filters.offset || 0,
+      order: [['createdAt', 'DESC']],
     });
   },
 
@@ -58,5 +89,41 @@ export const managerDashboardService = {
       offset: filters.offset || 0,
       order: [['createdAt', 'DESC']]
     });
+  },
+
+  getPendingAccessRequests: async (estate_id: string) => {
+    return await AccessLog.findAll({
+      where: { estate_id, status: 'pending' },
+      include: [{ model: User, attributes: ['first_name', 'last_name', 'email', 'phone'] }],
+      order: [['createdAt', 'DESC']]
+    });
+  },
+
+  approveAccessRequest: async (access_id: string, approved_by: string) => {
+    return await accessLogService.approveAccess({ access_id, approved_by });
+  },
+
+  revokeAccessRequest: async (access_id: string, revoked_by: string) => {
+    return await accessLogService.revokeAccess(access_id, revoked_by);
+  },
+
+  updateUserRole: async (user_id: string, role_id: string, user_type?: string) => {
+    const updateData: any = { role_id };
+    if (user_type) updateData.user_type = user_type;
+    return await User.update(updateData, { where: { id: user_id } });
+  },
+
+  updateResidentStatus: async (user_id: string, status: 'active' | 'inactive' | 'suspended' | 'pending') => {
+    return await User.update({ status }, { where: { id: user_id } });
+  },
+
+  rejectResidentJoinRequest: async (user_id: string) => {
+    return await User.update(
+      {
+        status: 'inactive',
+        estate_id: null as any,
+      } as any,
+      { where: { id: user_id, user_type: 'resident' } }
+    );
   }
 };
