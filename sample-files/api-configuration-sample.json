@@ -13,7 +13,10 @@
       "upload_bulk": "/estates/bulk-upload",
       "search_by_code": "/estate/search/{estate_code}",
       "approve": "/estate/estates/{estateId}/approve",
-      "validate_invitation": "/estate/invitations/validate/{token}"
+      "validate_invitation": "/estate/invitations/validate/{token}",
+      "generate_invitation": "/estate/invite/{estateId}",
+      "bulk_invite": "/estate/residents/bulk-invite",
+      "resend_invite": "/estate/residents/resend-invite"
     },
     "users": {
       "list": "/users/all",
@@ -123,6 +126,40 @@
           "country": "Nigeria"
         }
       }
+    }
+  },
+  "Generate Invitation Link": {
+    "method": "POST",
+    "url": "/api/v1/estate/invite/{estateId}",
+    "headers": {
+      "Authorization": "Bearer YOUR_JWT_TOKEN",
+      "Content-Type": "application/json"
+    }
+  },
+  "Send Bulk Invitations": {
+    "method": "POST",
+    "url": "/api/v1/estate/residents/bulk-invite",
+    "headers": {
+      "Authorization": "Bearer YOUR_JWT_TOKEN",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "emails": [
+        "resident1@example.com",
+        "resident2@example.com",
+        "resident3@example.com"
+      ]
+    }
+  },
+  "Resend Invitation": {
+    "method": "POST",
+    "url": "/api/v1/estate/residents/resend-invite",
+    "headers": {
+      "Authorization": "Bearer YOUR_JWT_TOKEN",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "email": "resident@example.com"
     }
   },
   "Send OTP": {
