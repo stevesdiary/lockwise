@@ -254,6 +254,22 @@ class EmailService {
       data: { name, amount, reference },
     });
   }
+
+  async sendEstateInvitationEmail(
+    to: string,
+    data: {
+      name?: string;
+      inviter_name?: string;
+      estate_name: string;
+      invitation_link: string;
+    }
+  ): Promise<boolean> {
+    return this.sendEmail({
+      to,
+      template: 'estateInvitation',
+      data,
+    });
+  }
 }
 
 export default new EmailService();

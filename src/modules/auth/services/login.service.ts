@@ -69,7 +69,7 @@ export const loginUser = async (email: string, password: string) => {
           email: user.email,
           first_name: user.first_name,
           last_name: user.last_name,
-          phone_number: user.phone,
+          phone: user.phone,
           estate_id: user.estate_id,
           role: user.role?.role
         },
