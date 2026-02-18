@@ -77,18 +77,6 @@ export class User extends Model<User> {
     type: DataType.STRING,
     allowNull: true,
   })
-  declare verification_code: string | null;
-
-  @Column({
-    type: DataType.DATE,
-    allowNull: true,
-  })
-  declare verification_expires: Date | null;
-  
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
   declare reset_token: string | null;
 
   @Column({
@@ -132,7 +120,7 @@ export class User extends Model<User> {
   declare estate: Estate;
 
   @HasOne(() => Resident, { 
-    foreignKey: 'id', 
+    foreignKey: 'user_id', 
     as: 'residentProfile' 
   })
   declare residentProfile: Resident;
