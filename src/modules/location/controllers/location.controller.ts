@@ -2,11 +2,12 @@ import { Request, Response } from 'express';
 import { handleControllerError } from '../../../shared/middleware/error-handler.middleware';
 import { Address } from '../models/address.model';
 import geocodingService from '../services/geocoding.service';
+import { asString } from '../../../shared/utils/param.util';
 
 class LocationController {
   async updateAddressLocation(req: Request, res: Response) {
     try {
-      const { addressId } = req.params;
+      const addressId = asString(req.params.addressId);
       const { latitude, longitude, formatted_address } = req.body;
 
       const address = await Address.findByPk(addressId);
@@ -39,7 +40,7 @@ class LocationController {
 
   async getAddressLocation(req: Request, res: Response) {
     try {
-      const { addressId } = req.params;
+      const addressId = asString(req.params.addressId);
 
       const address = await Address.findByPk(addressId, {
         attributes: ['address_id', 'apartment_number', 'street', 'building', 'city', 'state', 'country', 'latitude', 'longitude']

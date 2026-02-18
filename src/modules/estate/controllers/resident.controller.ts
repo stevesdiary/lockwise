@@ -1,100 +1,84 @@
-// import { Request as ExpressRequest, Response } from "express";
-// import { ResidentService } from "./resident.service";
+import { Request, Response } from 'express';
+import { Resident } from '../models/resident.model';
+import { Unit } from '../models/unit.model';
+import { Street } from '../models/street.model';
+import { handleControllerError } from '../../../shared/middleware/error-handler.middleware';
 
-// const residentService = new ResidentService();
+class ResidentController {
+  // Update resident address by selecting unit
+  async updateResidentAddress(req: Request, res: Response) {
+    try {
+      const { resident_id } = req.params;
+      const { unit_id } = req.body;
 
+      // Get unit with street info to build full address
+      const unit = await Unit.findByPk(unit_id, {
+        include: [{ model: Street, as: 'street' }]
+      });
 
-// const ResidentController = {
-//   create: async (req: ExpressRequest, res: Response): Promise<Response> => {
-//     try {
-//       const createResidentData = req.body;
-//       const estateId = req.query.estate_id as string;
-//       if (!createResidentData || !estateId) {
-//         return res.status(400).json({
-//           status: "error",
-//           message: "Estate ID and resident data are required",
-//         });
-//       }
-//       const residentData = {
-//         ...createResidentData,
-//         estate_id: estateId
-//       };
-//       const newResident = await residentService.createResident(residentData);
-//       return res.json(newResident);
-//     } catch (error) {
-//       return res.status(500).json({
-//         status: "error",
-//         message: "Failed to create resident",
-//         error: error instanceof Error ? error.message : "Unknown error occurred",
-//       });
-//     }
-//   },
+      if (!unit) {
+        return res.status(404).json({
+          status: 'error',
+          message: 'Unit not found'
+        });
+      }
 
-//   getAllByEstate: async (req: ExpressRequest, res: Response): Promise<Response> => {
-//     try {
-//       const estateId = req.query.estate_id as string;
-//       const residents = await residentService.getResidentsByEstate(estateId);
-//       return res.json( residents);
-//     } catch (error) {
-//       return res.status(500).json({
-//         status: "error",
-//         message: "Failed to retrieve residents",
-//         error: error instanceof Error ? error.message : "Unknown error occurred",
-//       });
-//     }
-//   },
+      // Build full address
+      const fullAddress = `${unit.unit_identifier}, ${unit.street.name}`;
 
-//   getOne: async (req: ExpressRequest, res: Response): Promise<Response> => {
-//     try {
-//       const residentId = req.params.id;
-//       const estateId = req.query.estate_id as string;
-//       if (!residentId || !estateId) {
-//         return res.status(400).json({
-//           status: "error",
-//           message: "Resident ID and Estate ID are required",
-//         });
-//       }
-//       const resident = await residentService.getOneResident(residentId, estateId);
-//       if (!resident) {
-//         return res.status(404).json({
-//           status: "error",
-//           message: "Resident not found",
-//         });
-//       }
-//       return res.status(200).json({
-//         status: "success",
-//         data: resident,
-//       });
-//     } catch (error) {
-//       return res.status(500).json({
-//         status: "error",
-//         message: "Failed to retrieve resident",
-//         error: error instanceof Error ? error.message : "Unknown error occurred",
-//       });
-//     }
-//   },
+      // Update resident
+      const resident = await Resident.update(
+        {
+          unit_id,
+          address: fullAddress
+        },
+        {
+          where: { resident_id },
+          returning: true
+        }
+      );
 
-//   update: async (req: ExpressRequest, res: Response): Promise<Response> => {
-//     try {
-//       const residentId = req.params.id;
-//       const updatedData = req.body;
-      
-//       const updatedResident = await residentService.updateResident(residentId, updatedData);
-//       if (!updatedResident) {
-//         return res.status(404).json({
-//           status: "error",
-//           message: "Resident not found",
-//         });
-//       }
-//     return res.json( updatedResident );
-//     } catch (error) {
-//       return res.status(500).json({
-//         status: "error",
-//         message: "Failed to update resident",
-//         error: error instanceof Error ? error.message : "Unknown error occurred",
-//       });
-//     }
-//   }
-// }
+      return res.json({
+        status: 'success',
+        message: 'Address updated successfully',
+        data: {
+          resident: resident[1][0],
+          fullAddress
+        }
+      });
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  }
 
-// export default ResidentController;
+  // Get resident with full address details
+  async getResidentWithAddress(req: Request, res: Response) {
+    try {
+      const { resident_id } = req.params;
+
+      const resident = await Resident.findByPk(Array.isArray(resident_id) ? resident_id[0] : resident_id, {
+        include: [{
+          model: Unit,
+          as: 'unit',
+          include: [{ model: Street, as: 'street' }]
+        }]
+      });
+
+      if (!resident) {
+        return res.status(404).json({
+          status: 'error',
+          message: 'Resident not found'
+        });
+      }
+
+      return res.json({
+        status: 'success',
+        data: resident
+      });
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  }
+}
+
+export default new ResidentController();

@@ -1,4 +1,4 @@
-import { Column, Table, DataType, Model, ForeignKey, HasMany } from "sequelize-typescript";
+import { Column, Table, DataType, Model, ForeignKey, HasMany, BelongsTo } from "sequelize-typescript";
 import { Street } from "./street.model";
 import { Resident } from './resident.model';
 
@@ -89,6 +89,9 @@ export class Unit extends Model<UnitAttributes, UnitCreationAttributes> {
     defaultValue: 'vacant'
   })
   declare status?: 'occupied' | 'vacant' | 'under_construction' | 'reserved';
+
+  @BelongsTo(() => Street, { foreignKey: 'street_id', as: 'street' })
+  declare street: Street;
 
   @HasMany(() => Resident, { as: 'residentsInUnit' })
   declare residentsInUnit?: Resident[];

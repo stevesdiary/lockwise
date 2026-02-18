@@ -22,6 +22,12 @@ export class Resident extends Model<Resident> {
   })
   declare subscribed: boolean;
 
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true
+  })
+  declare address: string;
+
   @ForeignKey(() => Estate)
   @Column({
     type: DataType.UUID,
@@ -49,6 +55,6 @@ export class Resident extends Model<Resident> {
   })
   declare user_id: string;
 
-  @BelongsTo(() => Unit)
+  @BelongsTo(() => Unit, { foreignKey: 'unit_id', as: 'unit' })
   declare unit: Unit;
 }
