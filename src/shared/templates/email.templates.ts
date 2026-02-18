@@ -200,5 +200,35 @@ If you have any questions about this transaction, please contact our support tea
 
 Best regards,
 The Lockwise Team`
+  }),
+
+  estateInvitation: (data: any) => ({
+    subject: `You're invited to join ${data.estate_name || 'an estate'} on Lockwise`,
+    html: baseTemplate(`
+      <div class="content">
+        <h2>Estate Invitation</h2>
+        <p>Hello ${data.name || 'there'},</p>
+        <p>${data.inviter_name || 'A manager'} invited you to join <strong>${data.estate_name || 'their estate'}</strong> on Lockwise.</p>
+        <p>Use the secure invitation link below to join:</p>
+        <p style="text-align: center;">
+          <a href="${data.invitation_link}" class="button">Join Estate</a>
+        </p>
+        <p>If the button does not work, copy this link:</p>
+        <p style="word-break: break-all;">${data.invitation_link}</p>
+        <p>This invitation link expires automatically.</p>
+        <p>Best regards,<br>The Lockwise Team</p>
+      </div>
+    `),
+    text: `Estate Invitation
+
+Hello ${data.name || 'there'},
+
+${data.inviter_name || 'A manager'} invited you to join ${data.estate_name || 'their estate'} on Lockwise.
+
+Use this link to join:
+${data.invitation_link}
+
+Best regards,
+The Lockwise Team`
   })
 };
