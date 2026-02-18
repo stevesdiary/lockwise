@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { supportService } from '../../support/services/support.service';
 import { AuthRequest } from '../../auth/middleware/auth.middleware';
+import { asString } from '../../../shared/utils/param.util';
 
 export const supportController = {
   async createTicket(req: AuthRequest, res: Response) {
@@ -62,7 +63,7 @@ export const supportController = {
 
   async assignTicket(req: AuthRequest, res: Response) {
     try {
-      const { ticketId } = req.params;
+      const ticketId = asString(req.params.ticketId);
       const ticket = await supportService.assignTicket(ticketId, req.user!.id);
       res.json({ message: 'Ticket assigned', data: ticket });
     } catch (error) {
@@ -72,7 +73,7 @@ export const supportController = {
 
   async sendMessage(req: AuthRequest, res: Response) {
     try {
-      const { ticketId } = req.params;
+      const ticketId = asString(req.params.ticketId);
       const { message, is_internal } = req.body;
       
       const msg = await supportService.sendMessage(
@@ -90,7 +91,7 @@ export const supportController = {
 
   async getMessages(req: AuthRequest, res: Response) {
     try {
-      const { ticketId } = req.params;
+      const ticketId = asString(req.params.ticketId);
       const messages = await supportService.getTicketMessages(ticketId, req.user!.id);
       res.json({ data: messages });
     } catch (error) {
@@ -100,7 +101,7 @@ export const supportController = {
 
   async updateStatus(req: AuthRequest, res: Response) {
     try {
-      const { ticketId } = req.params;
+      const ticketId = asString(req.params.ticketId);
       const { status } = req.body;
       
       const ticket = await supportService.updateTicketStatus(ticketId, status);

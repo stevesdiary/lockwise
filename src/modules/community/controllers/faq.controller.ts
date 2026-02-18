@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { handleControllerError } from '../../../shared/middleware/error-handler.middleware';
 import faqService from '../services/faq.service';
+import { asString } from '../../../shared/utils/param.util';
 
 class FaqController {
   async getFaqs(req: Request, res: Response) {
@@ -56,7 +57,7 @@ class FaqController {
 
   async updateFaq(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = asString(req.params.id);
       const { question, answer, category, is_active, order_index } = req.body;
 
       const updated = await faqService.updateFaq(id, {
@@ -85,7 +86,7 @@ class FaqController {
 
   async deleteFaq(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = asString(req.params.id);
 
       const deleted = await faqService.deleteFaq(id);
 
