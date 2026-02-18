@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import * as userService from "../services/user.service";
+import { asString } from '../../../shared/utils/param.util';
 
 export const registerUser = async (req: Request, res: Response) => {
   try {
@@ -21,7 +22,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
 
 export const getUser = async (req: Request, res: Response) => {
   try {
-    const result = await userService.getUserById(req.params.id);
+    const result = await userService.getUserById(asString(req.params.id));
     res.status(result.statusCode).json(result);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch user" });
@@ -30,7 +31,7 @@ export const getUser = async (req: Request, res: Response) => {
 
 export const updateUser = async (req: Request, res: Response) => {
   try {
-    const targetUserId = req.params.id;
+    const targetUserId = asString(req.params.id);
     const currentUser = (req as any).user;
 
     // Prevent privilege escalation: users can only update themselves unless they're admin
@@ -63,7 +64,7 @@ export const updateUser = async (req: Request, res: Response) => {
 
 export const deleteUser = async (req: Request, res: Response) => {
   try {
-    const targetUserId = req.params.id;
+    const targetUserId = asString(req.params.id);
     const currentUser = (req as any).user;
 
     // Prevent self-deletion
@@ -91,7 +92,7 @@ export const deleteUser = async (req: Request, res: Response) => {
 export const uploadAvatar = async (req: Request, res: Response) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ error: "No file provided" });
+      return res.status(400).json({ success: false, error: "No file provided" });
     }
 
     const userId = (req as any).user.id;
@@ -99,7 +100,7 @@ export const uploadAvatar = async (req: Request, res: Response) => {
     res.status(result.statusCode).json(result);
   } catch (error) {
     console.error("Avatar upload error:", error);
-    res.status(500).json({ error: "Failed to upload avatar" });
+    res.status(500).json({ success: false, error: "Failed to upload avatar" });
   }
 };
 
