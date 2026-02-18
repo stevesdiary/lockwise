@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { parkingService } from '../../parking/services/parking.service';
+import { asString } from '../../../shared/utils/param.util';
 
 export const parkingController = {
   async getMySlot(req: Request, res: Response) {
@@ -14,7 +15,7 @@ export const parkingController = {
 
   async getEstateSlots(req: Request, res: Response) {
     try {
-      const { estateId } = req.params;
+      const estateId = asString(req.params.estateId);
       const slots = await parkingService.getEstateSlots(estateId);
       res.json({ success: true, data: slots });
     } catch (error: any) {
@@ -45,7 +46,7 @@ export const parkingController = {
   async cancelGuestParking(req: Request, res: Response) {
     try {
       const userId = (req as any).user.id;
-      const { id } = req.params;
+      const id = asString(req.params.id);
       const guestParking = await parkingService.cancelGuestParking(id, userId);
       res.json({ success: true, data: guestParking });
     } catch (error: any) {

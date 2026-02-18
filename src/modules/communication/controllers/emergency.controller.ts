@@ -3,6 +3,7 @@ import { handleControllerError } from '../../../shared/middleware/error-handler.
 import emergencyService from '../services/emergency.service';
 import emergencyNotificationService from '../services/emergency.notification.service';
 import defaultEmergencyContactsService from '../services/default.emergency.contacts.service';
+import { asString } from '../../../shared/utils/param.util';
 
 class EmergencyController {
   async createAlert(req: Request, res: Response) {
@@ -64,7 +65,7 @@ class EmergencyController {
   async resolveAlert(req: Request, res: Response) {
     try {
       const userId = req.user?.id;
-      const { alertId } = req.params;
+      const alertId = asString(req.params.alertId);
 
       if (!userId) {
         return res.status(401).json({
