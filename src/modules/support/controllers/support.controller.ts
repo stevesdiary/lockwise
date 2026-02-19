@@ -75,12 +75,32 @@ export const supportController = {
     try {
       const ticketId = asString(req.params.ticketId);
       const { message, is_internal } = req.body;
+      const file = req.file;
+      
+      // Validate file type if file is uploaded
+      if (file) {
+        const allowedMimeTypes = [
+          'image/jpeg',
+          'image/jpg',
+          'image/png',
+          'application/pdf',
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        ];
+        
+        if (!allowedMimeTypes.includes(file.mimetype)) {
+          return res.status(400).json({ 
+            error: 'Invalid file type. Only images (jpg, jpeg, png) and documents (pdf, doc, docx) are allowed.' 
+          });
+        }
+      }
       
       const msg = await supportService.sendMessage(
         ticketId,
         req.user!.id,
         message,
-        is_internal || false
+        is_internal || false,
+        file
       );
 
       res.status(201).json({ message: 'Message sent', data: msg });
