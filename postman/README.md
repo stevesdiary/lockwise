@@ -25,6 +25,15 @@ Import `Lockwise-API-Complete.postman_collection.json` into Postman
 - **Unlimited Types** (`domestic_staff`, `service`, `maintenance`): Unlimited entries within validity period
 - **All Types**: Respect expiration dates and automatic cleanup after expiry
 
+### 🆕 New Estate Invitation APIs (February 2026)
+
+#### Estate Management Endpoints
+- **Generate Invitation Link**: `POST /api/v1/estate/invite/{estateId}` - Create secure invitation links for residents
+- **Send Bulk Invitations**: `POST /api/v1/estate/residents/bulk-invite` - Send invitation emails to multiple residents
+- **Resend Invitation**: `POST /api/v1/estate/residents/resend-invite` - Resend invitation to specific resident
+
+> ⚠️ **Authentication Required**: All invitation endpoints require manager role and estate association
+
 ### 1. Authentication
 - Login (auto-saves token)
 - Refresh Token
