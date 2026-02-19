@@ -93,6 +93,14 @@ export const supportController = {
             error: 'Invalid file type. Only images (jpg, jpeg, png) and documents (pdf, doc, docx) are allowed.' 
           });
         }
+        
+        // Validate file size (5MB = 5 * 1024 * 1024 bytes)
+        const maxSize = 5 * 1024 * 1024;
+        if (file.size > maxSize) {
+          return res.status(400).json({ 
+            error: 'File size exceeds 5MB limit.' 
+          });
+        }
       }
       
       const msg = await supportService.sendMessage(
