@@ -8,9 +8,15 @@ class AccessLog extends Model {
   declare estate_id: string;
   declare status: string;
   declare access_code?: string;
+  declare valid_from?: Date;
   declare valid_until?: Date;
   declare approved_by?: string;
   declare guest_name?: string;
+  declare guest_phone?: string;
+  declare entry_time?: Date;
+  declare exit_time?: Date;
+  declare scanned_by?: string;
+  declare remark?: string;
   declare created_at?: Date;
   declare updated_at?: Date;
   declare user?: User;
@@ -37,8 +43,32 @@ AccessLog.init({
     type: DataTypes.STRING,
     allowNull: true
   },
+  valid_from: {
+    type: DataTypes.DATE,
+    allowNull: true
+  },
   valid_until: {
     type: DataTypes.DATE,
+    allowNull: true
+  },
+  guest_phone: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  entry_time: {
+    type: DataTypes.DATE,
+    allowNull: true
+  },
+  exit_time: {
+    type: DataTypes.DATE,
+    allowNull: true
+  },
+  scanned_by: {
+    type: DataTypes.UUID,
+    allowNull: true
+  },
+  remark: {
+    type: DataTypes.TEXT,
     allowNull: true
   },
   approved_by: {

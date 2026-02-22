@@ -178,6 +178,28 @@ export const accessCodeController = {
     }
   },
 
+  async confirmAccess(req: AuthRequest, res: Response) {
+    try {
+      const { code } = req.params;
+      const userId = req.user?.id;
+
+      const accessLog = await AccessLog.findOne({
+        where: { access_code: code, user_id: userId }
+      });
+
+      if (!accessLog) {
+        return res.status(404).json({ success: false, message: 'Access code not found' });
+      }
+
+      await accessLog.update({ status: 'used' });
+
+      return res.status(200).json({ success: true, message: 'Access confirmed', data: accessLog });
+    } catch (error: any) {
+      logger.error('Confirm access error:', error);
+      return res.status(500).json({ success: false, message: 'Failed to confirm access' });
+    }
+  },
+
   async rejectAccess(req: AuthRequest, res: Response) {
     try {
       const { code, reason } = req.body;

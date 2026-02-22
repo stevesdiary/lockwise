@@ -8,6 +8,7 @@ router.post('/generate', authenticateToken, requireResident, accessCodeControlle
 router.post('/validate', authenticateToken, accessCodeController.validateCode);
 router.post('/approve', authenticateToken, accessCodeController.approveAccess);
 router.post('/reject', authenticateToken, accessCodeController.rejectAccess);
+router.post('/:code/confirm', authenticateToken, accessCodeController.confirmAccess);
 router.get('/', authenticateToken, accessCodeController.getAccessCodes);
 
 export default router;
