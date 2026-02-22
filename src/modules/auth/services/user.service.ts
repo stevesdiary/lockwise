@@ -4,6 +4,7 @@ import { User } from '../models/user.model';
 import { Role } from '../models/role.model';
 import emailVerificationService from './email-verification.service';
 import { title } from 'process';
+import { Estate } from '../../estate/models/estate.model';
 
 const userRepository = new UserRepository();
 
@@ -195,5 +196,44 @@ export const uploadAvatar = async (userId: string, file: Express.Multer.File) =>
   } catch (error: any) {
     console.error('Upload avatar error:', error);
     return { statusCode: 500, message: 'Failed to upload profile picture', error: error.message };
+  }
+};
+
+export const getCurrentUserEstate = async (userId: string) => {
+  try {
+    const user = await User.findByPk(userId, {
+      attributes: ['id', 'estate_id'],
+      include: [{
+        model: Estate,
+        as: 'estate',
+        attributes: [
+          'estate_id',
+          'estate_code',
+          'name',
+          'city',
+          'state',
+          'country',
+          'location_details',
+          'contact_info'
+        ]
+      }]
+    });
+
+    if (!user) {
+      return { statusCode: 404, success: false, message: 'User not found' };
+    }
+
+    if (!user.estate_id || !user.estate) {
+      return { statusCode: 404, success: false, message: 'No estate linked to this user' };
+    }
+
+    return {
+      statusCode: 200,
+      success: true,
+      data: user.estate
+    };
+  } catch (error: any) {
+    console.error('Get current user estate error:', error);
+    return { statusCode: 500, success: false, message: 'Failed to fetch estate details', error: error.message };
   }
 };

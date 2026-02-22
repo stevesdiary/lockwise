@@ -87,6 +87,15 @@ userRouter.post(
   }
 );
 
+userRouter.get(
+  "/estate",
+  rateLimiters.api,
+  authenticateToken as any,
+  async (req: ExpressRequest, res: Response) => {
+    await userController.getCurrentUserEstate(req, res);
+  }
+);
+
 userRouter.post(
   "/avatar",
   authenticateToken as any,

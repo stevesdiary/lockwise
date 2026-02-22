@@ -4,7 +4,7 @@ import accessCodeService from '../services/access-code.service';
 import AccessLog from '../models/access-log.model';
 import { User } from '../../auth/models/user.model';
 import logger from '../../../shared/utils/logger';
-import { getResidentFullAddress, formatAccessCodeMessage } from '../../../shared/utils/address.util';
+import { getResidentFullAddress, formatAccessCodeMessage, buildGoogleMapsSearchUrl } from '../../../shared/utils/address.util';
 import notificationService from '../../../shared/services/notification.service';
 
 export const accessCodeController = {
@@ -55,6 +55,7 @@ export const accessCodeController = {
       
       // Get resident full address
       const fullAddress = await getResidentFullAddress(userId);
+      const destinationMapsUrl = buildGoogleMapsSearchUrl(fullAddress);
       
       const accessCode = await accessCodeService.generateCode({
         user_id: userId,
@@ -71,7 +72,8 @@ export const accessCodeController = {
         code,
         fullAddress,
         validFromDate,
-        validUntilDate
+        validUntilDate,
+        destinationMapsUrl
       );
 
       return res.status(201).json({
@@ -80,6 +82,8 @@ export const accessCodeController = {
         data: {
           ...accessCode.toJSON(),
           fullAddress,
+          destinationAddress: fullAddress || null,
+          destinationMapsUrl: destinationMapsUrl || null,
           shareMessage
         }
       });

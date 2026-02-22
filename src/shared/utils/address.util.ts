@@ -61,12 +61,22 @@ export const getResidentFullAddress = async (userId: string): Promise<string> =>
   }
 };
 
+export const buildGoogleMapsSearchUrl = (address: string): string => {
+  if (!address?.trim()) {
+    return '';
+  }
+
+  const encodedAddress = encodeURIComponent(address.trim());
+  return `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+};
+
 export const formatAccessCodeMessage = (
   guestName: string,
   accessCode: string,
   address: string,
   validFrom: Date,
-  validUntil: Date
+  validUntil: Date,
+  mapsUrl?: string
 ): string => {
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleString('en-GB', {
@@ -79,11 +89,14 @@ export const formatAccessCodeMessage = (
     });
   };
 
+  const addressBlock = address?.trim()
+    ? `Destination: ${address}\n${mapsUrl ? `Open in Maps: ${mapsUrl}\n` : ''}`
+    : '';
+
   return `Hi ${guestName},
 Your access code is: ${accessCode}
 
-Location: ${address}
-From: ${formatDate(validFrom)}
+${addressBlock}From: ${formatDate(validFrom)}
 To: ${formatDate(validUntil)}
 
 To start enjoying Lockwise in your community too, please send email to coresystemglobal@gmail.com

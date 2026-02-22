@@ -152,3 +152,18 @@ export const linkUserToEstate = async (req: Request, res: Response) => {
       .json({ success: false, message: "Failed to link user to estate" });
   }
 };
+
+export const getCurrentUserEstate = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    const result = await userService.getCurrentUserEstate(userId);
+    return res.status(result.statusCode).json(result);
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Failed to fetch estate details' });
+  }
+};
