@@ -6,6 +6,7 @@ import { User } from '../../auth/models/user.model';
 import logger from '../../../shared/utils/logger';
 import { getResidentFullAddress, formatAccessCodeMessage, buildGoogleMapsSearchUrl } from '../../../shared/utils/address.util';
 import notificationService from '../../../shared/services/notification.service';
+import { pushNotificationService } from '../../communication/services/push-notification.service';
 import { UserRole } from '../../../shared/constants/permissions';
 
 export const accessCodeController = {
@@ -144,7 +145,7 @@ export const accessCodeController = {
 
       const accessLog = await AccessLog.findOne({ 
         where: { access_code: code, status: 'pending' },
-        include: [{ model: User, as: 'user', attributes: ['phone'] }]
+        include: [{ model: User, as: 'user', attributes: ['id', 'phone'] }]
       });
 
       if (!accessLog) {
@@ -157,8 +158,14 @@ export const accessCodeController = {
         scanned_by: securityId
       });
 
-      // Send real-time notification to resident
-      if (accessLog.user?.phone) {
+      if (accessLog.user_id) {
+        pushNotificationService.sendToUser(
+          accessLog.user_id,
+          'Guest Entry',
+          `${accessLog.guest_name || 'Guest'} has entered the estate`,
+          { type: 'entry', code, status: 'approved' }
+        ).catch(err => logger.error('Push notification error:', err));
+      } else if (accessLog.user?.phone) {
         notificationService.sendEntryNotification(
           accessLog.user.phone,
           accessLog.guest_name || 'Guest',
@@ -184,7 +191,7 @@ export const accessCodeController = {
       const userId = req.user?.id;
 
       const accessLog = await AccessLog.findOne({
-        where: { access_code: code, user_id: userId, status: 'pending' }
+        where: { access_code: code, user_id: userId, status: 'active' }
       });
 
       if (!accessLog) {
@@ -215,6 +222,15 @@ export const accessCodeController = {
 
       await accessLog.update({ status: 'used' });
 
+      if (accessLog.user_id) {
+        pushNotificationService.sendToUser(
+          accessLog.user_id,
+          'Guest Check-in',
+          `${accessLog.guest_name || 'Guest'} has checked-in`,
+          { type: 'checkin', code }
+        ).catch(err => logger.error('Push notification error:', err));
+      }
+
       return res.status(200).json({ success: true, message: 'Access confirmed', data: accessLog });
     } catch (error: any) {
       logger.error('Confirm access error:', error);
@@ -233,7 +249,7 @@ export const accessCodeController = {
 
       const accessLog = await AccessLog.findOne({ 
         where: { access_code: code, status: 'pending' },
-        include: [{ model: User, as: 'user', attributes: ['phone'] }]
+        include: [{ model: User, as: 'user', attributes: ['id', 'phone'] }]
       });
 
       if (!accessLog) {
@@ -246,8 +262,14 @@ export const accessCodeController = {
         remark: reason
       });
 
-      // Send real-time notification to resident
-      if (accessLog.user?.phone) {
+      if (accessLog.user_id) {
+        pushNotificationService.sendToUser(
+          accessLog.user_id,
+          'Guest Entry Denied',
+          `${accessLog.guest_name || 'Guest'}'s entry was rejected`,
+          { type: 'entry', code, status: 'rejected' }
+        ).catch(err => logger.error('Push notification error:', err));
+      } else if (accessLog.user?.phone) {
         notificationService.sendEntryNotification(
           accessLog.user.phone,
           accessLog.guest_name || 'Guest',
