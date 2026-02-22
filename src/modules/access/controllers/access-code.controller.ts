@@ -6,6 +6,7 @@ import { User } from '../../auth/models/user.model';
 import logger from '../../../shared/utils/logger';
 import { getResidentFullAddress, formatAccessCodeMessage, buildGoogleMapsSearchUrl } from '../../../shared/utils/address.util';
 import notificationService from '../../../shared/services/notification.service';
+import { UserRole } from '../../../shared/constants/permissions';
 
 export const accessCodeController = {
   async getAccessCodes(req: AuthRequest, res: Response) {
@@ -39,6 +40,13 @@ export const accessCodeController = {
 
       if (!userId) {
         return res.status(401).json({ message: 'Unauthorized' });
+      }
+
+      if (req.user?.role === UserRole.SECURITY) {
+        return res.status(403).json({
+          success: false,
+          message: 'Security personnels are not allowed to create access codes'
+        });
       }
 
       if (!estateId) {
