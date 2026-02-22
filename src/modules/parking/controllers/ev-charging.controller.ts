@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
 import { evChargingService } from '../../parking/services/ev-charging.service';
+import { asString } from '../../../shared/utils/param.util';
 
 export const evChargingController = {
   async getChargingSlots(req: Request, res: Response) {
     try {
-      const { estateId } = req.params;
+      const estateId = asString(req.params.estateId);
       const slots = await evChargingService.getEVChargingSlots(estateId);
       res.json({ success: true, data: slots });
     } catch (error: any) {
@@ -26,7 +27,7 @@ export const evChargingController = {
   async stopSession(req: Request, res: Response) {
     try {
       const userId = (req as any).user.id;
-      const { sessionId } = req.params;
+      const sessionId = asString(req.params.sessionId);
       const { energy_consumed } = req.body;
       const result = await evChargingService.stopChargingSession(sessionId, userId, energy_consumed);
       res.json({ success: true, data: result });

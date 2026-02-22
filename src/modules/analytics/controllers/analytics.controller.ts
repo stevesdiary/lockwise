@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { analyticsService } from '../services/analytics.service';
 import { AuthRequest } from '../../auth/middleware/auth.middleware';
+import { asString } from '../../../shared/utils/param.util';
 
 export const analyticsController = {
   async getDashboard(req: AuthRequest, res: Response) {
@@ -28,7 +29,7 @@ export const analyticsController = {
 
   async getUserAnalytics(req: AuthRequest, res: Response) {
     try {
-      const { userId } = req.params;
+      const userId = asString(req.params.userId);
       const { days = 30 } = req.query;
 
       const behavior = await analyticsService.getUserBehavior(userId, Number(days));

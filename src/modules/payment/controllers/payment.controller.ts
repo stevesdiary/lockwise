@@ -8,6 +8,7 @@ import {
 } from '../../../shared/utils/validator';
 import { paymentService } from '../../payment/services/payment.service';
 import realTimeNotificationService from '../../communication/services/realtime-notification.service';
+import { asString } from '../../../shared/utils/param.util';
 
 const paymentController = {
   initiatePayment: async (req: ExpressRequest, res: Response) => {
@@ -118,7 +119,7 @@ const paymentController = {
 
   getPaymentById: async (req: ExpressRequest, res: Response) => {
     try {
-      const { paymentId } = req.params;
+      const paymentId = asString(req.params.paymentId);
       const payment = await paymentService.getPaymentById(paymentId);
       return res.status(payment.statusCode).json(payment);
     } catch (error) {
@@ -132,7 +133,7 @@ const paymentController = {
 
   getPaymentByReference: async (req: ExpressRequest, res: Response) => {
     try {
-      const { reference } = req.params;
+      const reference = asString(req.params.reference);
       const payment = await paymentService.getPaymentByReference(reference);
       return res.status(payment.statusCode).json(payment);
     } catch (error) {

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { referralService } from '../../payment/services/referral.service';
 import { referrerCreationSchema } from '../../../shared/utils/validator';
+import { asString } from '../../../shared/utils/param.util';
 
 export const ReferralController = {
   async registerReferrer(req: Request, res: Response) {
@@ -23,7 +24,7 @@ export const ReferralController = {
 
   async getReferrer(req: Request, res: Response) {
     try {
-      const { code } = req.params;
+      const code = asString(req.params.code);
       const referrer = await referralService.getReferrerByCode(code);
 
       if (!referrer) {
@@ -49,7 +50,7 @@ export const ReferralController = {
 
   async deleteReferrer(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = asString(req.params.id);
       const referrer = await referralService.deleteReferrerById(id);
       return res.status(referrer.statusCode).json({data: referrer});
     } catch (error) {
@@ -70,7 +71,7 @@ export const ReferralController = {
 
   async getReferrerBonuses(req: Request, res: Response) {
     try {
-      const { referrerId } = req.params;
+      const referrerId = asString(req.params.referrerId);
       const bonuses = await referralService.getReferrerBonuses(referrerId);
       return res.status(200).json({ data: bonuses });
     } catch (error) {
@@ -81,7 +82,7 @@ export const ReferralController = {
 
   async markBonusAsPaid(req: Request, res: Response) {
     try {
-      const { bonusId } = req.params;
+      const bonusId = asString(req.params.bonusId);
       const { payment_reference } = req.body;
       
       const result = await referralService.markBonusAsPaid(bonusId, payment_reference);

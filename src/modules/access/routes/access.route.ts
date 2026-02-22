@@ -1,10 +1,13 @@
 import { Router } from 'express';
 import { authenticateToken, requireManager } from '../../auth/middleware/auth.middleware';
+import { requirePermission } from '../../auth/middleware/permission.middleware';
+import { Resource, Permission } from '../../../shared/constants/permissions';
 import { 
   createAccessRecord, 
   processCodeScan,
   // getEntryStatistics,
-  approveAccess, 
+  approveAccess,
+  revokeAccess, 
   getAllAccess, 
   getActiveAccess 
 } from '../controllers/access.controller';
@@ -26,6 +29,7 @@ router.post('/', createAccessRecord);
 router.get('/', getAllAccess);
 router.get('/active', getActiveAccess);
 // router.get('/:accessId/statistics', getEntryStatistics);
-router.patch('/:accessId/approve', requireManager, approveAccess);
+router.patch('/:accessId/approve', requirePermission(Resource.ACCESS_CODES, Permission.APPROVE), approveAccess);
+router.patch('/:accessId/revoke', revokeAccess);
 
 export default router;

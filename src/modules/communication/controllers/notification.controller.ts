@@ -1,24 +1,77 @@
 import { Request, Response } from 'express';
+import { Notification } from '../models/notification.model';
 import NotificationService from '../../communication/services/notification.service';
 import EmailService from '../../communication/services/email.service';
 import SMSService from '../../communication/services/sms.service';
+import { AuthRequest } from '../../auth/middleware/auth.middleware';
 
 export const notificationController = {
+  async getUserNotifications(req: AuthRequest, res: Response) {
+    try {
+      const notifications = await Notification.findAll({
+        where: { user_id: req.user!.id },
+        order: [['created_at', 'DESC']]
+      });
+      
+      res.json({
+        status: 'success',
+        data: notifications.map(n => ({
+          id: n.id,
+          type: n.type,
+          title: n.title,
+          message: n.message,
+          timestamp: n.createdAt,
+          read: n.is_read,
+          data: n.data
+        }))
+      });
+    } catch (error: any) {
+      res.status(500).json({ status: 'error', message: error.message });
+    }
+  },
+
+  async markAsRead(req: AuthRequest, res: Response) {
+    try {
+      await Notification.update(
+        { is_read: true },
+        { where: { id: req.params.id, user_id: req.user!.id } }
+      );
+      res.json({ status: 'success' });
+    } catch (error: any) {
+      res.status(500).json({ status: 'error', message: error.message });
+    }
+  },
+
+  async markAllAsRead(req: AuthRequest, res: Response) {
+    try {
+      await Notification.update(
+        { is_read: true },
+        { where: { user_id: req.user!.id, is_read: false } }
+      );
+      res.json({ status: 'success' });
+    } catch (error: any) {
+      res.status(500).json({ status: 'error', message: error.message });
+    }
+  },
+
+  async clearAll(req: AuthRequest, res: Response) {
+    try {
+      await Notification.destroy({ where: { user_id: req.user!.id } });
+      res.json({ status: 'success' });
+    } catch (error: any) {
+      res.status(500).json({ status: 'error', message: error.message });
+    }
+  },
   async sendTestEmail(req: Request, res: Response) {
     try {
       const { email, name } = req.body;
-      
       const success = await EmailService.sendWelcomeEmail(email, name);
-      
       res.status(success ? 200 : 500).json({
         status: success ? 'success' : 'error',
         message: success ? 'Test email sent successfully' : 'Failed to send test email'
       });
     } catch (error: any) {
-      res.status(500).json({
-        status: 'error',
-        message: error.message
-      });
+      res.status(500).json({ status: 'error', message: error.message });
     }
   },
 

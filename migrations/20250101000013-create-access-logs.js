@@ -46,7 +46,7 @@ module.exports = {
       
       // Approval fields
       status: {
-        type: Sequelize.ENUM('pending', 'approved', 'rejected', 'expired'),
+        type: Sequelize.STRING,
         defaultValue: 'pending'
       },
       approved_by: {

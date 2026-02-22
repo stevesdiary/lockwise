@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { supportService } from '../../support/services/support.service';
 import { AuthRequest } from '../../auth/middleware/auth.middleware';
+import { asString } from '../../../shared/utils/param.util';
 
 export const supportController = {
   async createTicket(req: AuthRequest, res: Response) {
@@ -62,7 +63,7 @@ export const supportController = {
 
   async assignTicket(req: AuthRequest, res: Response) {
     try {
-      const { ticketId } = req.params;
+      const ticketId = asString(req.params.ticketId);
       const ticket = await supportService.assignTicket(ticketId, req.user!.id);
       res.json({ message: 'Ticket assigned', data: ticket });
     } catch (error) {
@@ -72,14 +73,42 @@ export const supportController = {
 
   async sendMessage(req: AuthRequest, res: Response) {
     try {
-      const { ticketId } = req.params;
+      const ticketId = asString(req.params.ticketId);
       const { message, is_internal } = req.body;
+      const file = req.file;
+      
+      // Validate file type if file is uploaded
+      if (file) {
+        const allowedMimeTypes = [
+          'image/jpeg',
+          'image/jpg',
+          'image/png',
+          'application/pdf',
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        ];
+        
+        if (!allowedMimeTypes.includes(file.mimetype)) {
+          return res.status(400).json({ 
+            error: 'Invalid file type. Only images (jpg, jpeg, png) and documents (pdf, doc, docx) are allowed.' 
+          });
+        }
+        
+        // Validate file size (5MB = 5 * 1024 * 1024 bytes)
+        const maxSize = 5 * 1024 * 1024;
+        if (file.size > maxSize) {
+          return res.status(400).json({ 
+            error: 'File size exceeds 5MB limit.' 
+          });
+        }
+      }
       
       const msg = await supportService.sendMessage(
         ticketId,
         req.user!.id,
         message,
-        is_internal || false
+        is_internal || false,
+        file
       );
 
       res.status(201).json({ message: 'Message sent', data: msg });
@@ -90,7 +119,7 @@ export const supportController = {
 
   async getMessages(req: AuthRequest, res: Response) {
     try {
-      const { ticketId } = req.params;
+      const ticketId = asString(req.params.ticketId);
       const messages = await supportService.getTicketMessages(ticketId, req.user!.id);
       res.json({ data: messages });
     } catch (error) {
@@ -100,7 +129,7 @@ export const supportController = {
 
   async updateStatus(req: AuthRequest, res: Response) {
     try {
-      const { ticketId } = req.params;
+      const ticketId = asString(req.params.ticketId);
       const { status } = req.body;
       
       const ticket = await supportService.updateTicketStatus(ticketId, status);

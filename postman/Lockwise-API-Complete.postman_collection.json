@@ -478,6 +478,74 @@
             "url": "{{baseUrl}}/estate/invitations/validate/{{invitationToken}}",
             "description": "Validate an estate invitation token"
           }
+        },
+        {
+          "name": "Generate Invitation Link",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/estate/invite/{{estateId}}",
+            "description": "Generate a secure invitation link for estate residents. Requires manager authentication and estate association.",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Send Bulk Invitations",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/estate/residents/bulk-invite",
+            "description": "Send invitation emails to multiple residents at once. Requires manager authentication and estate association.",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"emails\": [\n    \"resident1@example.com\",\n    \"resident2@example.com\",\n    \"resident3@example.com\"\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Resend Invitation",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/estate/residents/resend-invite",
+            "description": "Resend invitation email to a specific resident. Requires manager authentication and estate association.",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"resident@example.com\"\n}"
+            }
+          }
         }
       ]
     },

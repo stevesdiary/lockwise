@@ -4,7 +4,7 @@ import { createPermissionSchema } from '../../../shared/utils/validator';
 
 import PermissionService  from '../services/permission.service';
 import { handleControllerError } from '../../../shared/middleware/error-handler.middleware';
-// import permissionController from './permission.controller';
+import { asString } from '../../../shared/utils/param.util';
 
 export class PermissionController {
   async createPermission(req: ExpressRequest, res: Response): Promise<Response> {
@@ -38,7 +38,7 @@ export class PermissionController {
   }
   
   async getPermissionById(req: ExpressRequest, res: Response): Promise<Response> {
-    const permissionId = req.params.id;
+    const permissionId = asString(req.params.id);
     if (!permissionId) {
       return res.status(400).json({
         status: 'fail',
@@ -65,7 +65,7 @@ export class PermissionController {
   }
 
   async updatePermission(req: ExpressRequest, res: Response): Promise<Response> {
-    const permissionId = req.params.id;
+    const permissionId = asString(req.params.id);
     if (!permissionId) {
       return res.status(400).json({
         status: 'fail',
@@ -95,7 +95,7 @@ export class PermissionController {
   }
 
   async deletePermission(req: ExpressRequest, res: Response): Promise<Response> {
-    const permissionId = req.params.id;
+    const permissionId = asString(req.params.id);
     if (!permissionId) {
       return res.status(400).json({
         status: 'fail',

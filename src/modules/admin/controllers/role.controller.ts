@@ -1,5 +1,6 @@
 import { Request as ExpressRequest, Response } from "express";
 import { RoleService } from "../services/role.service";
+import { asString } from '../../../shared/utils/param.util';
 
 const roleService = new RoleService();
 const RoleController = {
@@ -37,7 +38,7 @@ const RoleController = {
   },
   getRoleById: async (req: ExpressRequest, res: Response): Promise<Response> => {
     try {
-      const roleId = req.params.roleId;
+      const roleId = asString(req.params.roleId);
       if (!roleId) {
         return res.status(400).json({
           status: "error",
@@ -62,7 +63,7 @@ const RoleController = {
   },
   updateRole: async (req: ExpressRequest, res: Response): Promise<Response> => {
     try {
-      const roleId = req.params.roleId;
+      const roleId = asString(req.params.roleId);
       const roleData = req.body;
       if (!roleId || !roleData) {
         return res.status(400).json({
@@ -88,7 +89,7 @@ const RoleController = {
   },
   deleteRole: async (req: ExpressRequest, res: Response): Promise<Response> => {
     try {
-      const roleId = req.params.roleId;
+      const roleId = asString(req.params.roleId);
       if (!roleId) {
         return res.status(400).json({
           status: "error",
@@ -116,7 +117,7 @@ const RoleController = {
   },
   assignPermissions: async (req: ExpressRequest, res: Response): Promise<Response> => {
     try {
-      const roleId = req.params.roleId;
+      const roleId = asString(req.params.roleId);
       const { permission_ids } = req.body;
       
       if (!roleId || !permission_ids) {

@@ -16,6 +16,9 @@ import { ReferralBonus } from '../../modules/payment/models/referral.bonus.model
 import { Subscription } from '../../modules/payment/models/subscription.model';
 import { Address } from '../../modules/location/models/address.model';
 import { Gate } from '../../modules/estate/models/gate.model';
+import { CommunityMessage } from '../../modules/communication/models/community-message.model';
+import { MessageReaction } from '../../modules/communication/models/message-reaction.model';
+import { Notification } from '../../modules/communication/models/notification.model';
 
 const env = process.env.NODE_ENV || 'development';
 const isProduction = env === 'production';
@@ -28,7 +31,7 @@ const sequelize = new Sequelize({
   username: isProduction ? (process.env.PROD_DB_USER || 'postgres') : (process.env.DEV_DB_USER || 'postgres'),
   password: isProduction ? (process.env.PROD_DB_PASSWORD || '') : (process.env.DEV_DB_PASSWORD || ''),
   database: isProduction ? (process.env.PROD_DB_NAME || 'lockwise') : (process.env.DEV_DB_NAME || 'lockwise_dev'),
-  models: [User, Estate, Resident, Role, Payment, Street, Permission, Unit, RolePermission, Plan, Referrer, ReferralBonus, Address, Subscription, Gate],
+  models: [User, Estate, Resident, Role, Payment, Street, Permission, Unit, RolePermission, Plan, Referrer, ReferralBonus, Address, Subscription, Gate, CommunityMessage, MessageReaction, Notification],
   dialectOptions: {
     ssl: process.env.SSL === 'true' ? {
       require: true,

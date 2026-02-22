@@ -4,6 +4,7 @@ import estateService from '../../estate/services/estate.service';
 import { errorHandler, handleControllerError } from '../../../shared/middleware/error-handler.middleware';
 import { idSchema } from '../../../shared/schemas/validation.schema';
 import { customAlphabet } from 'nanoid';
+import { asString } from '../../../shared/utils/param.util';
 
 class EstateController {
   async createEstate(req: ExpressRequest, res: Response) {
@@ -90,8 +91,9 @@ class EstateController {
 
   async getEstateById(req: ExpressRequest, res: Response): Promise<Response> {
     try {
-      const { estateId, estate_code } = req.params;
-      if (!req.params.estateId || !req.params.estate_code) {
+      const estateId = asString(req.params.estateId);
+      const estate_code = asString(req.params.estate_code);
+      if (!estateId || !estate_code) {
         return res.status(400).json({
           status: 'fail',
           message: 'Estate ID is required'
@@ -111,7 +113,7 @@ class EstateController {
 
   async getEstateByCode(req: ExpressRequest, res: Response): Promise<Response> {
     try {
-      const { estate_code } = req.params;
+      const estate_code = asString(req.params.estate_code);
       if (!estate_code) {
         return res.status(400).json({
           status: 'fail',
@@ -132,7 +134,7 @@ class EstateController {
 
   async searchEstate(req: ExpressRequest, res: Response): Promise<Response> {
     try {
-      const { estate_code } = req.params;
+      const estate_code = asString(req.params.estate_code);
       if (!estate_code) {
         return res.status(400).json({ success: false, message: 'Estate code is required' });
       }
@@ -157,7 +159,7 @@ class EstateController {
       });
     }
     try {
-      const estate = await estateService.updateEstate(req.params.estateId, req.body);
+      const estate = await estateService.updateEstate(asString(req.params.estateId), req.body);
       if (!estate) {
         return res.status(404).json({
           status: 'fail',
@@ -187,7 +189,7 @@ class EstateController {
 
   async approveEstate(req: ExpressRequest, res: Response): Promise<Response> {
     try {
-      const { estateId } = req.params;
+      const estateId = asString(req.params.estateId);
       const approvedBy = req.user!.id;
 
       if (!estateId) {
@@ -211,7 +213,7 @@ class EstateController {
 
   async deleteEstate(req: ExpressRequest, res: Response) {
     try {
-      const result = await estateService.deleteEstate(req.params.estateId);
+      const result = await estateService.deleteEstate(asString(req.params.estateId));
       if (!result) {
         return res.status(404).json({
           status: 'fail',

@@ -95,7 +95,7 @@ export const supportService = {
     return ticket;
   },
 
-  async sendMessage(ticketId: string, senderId: string, message: string, isInternal = false) {
+  async sendMessage(ticketId: string, senderId: string, message: string, isInternal = false, file?: Express.Multer.File) {
     const ticket = await SupportTicket.findByPk(ticketId);
     if (!ticket) throw new Error('Ticket not found');
 
@@ -103,7 +103,9 @@ export const supportService = {
       ticket_id: ticketId,
       sender_id: senderId,
       message,
-      is_internal: isInternal
+      is_internal: isInternal,
+      attachment_url: file?.path || null,
+      attachment_type: file?.mimetype || null
     });
 
     // Notify recipient

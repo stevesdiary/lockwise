@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
 import { handleControllerError } from '../../../shared/middleware/error-handler.middleware';
 import communityBoardService from '../services/community.board.service';
+import { asString } from '../../../shared/utils/param.util';
 
 class CommunityBoardController {
   async getPosts(req: Request, res: Response) {
     try {
-      const estateId = req.user?.estateId;
+      const estateId = req.user?.estate_id;
       const { type, limit } = req.query;
 
       if (!estateId) {
@@ -33,7 +34,7 @@ class CommunityBoardController {
   async createPost(req: Request, res: Response) {
     try {
       const userId = req.user?.id;
-      const estateId = req.user?.estateId;
+      const estateId = req.user?.estate_id;
       const { type, title, content, attachments } = req.body;
 
       if (!userId || !estateId) {
@@ -64,7 +65,7 @@ class CommunityBoardController {
   async addComment(req: Request, res: Response) {
     try {
       const userId = req.user?.id;
-      const { postId } = req.params;
+      const postId = asString(req.params.postId);
       const { content } = req.body;
 
       if (!userId) {
@@ -87,7 +88,7 @@ class CommunityBoardController {
 
   async getChatMessages(req: Request, res: Response) {
     try {
-      const estateId = req.user?.estateId;
+      const estateId = req.user?.estate_id;
       const { limit } = req.query;
 
       if (!estateId) {
@@ -114,7 +115,7 @@ class CommunityBoardController {
   async sendChatMessage(req: Request, res: Response) {
     try {
       const userId = req.user?.id;
-      const estateId = req.user?.estateId;
+      const estateId = req.user?.estate_id;
       const { message } = req.body;
 
       if (!userId || !estateId) {
@@ -138,7 +139,7 @@ class CommunityBoardController {
   async createAnnouncement(req: Request, res: Response) {
     try {
       const userId = req.user?.id;
-      const estateId = req.user?.estateId;
+      const estateId = req.user?.estate_id;
       const { title, content } = req.body;
 
       if (!userId || !estateId) {
@@ -162,7 +163,7 @@ class CommunityBoardController {
   async createMeeting(req: Request, res: Response) {
     try {
       const userId = req.user?.id;
-      const estateId = req.user?.estateId;
+      const estateId = req.user?.estate_id;
       const { title, content, meeting_date, meeting_link } = req.body;
 
       if (!userId || !estateId) {

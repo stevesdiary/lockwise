@@ -50,6 +50,12 @@ dashboardRouter.get('/manager/:estate_id/residents',
   managerDashboardController.getEstateResidents
 );
 
+dashboardRouter.get('/manager/:estate_id/residents/pending',
+  authenticateToken,
+  authorizeRoles(['manager', 'admin']),
+  managerDashboardController.getPendingEstateResidents
+);
+
 dashboardRouter.get('/manager/:estate_id/access-logs', 
   authenticateToken, 
   authorizeRoles(['manager', 'admin']), 
@@ -60,6 +66,51 @@ dashboardRouter.get('/manager/:estate_id/payments',
   authenticateToken, 
   authorizeRoles(['manager', 'admin']), 
   managerDashboardController.getEstatePayments
+);
+
+// Access management
+dashboardRouter.get('/manager/:estate_id/access/pending', 
+  authenticateToken, 
+  authorizeRoles(['manager', 'admin']), 
+  managerDashboardController.getPendingAccessRequests
+);
+
+dashboardRouter.post('/manager/access/:access_id/approve', 
+  authenticateToken, 
+  authorizeRoles(['manager', 'admin']), 
+  managerDashboardController.approveAccessRequest
+);
+
+dashboardRouter.post('/manager/access/:access_id/revoke', 
+  authenticateToken, 
+  authorizeRoles(['manager', 'admin']), 
+  managerDashboardController.revokeAccessRequest
+);
+
+// User role management
+dashboardRouter.put('/manager/users/:user_id/role', 
+  authenticateToken, 
+  authorizeRoles(['manager', 'admin']), 
+  managerDashboardController.updateUserRole
+);
+
+// Resident management
+dashboardRouter.post('/manager/residents/:user_id/approve', 
+  authenticateToken, 
+  authorizeRoles(['manager', 'admin']), 
+  managerDashboardController.approveResident
+);
+
+dashboardRouter.post('/manager/residents/:user_id/inactive', 
+  authenticateToken, 
+  authorizeRoles(['manager', 'admin']), 
+  managerDashboardController.setResidentInactive
+);
+
+dashboardRouter.post('/manager/residents/:user_id/reject',
+  authenticateToken,
+  authorizeRoles(['manager', 'admin']),
+  managerDashboardController.rejectResident
 );
 
 export default dashboardRouter;

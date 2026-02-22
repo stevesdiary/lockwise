@@ -3,17 +3,17 @@ import sequelize from '../../../shared/core/database';
 import { User } from '../../auth/models/user.model';
 
 class AccessLog extends Model {
-  public id!: string;
-  public user_id?: string;
-  public estate_id!: string;
-  public status!: string;
-  public access_code?: string;
-  public valid_until?: Date;
-  public approved_by?: string;
-  public guest_name?: string;
-  public created_at?: Date;
-  public updated_at?: Date;
-  public user?: User;
+  declare id: string;
+  declare user_id?: string;
+  declare estate_id: string;
+  declare status: string;
+  declare access_code?: string;
+  declare valid_until?: Date;
+  declare approved_by?: string;
+  declare guest_name?: string;
+  declare created_at?: Date;
+  declare updated_at?: Date;
+  declare user?: User;
 }
 
 AccessLog.init({
@@ -30,8 +30,8 @@ AccessLog.init({
     allowNull: false
   },
   status: {
-    type: DataTypes.ENUM('pending', 'approved', 'rejected', 'expired'),
-    defaultValue: 'pending'
+    type: DataTypes.ENUM('active', 'used', 'approved', 'rejected', 'expired', 'revoked'),
+    defaultValue: 'active'
   },
   access_code: {
     type: DataTypes.STRING,

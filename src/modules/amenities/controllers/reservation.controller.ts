@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { reservationService } from '../../amenities/services/reservation.service';
+import { asString } from '../../../shared/utils/param.util';
 
 export const reservationController = {
   async createReservation(req: Request, res: Response) {
@@ -24,7 +25,7 @@ export const reservationController = {
 
   async getEstateReservations(req: Request, res: Response) {
     try {
-      const { estateId } = req.params;
+      const estateId = asString(req.params.estateId);
       const { start_date, end_date } = req.query;
       const reservations = await reservationService.getEstateReservations(
         estateId,
@@ -40,7 +41,7 @@ export const reservationController = {
   async cancelReservation(req: Request, res: Response) {
     try {
       const userId = (req as any).user.id;
-      const { reservationId } = req.params;
+      const reservationId = asString(req.params.reservationId);
       const { reason } = req.body;
       const reservation = await reservationService.cancelReservation(reservationId, userId, reason);
       res.json({ success: true, data: reservation });
@@ -51,7 +52,7 @@ export const reservationController = {
 
   async getAvailableSlots(req: Request, res: Response) {
     try {
-      const { amenityId } = req.params;
+      const amenityId = asString(req.params.amenityId);
       const { date } = req.query;
       const slots = await reservationService.getAvailableSlots(amenityId, new Date(date as string));
       res.json({ success: true, data: slots });

@@ -78,7 +78,11 @@ class FileUploadService {
       }
 
       // Upload main file
-      const url = await cloudStorage.uploadFile(key, processedBuffer, file.mimetype);
+      await cloudStorage.uploadFile(key, processedBuffer, file.mimetype);
+      
+      // Return server URL instead of direct storage URL
+      const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+      const url = `${baseUrl}/api/upload/file/${key}`;
 
       return {
         success: true,

@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
 import { amenityService } from '../../amenities/services/amenity.service';
+import { asString } from '../../../shared/utils/param.util';
 
 export const amenityController = {
   async createAmenity(req: Request, res: Response) {
     try {
-      const { estateId } = req.params;
+      const estateId = asString(req.params.estateId);
       const amenity = await amenityService.createAmenity(estateId, req.body);
       res.status(201).json({ success: true, data: amenity });
     } catch (error: any) {
@@ -14,7 +15,7 @@ export const amenityController = {
 
   async getEstateAmenities(req: Request, res: Response) {
     try {
-      const { estateId } = req.params;
+      const estateId = asString(req.params.estateId);
       const amenities = await amenityService.getEstateAmenities(estateId);
       res.json({ success: true, data: amenities });
     } catch (error: any) {
@@ -24,7 +25,7 @@ export const amenityController = {
 
   async updateAmenity(req: Request, res: Response) {
     try {
-      const { amenityId } = req.params;
+      const amenityId = asString(req.params.amenityId);
       const amenity = await amenityService.updateAmenity(amenityId, req.body);
       res.json({ success: true, data: amenity });
     } catch (error: any) {
@@ -34,7 +35,7 @@ export const amenityController = {
 
   async deleteAmenity(req: Request, res: Response) {
     try {
-      const { amenityId } = req.params;
+      const amenityId = asString(req.params.amenityId);
       await amenityService.deleteAmenity(amenityId);
       res.json({ success: true, message: 'Amenity deleted' });
     } catch (error: any) {

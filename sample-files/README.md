@@ -152,6 +152,9 @@ For technical support or questions:
 - **Search Estate by Code**: `GET /api/v1/estate/search/{estate_code}` - Find estates using their unique estate code
 - **Validate Estate Invitation**: `GET /api/v1/estate/invitations/validate/{token}` - Validate estate invitation tokens
 - **Approve Estate**: `PATCH /api/v1/estate/estates/{estateId}/approve` - Approve pending estates (Admin only)
+- **Generate Invitation Link**: `POST /api/v1/estate/invite/{estateId}` - Generate secure invitation links for residents (Manager only)
+- **Send Bulk Invitations**: `POST /api/v1/estate/residents/bulk-invite` - Send invitation emails to multiple residents (Manager only)
+- **Resend Invitation**: `POST /api/v1/estate/residents/resend-invite` - Resend invitation to specific resident (Manager only)
 
 #### User Management
 - **Link User to Estate**: `POST /api/v1/user/link-estate` - Link authenticated users to estates using estate code

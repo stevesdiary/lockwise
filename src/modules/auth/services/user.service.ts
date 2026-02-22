@@ -162,7 +162,7 @@ export const updateProfile = async (userId: string, data: { first_name: string; 
       return { statusCode: 404, message: 'User not found' };
     }
     
-    const { password, verification_code, verification_expires, reset_token, reset_expires, ...userWithoutSensitive } = updatedUser.toJSON();
+    const { password, reset_token, reset_expires, ...userWithoutSensitive } = updatedUser.toJSON();
     
     return { 
       statusCode: 200, 
@@ -177,18 +177,23 @@ export const updateProfile = async (userId: string, data: { first_name: string; 
 
 export const uploadAvatar = async (userId: string, file: Express.Multer.File) => {
   try {
-    const { uploadService } = await import('../../upload/services/upload.service');
-    const result = await uploadService.uploadFile(file, userId, 'avatar');
+    const fileUploadService = (await import('../../upload/services/file-upload.service')).default;
+    const result = await fileUploadService.uploadFile(file, 'avatars');
+    
+    if (!result.success) {
+      return { statusCode: 400, message: result.error || 'Upload failed' };
+    }
     
     await userRepository.update(userId, { profile_picture: result.url } as any);
     
     return { 
       statusCode: 200, 
-      message: 'Avatar uploaded successfully', 
-      url: result.url 
+      success: true,
+      message: 'Profile picture uploaded successfully', 
+      data: { profile_picture: result.url }
     };
   } catch (error: any) {
     console.error('Upload avatar error:', error);
-    return { statusCode: 500, message: 'Failed to upload avatar', error: error.message };
+    return { statusCode: 500, message: 'Failed to upload profile picture', error: error.message };
   }
 };

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { User } from '../../auth/models/user.model';
 import { Role } from '../../auth/models/role.model';
+import { asString } from '../../../shared/utils/param.util';
 
 interface AuthRequest extends Request {
   user?: {
@@ -12,7 +13,7 @@ interface AuthRequest extends Request {
 
 export const updateUserRole = async (req: AuthRequest, res: Response) => {
   try {
-    const { userId } = req.params;
+    const userId = asString(req.params.userId);
     const { role } = req.body;
     const managerId = req.user?.id;
     const managerEstateId = req.user?.estate_id;

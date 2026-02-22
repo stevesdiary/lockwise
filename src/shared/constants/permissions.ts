@@ -126,7 +126,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Record<Resource, Permission[]>> 
     [Resource.USERS]: [Permission.READ],
     [Resource.ESTATES]: [Permission.READ],
     [Resource.RESIDENTS]: [Permission.READ],
-    [Resource.ACCESS_CODES]: [Permission.READ, Permission.CREATE],
+    [Resource.ACCESS_CODES]: [Permission.READ, Permission.CREATE, Permission.APPROVE],
     [Resource.ACCESS_LOGS]: [Permission.READ, Permission.CREATE],
     [Resource.PAYMENTS]: [],
     [Resource.SUBSCRIPTIONS]: [],

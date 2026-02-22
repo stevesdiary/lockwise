@@ -4,7 +4,7 @@ interface FlutterwaveInitiateData {
   amount: number;
   currency: string;
   email: string;
-  phone_number?: string;
+  phone?: string;
   name?: string;
   tx_ref: string;
   redirect_url?: string;
