@@ -221,7 +221,7 @@ export const estateSearchSchema = yup.object().shape({
 
 export const paymentInitiationSchema = yup.object().shape({
   amount: yup.number().positive().required('Amount is required'),
-  email: yup.string().email('Invalid email').required('Email is required'),
+  email: yup.string().email('Invalid email').optional(),
   currency: yup.string().optional().default('NGN'),
   paymentProvider: yup.string().trim().optional(),
   paymentMethod: yup.string().trim().required('Payment method is required')

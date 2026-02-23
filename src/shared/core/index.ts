@@ -11,6 +11,7 @@ import WebSocketService from '../../modules/communication/services/websocket.ser
 import { errorHandler, notFound } from '../middleware/error-handler.middleware';
 import realTimeNotificationService from '../../modules/analytics/services/realtime-notification.service';
 import { startAccessCodeExpiryJob } from '../jobs/access-code-expiry.job';
+import { startSubscriptionExpiryJob } from '../jobs/subscription-expiry.job';
 
 const server = express();
 const httpServer = createServer(server);
@@ -69,6 +70,7 @@ const startServer = async () => {
 
     // 4 Start cron jobs
     startAccessCodeExpiryJob();
+    startSubscriptionExpiryJob();
 
   } catch (error) {
     console.error('Unable to start server:', error);
