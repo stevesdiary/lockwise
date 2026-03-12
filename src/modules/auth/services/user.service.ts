@@ -3,8 +3,8 @@ import { UserRepository } from '../repositories/user.repository';
 import { User } from '../models/user.model';
 import { Role } from '../models/role.model';
 import emailVerificationService from './email-verification.service';
-import { title } from 'process';
 import { Estate } from '../../estate/models/estate.model';
+import { Resident } from '../../estate/models/resident.model';
 
 const userRepository = new UserRepository();
 
@@ -71,6 +71,16 @@ export const registerUser = async (userData: {
       estate_id: estateId,
       role_id: roleId
     } as any);
+
+    // Auto-create resident profile for resident accounts
+    if (userData.user_type === 'resident') {
+      await Resident.create({
+        user_id: user.id,
+        estate_id: estateId || null,
+        unit_id: null,
+        subscribed: false,
+      } as any);
+    }
 
     // Send verification code
     await emailVerificationService.sendVerificationCode(userData.email);
