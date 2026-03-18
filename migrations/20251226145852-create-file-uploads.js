@@ -76,14 +76,14 @@ module.exports = {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
       }
-    });
+    }, { ifNotExists: true });
 
     // Add indexes
-    await queryInterface.addIndex('file_uploads', ['user_id']);
-    await queryInterface.addIndex('file_uploads', ['estate_id']);
-    await queryInterface.addIndex('file_uploads', ['file_key']);
-    await queryInterface.addIndex('file_uploads', ['upload_type']);
-    await queryInterface.addIndex('file_uploads', ['created_at']);
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "file_uploads_user_id" ON "file_uploads" ("user_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "file_uploads_estate_id" ON "file_uploads" ("estate_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "file_uploads_file_key" ON "file_uploads" ("file_key")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "file_uploads_upload_type" ON "file_uploads" ("upload_type")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "file_uploads_created_at" ON "file_uploads" ("created_at")');
   },
 
   down: async (queryInterface, Sequelize) => {

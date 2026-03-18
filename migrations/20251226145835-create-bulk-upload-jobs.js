@@ -65,13 +65,13 @@ module.exports = {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
       }
-    });
+    }, { ifNotExists: true });
 
     // Add indexes
-    await queryInterface.addIndex('bulk_upload_jobs', ['user_id']);
-    await queryInterface.addIndex('bulk_upload_jobs', ['upload_type']);
-    await queryInterface.addIndex('bulk_upload_jobs', ['status']);
-    await queryInterface.addIndex('bulk_upload_jobs', ['created_at']);
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "bulk_upload_jobs_user_id" ON "bulk_upload_jobs" ("user_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "bulk_upload_jobs_upload_type" ON "bulk_upload_jobs" ("upload_type")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "bulk_upload_jobs_status" ON "bulk_upload_jobs" ("status")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "bulk_upload_jobs_created_at" ON "bulk_upload_jobs" ("created_at")');
   },
 
   down: async (queryInterface, Sequelize) => {

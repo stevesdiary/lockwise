@@ -25,7 +25,7 @@ module.exports = {
         defaultValue: Sequelize.literal("NOW()"),
       },
       last_used: { type: Sequelize.DATE },
-    });
+    }, { ifNotExists: true });
 
     await queryInterface.createTable("audit_logs", {
       id: {
@@ -49,23 +49,13 @@ module.exports = {
         type: Sequelize.DATE,
         defaultValue: Sequelize.literal("NOW()"),
       },
-    });
+    }, { ifNotExists: true });
 
-    await queryInterface.addIndex("api_keys", ["key_hash"], {
-      name: "idx_api_keys_hash",
-    });
-    await queryInterface.addIndex("api_keys", ["is_active"], {
-      name: "idx_api_keys_active",
-    });
-    await queryInterface.addIndex("audit_logs", ["user_id"], {
-      name: "idx_audit_logs_user",
-    });
-    await queryInterface.addIndex("audit_logs", ["created_at"], {
-      name: "idx_audit_logs_created",
-    });
-    await queryInterface.addIndex("audit_logs", ["path"], {
-      name: "idx_audit_logs_path",
-    });
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_api_keys_hash" ON "api_keys" ("key_hash")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_api_keys_active" ON "api_keys" ("is_active")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_audit_logs_user" ON "audit_logs" ("user_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_audit_logs_created" ON "audit_logs" ("created_at")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_audit_logs_path" ON "audit_logs" ("path")');
   },
 
   down: async (queryInterface, Sequelize) => {

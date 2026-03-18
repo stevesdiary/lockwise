@@ -58,7 +58,7 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: false,
       },
-    });
+    }, { ifNotExists: true });
 
     await queryInterface.createTable('message_reactions', {
       id: {
@@ -96,12 +96,12 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: false,
       },
-    });
+    }, { ifNotExists: true });
 
-    await queryInterface.addIndex('community_messages', ['estate_id']);
-    await queryInterface.addIndex('community_messages', ['user_id']);
-    await queryInterface.addIndex('message_reactions', ['message_id']);
-    await queryInterface.addIndex('message_reactions', ['user_id']);
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "community_messages_estate_id" ON "community_messages" ("estate_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "community_messages_user_id" ON "community_messages" ("user_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "message_reactions_message_id" ON "message_reactions" ("message_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "message_reactions_user_id" ON "message_reactions" ("user_id")');
   },
 
   down: async (queryInterface, Sequelize) => {

@@ -19,7 +19,7 @@ module.exports = {
       },
       created_at: Sequelize.DATE,
       updated_at: Sequelize.DATE
-    });
+    }, { ifNotExists: true });
   },
 
   down: async (queryInterface) => {

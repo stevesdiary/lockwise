@@ -1,22 +1,27 @@
 'use strict';
 
-/** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up(queryInterface, Sequelize) {
-    await queryInterface.addColumn('access_logs', 'valid_from', { type: Sequelize.DATE, allowNull: true });
-    await queryInterface.addColumn('access_logs', 'guest_phone', { type: Sequelize.STRING, allowNull: true });
-    await queryInterface.addColumn('access_logs', 'entry_time', { type: Sequelize.DATE, allowNull: true });
-    await queryInterface.addColumn('access_logs', 'exit_time', { type: Sequelize.DATE, allowNull: true });
-    await queryInterface.addColumn('access_logs', 'scanned_by', { type: Sequelize.UUID, allowNull: true });
-    await queryInterface.addColumn('access_logs', 'remark', { type: Sequelize.TEXT, allowNull: true });
+  up: async (queryInterface) => {
+    await queryInterface.sequelize.query(`
+      ALTER TABLE "access_logs"
+        ADD COLUMN IF NOT EXISTS "valid_from" TIMESTAMPTZ,
+        ADD COLUMN IF NOT EXISTS "guest_phone" VARCHAR(255),
+        ADD COLUMN IF NOT EXISTS "entry_time" TIMESTAMPTZ,
+        ADD COLUMN IF NOT EXISTS "exit_time" TIMESTAMPTZ,
+        ADD COLUMN IF NOT EXISTS "scanned_by" UUID,
+        ADD COLUMN IF NOT EXISTS "remark" TEXT;
+    `);
   },
 
-  async down(queryInterface) {
-    await queryInterface.removeColumn('access_logs', 'valid_from');
-    await queryInterface.removeColumn('access_logs', 'guest_phone');
-    await queryInterface.removeColumn('access_logs', 'entry_time');
-    await queryInterface.removeColumn('access_logs', 'exit_time');
-    await queryInterface.removeColumn('access_logs', 'scanned_by');
-    await queryInterface.removeColumn('access_logs', 'remark');
+  down: async (queryInterface) => {
+    await queryInterface.sequelize.query(`
+      ALTER TABLE "access_logs"
+        DROP COLUMN IF EXISTS "valid_from",
+        DROP COLUMN IF EXISTS "guest_phone",
+        DROP COLUMN IF EXISTS "entry_time",
+        DROP COLUMN IF EXISTS "exit_time",
+        DROP COLUMN IF EXISTS "scanned_by",
+        DROP COLUMN IF EXISTS "remark";
+    `);
   }
 };

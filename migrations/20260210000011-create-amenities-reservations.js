@@ -15,7 +15,7 @@ module.exports = {
       rules: { type: Sequelize.TEXT },
       created_at: { type: Sequelize.DATE, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
       updated_at: { type: Sequelize.DATE, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') }
-    });
+    }, { ifNotExists: true });
 
     await queryInterface.createTable('reservations', {
       id: { type: Sequelize.UUID, defaultValue: Sequelize.literal('gen_random_uuid()'), primaryKey: true },
@@ -31,14 +31,14 @@ module.exports = {
       cancelled_reason: { type: Sequelize.TEXT },
       created_at: { type: Sequelize.DATE, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
       updated_at: { type: Sequelize.DATE, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') }
-    });
+    }, { ifNotExists: true });
 
-    await queryInterface.addIndex('amenities', ['estate_id'], { name: 'idx_amenities_estate' });
-    await queryInterface.addIndex('amenities', ['status'], { name: 'idx_amenities_status' });
-    await queryInterface.addIndex('reservations', ['amenity_id'], { name: 'idx_reservations_amenity' });
-    await queryInterface.addIndex('reservations', ['user_id'], { name: 'idx_reservations_user' });
-    await queryInterface.addIndex('reservations', ['start_time', 'end_time'], { name: 'idx_reservations_time' });
-    await queryInterface.addIndex('reservations', ['status'], { name: 'idx_reservations_status' });
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_amenities_estate" ON "amenities" ("estate_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_amenities_status" ON "amenities" ("status")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_reservations_amenity" ON "reservations" ("amenity_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_reservations_user" ON "reservations" ("user_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_reservations_time" ON "reservations" ("start_time", "end_time")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_reservations_status" ON "reservations" ("status")');
 
     await queryInterface.addIndex('reservations', ['amenity_id', 'start_time', 'end_time'], {
       name: 'idx_no_overlap',

@@ -112,14 +112,13 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: true
       }
-    });
+    }, { ifNotExists: true });
 
     // Add indexes for performance
-    await queryInterface.addIndex('access_logs', ['user_id']);
-    await queryInterface.addIndex('access_logs', ['estate_id']);
-    await queryInterface.addIndex('access_logs', ['status']);
-    await queryInterface.addIndex('access_logs', ['access_code']);
-    await queryInterface.addIndex('access_logs', ['actual_entry_time']);
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "access_logs_user_id" ON "access_logs" ("user_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "access_logs_estate_id" ON "access_logs" ("estate_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "access_logs_status" ON "access_logs" ("status")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "access_logs_access_code" ON "access_logs" ("access_code")');
   },
 
   async down(queryInterface) {

@@ -74,12 +74,12 @@ module.exports = {
         allowNull: false,
         defaultValue: Sequelize.NOW
       }
-    });
+    }, { ifNotExists: true });
 
-    await queryInterface.addIndex('scheduled_notifications', ['scheduled_for']);
-    await queryInterface.addIndex('scheduled_notifications', ['status']);
-    await queryInterface.addIndex('scheduled_notifications', ['user_id']);
-    await queryInterface.addIndex('scheduled_notifications', ['estate_id']);
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "scheduled_notifications_scheduled_for" ON "scheduled_notifications" ("scheduled_for")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "scheduled_notifications_status" ON "scheduled_notifications" ("status")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "scheduled_notifications_user_id" ON "scheduled_notifications" ("user_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "scheduled_notifications_estate_id" ON "scheduled_notifications" ("estate_id")');
   },
 
   down: async (queryInterface, Sequelize) => {

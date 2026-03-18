@@ -11,7 +11,7 @@ module.exports = {
       app_version: { type: Sequelize.STRING(20) },
       created_at: { type: Sequelize.DATE, defaultValue: Sequelize.literal('NOW()') },
       updated_at: { type: Sequelize.DATE, defaultValue: Sequelize.literal('NOW()') }
-    });
+    }, { ifNotExists: true });
 
     await queryInterface.addConstraint('user_devices', {
       fields: ['user_id', 'device_id'],
@@ -27,7 +27,7 @@ module.exports = {
       status: { type: Sequelize.STRING(20), defaultValue: 'pending', validate: { isIn: [['pending', 'processed', 'failed']] } },
       created_at: { type: Sequelize.DATE, defaultValue: Sequelize.literal('NOW()') },
       processed_at: { type: Sequelize.DATE }
-    });
+    }, { ifNotExists: true });
 
     await queryInterface.createTable('deep_links', {
       id: { type: Sequelize.UUID, defaultValue: Sequelize.literal('gen_random_uuid()'), primaryKey: true },
@@ -38,14 +38,14 @@ module.exports = {
       expires_at: { type: Sequelize.DATE },
       clicks: { type: Sequelize.INTEGER, defaultValue: 0 },
       created_at: { type: Sequelize.DATE, defaultValue: Sequelize.literal('NOW()') }
-    });
+    }, { ifNotExists: true });
 
-    await queryInterface.addIndex('user_devices', ['user_id'], { name: 'idx_user_devices_user' });
-    await queryInterface.addIndex('user_devices', ['fcm_token'], { name: 'idx_user_devices_fcm' });
-    await queryInterface.addIndex('sync_queue', ['user_id'], { name: 'idx_sync_queue_user' });
-    await queryInterface.addIndex('sync_queue', ['status'], { name: 'idx_sync_queue_status' });
-    await queryInterface.addIndex('deep_links', ['user_id'], { name: 'idx_deep_links_user' });
-    await queryInterface.addIndex('deep_links', ['link_type'], { name: 'idx_deep_links_type' });
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_user_devices_user" ON "user_devices" ("user_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_user_devices_fcm" ON "user_devices" ("fcm_token")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_sync_queue_user" ON "sync_queue" ("user_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_sync_queue_status" ON "sync_queue" ("status")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_deep_links_user" ON "deep_links" ("user_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_deep_links_type" ON "deep_links" ("link_type")');
   },
 
   down: async (queryInterface, Sequelize) => {

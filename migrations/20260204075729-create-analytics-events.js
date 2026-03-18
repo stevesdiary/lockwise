@@ -24,11 +24,11 @@ module.exports = {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
       }
-    });
+    }, { ifNotExists: true });
 
-    await queryInterface.addIndex('analytics_events', ['user_id']);
-    await queryInterface.addIndex('analytics_events', ['event_name']);
-    await queryInterface.addIndex('analytics_events', ['created_at']);
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "analytics_events_user_id" ON "analytics_events" ("user_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "analytics_events_event_name" ON "analytics_events" ("event_name")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "analytics_events_created_at" ON "analytics_events" ("created_at")');
   },
 
   down: async (queryInterface, Sequelize) => {

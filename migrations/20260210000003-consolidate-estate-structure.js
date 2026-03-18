@@ -30,58 +30,21 @@ module.exports = {
       }
 
       // Add international fields
-      await queryInterface.addColumn('estates', 'country_code', {
-        type: Sequelize.STRING(2),
-        allowNull: false,
-        defaultValue: 'NG'
-      }, { transaction });
-
-      await queryInterface.addColumn('estates', 'timezone', {
-        type: Sequelize.STRING,
-        allowNull: false,
-        defaultValue: 'Africa/Lagos'
-      }, { transaction });
-
-      await queryInterface.addColumn('estates', 'currency_code', {
-        type: Sequelize.STRING(3),
-        allowNull: false,
-        defaultValue: 'NGN'
-      }, { transaction });
-
-      // Add JSONB columns
-      await queryInterface.addColumn('estates', 'location_details', {
-        type: Sequelize.JSONB,
-        allowNull: true,
-        defaultValue: {}
-      }, { transaction });
-
-      await queryInterface.addColumn('estates', 'access_points', {
-        type: Sequelize.JSONB,
-        allowNull: true,
-        defaultValue: []
-      }, { transaction });
-
-      await queryInterface.addColumn('estates', 'geo_fencing', {
-        type: Sequelize.JSONB,
-        allowNull: true
-      }, { transaction });
-
-      await queryInterface.addColumn('estates', 'contact_info', {
-        type: Sequelize.JSONB,
-        allowNull: true,
-        defaultValue: {}
-      }, { transaction });
+      await queryInterface.sequelize.query(`
+        ALTER TABLE "estates"
+          ADD COLUMN IF NOT EXISTS "country_code" VARCHAR(2) NOT NULL DEFAULT 'NG',
+          ADD COLUMN IF NOT EXISTS "timezone" VARCHAR(255) NOT NULL DEFAULT 'Africa/Lagos',
+          ADD COLUMN IF NOT EXISTS "currency_code" VARCHAR(3) NOT NULL DEFAULT 'NGN',
+          ADD COLUMN IF NOT EXISTS "location_details" JSONB DEFAULT '{}',
+          ADD COLUMN IF NOT EXISTS "access_points" JSONB DEFAULT '[]',
+          ADD COLUMN IF NOT EXISTS "geo_fencing" JSONB,
+          ADD COLUMN IF NOT EXISTS "contact_info" JSONB DEFAULT '{}';
+      `, { transaction });
 
       // Add indexes
-      await queryInterface.addIndex('estates', ['country_code'], {
-        name: 'estates_country_code_idx',
-        transaction
-      });
+      await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "estates_country_code_idx" ON "estates" ("country_code")');
 
-      await queryInterface.addIndex('estates', ['city', 'country_code'], {
-        name: 'estates_city_country_idx',
-        transaction
-      });
+      await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "estates_city_country_idx" ON "estates" ("city", "country_code")');
 
       // ============ GATES TABLE ============
       await queryInterface.createTable('gates', {
@@ -145,17 +108,11 @@ module.exports = {
           type: Sequelize.DATE,
           allowNull: true,
         },
-      }, { transaction });
+      }, { transaction }, { ifNotExists: true });
 
-      await queryInterface.addIndex('gates', ['estate_id'], {
-        name: 'gates_estate_id_idx',
-        transaction
-      });
+      await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "gates_estate_id_idx" ON "gates" ("estate_id")');
 
-      await queryInterface.addIndex('gates', ['gate_code'], {
-        name: 'gates_gate_code_idx',
-        transaction
-      });
+      await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "gates_gate_code_idx" ON "gates" ("gate_code")');
 
       // ============ UNITS TABLE UPDATES ============
       const unitColumns = await queryInterface.describeTable('units');
@@ -164,17 +121,11 @@ module.exports = {
         await queryInterface.renameColumn('units', 'number', 'unit_identifier', { transaction });
       }
 
-      await queryInterface.addColumn('units', 'unit_details', {
-        type: Sequelize.JSONB,
-        allowNull: true,
-        defaultValue: {}
-      }, { transaction });
-
-      await queryInterface.addColumn('units', 'status', {
-        type: Sequelize.ENUM('occupied', 'vacant', 'under_construction', 'reserved'),
-        allowNull: true,
-        defaultValue: 'vacant'
-      }, { transaction });
+      await queryInterface.sequelize.query(`
+        ALTER TABLE "units"
+          ADD COLUMN IF NOT EXISTS "unit_details" JSONB DEFAULT '{}',
+          ADD COLUMN IF NOT EXISTS "status" VARCHAR(50) DEFAULT 'vacant';
+      `, { transaction });
 
       // Update unit_type enum - check if enum exists first
       const enumExists = await queryInterface.sequelize.query(
@@ -280,25 +231,13 @@ module.exports = {
       }
 
       // Add indexes
-      await queryInterface.addIndex('access_logs', ['gate_id'], {
-        name: 'access_logs_gate_id_idx',
-        transaction
-      });
+      await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "access_logs_gate_id_idx" ON "access_logs" ("gate_id")');
 
-      await queryInterface.addIndex('access_logs', ['unit_id'], {
-        name: 'access_logs_unit_id_idx',
-        transaction
-      });
+      await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "access_logs_unit_id_idx" ON "access_logs" ("unit_id")');
 
-      await queryInterface.addIndex('access_logs', ['entry_gate_id'], {
-        name: 'access_logs_entry_gate_id_idx',
-        transaction
-      });
+      await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "access_logs_entry_gate_id_idx" ON "access_logs" ("entry_gate_id")');
 
-      await queryInterface.addIndex('access_logs', ['exit_gate_id'], {
-        name: 'access_logs_exit_gate_id_idx',
-        transaction
-      });
+      await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "access_logs_exit_gate_id_idx" ON "access_logs" ("exit_gate_id")');
     });
   },
 

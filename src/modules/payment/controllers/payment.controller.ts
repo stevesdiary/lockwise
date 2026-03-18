@@ -13,7 +13,6 @@ import { UserRole } from '../../../shared/constants/permissions';
 
 const subscriptionInitiationSchema = yup.object().shape({
   plan_id: yup.string().required('Plan ID is required'),
-  paymentProvider: yup.string().trim().optional(),
   paymentMethod: yup.string().trim().optional().default('card')
 });
 
@@ -48,9 +47,7 @@ const paymentController = {
         amount: transactionData.amount,
         email: userEmail,
         currency: transactionData.currency || 'NGN',
-        payment_provider: (transactionData.paymentProvider === 'paystack' || transactionData.paymentProvider === 'flutterwave' 
-          ? transactionData.paymentProvider 
-          : 'paystack') as 'paystack' | 'flutterwave',
+        payment_provider: 'paystack' as const,
         payment_method: transactionData.paymentMethod,
         user_id: req.user.id,
         estate_id: req.user.estate_id,
@@ -287,7 +284,6 @@ const paymentController = {
         estate_id: req.user.estate_id,
         plan_id: data.plan_id,
         payment_method: data.paymentMethod,
-        payment_provider: data.paymentProvider === 'flutterwave' ? 'flutterwave' : 'paystack',
         user_id: req.user.id,
         user_email: req.user.email,
       });

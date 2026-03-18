@@ -3,7 +3,7 @@ import cors from 'cors';
 import { createServer } from 'http';
 import rateLimit from 'express-rate-limit';
 
-import sequelize from './database';
+import sequelize, { databaseTarget, runMigrations } from './database';
 import router from '../../router';
 import monitoringService from '../middleware/monitoring';
 import { swaggerUi, specs } from '../config/swagger';
@@ -56,11 +56,12 @@ server.use(errorHandler);
 const startServer = async () => {
   try {
     // 1 Connect to database
+    console.log(`Connecting to database ${databaseTarget}`);
     await sequelize.authenticate();
     console.log('Database connected.');
 
-    // 2️ Use migrations instead of sync
-    console.log('Run migrations');
+    // 2 Run pending migrations programmatically
+    await runMigrations();
 
     // 3 Start HTTP + WebSocket server
     httpServer.listen(port, () => {
@@ -77,20 +78,6 @@ const startServer = async () => {
     process.exit(1);
   }
 };
-
-// const startServer = async () => {
-//   try {
-//     await sequelize.authenticate();
-//     console.log('Database connected.');
-
-//     httpServer.listen(port, () => {
-//       console.log(`Server running on port ${port}`);
-//       console.log(`WebSocket server initialized`);
-//     });
-//   } catch (error) {
-//     console.error('Unable to connect to the database:', error);
-//   }
-// };
 
 export default startServer;
 export { webSocketService, server, httpServer };

@@ -52,13 +52,13 @@ module.exports = {
         allowNull: false,
         defaultValue: Sequelize.NOW
       }
-    });
+    }, { ifNotExists: true });
 
     // Add indexes
-    await queryInterface.addIndex('notifications', ['user_id']);
-    await queryInterface.addIndex('notifications', ['type']);
-    await queryInterface.addIndex('notifications', ['is_read']);
-    await queryInterface.addIndex('notifications', ['created_at']);
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "notifications_user_id" ON "notifications" ("user_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "notifications_type" ON "notifications" ("type")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "notifications_is_read" ON "notifications" ("is_read")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "notifications_created_at" ON "notifications" ("created_at")');
   },
 
   down: async (queryInterface, Sequelize) => {

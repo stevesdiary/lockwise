@@ -1,19 +1,19 @@
 'use strict';
 
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
-    await queryInterface.removeColumn('users', 'verification_code');
-    await queryInterface.removeColumn('users', 'verification_expires');
+  up: async (queryInterface) => {
+    await queryInterface.sequelize.query(`
+      ALTER TABLE "users"
+        DROP COLUMN IF EXISTS "verification_code",
+        DROP COLUMN IF EXISTS "verification_expires";
+    `);
   },
 
-  down: async (queryInterface, Sequelize) => {
-    await queryInterface.addColumn('users', 'verification_code', {
-      type: Sequelize.STRING,
-      allowNull: true,
-    });
-    await queryInterface.addColumn('users', 'verification_expires', {
-      type: Sequelize.DATE,
-      allowNull: true,
-    });
+  down: async (queryInterface) => {
+    await queryInterface.sequelize.query(`
+      ALTER TABLE "users"
+        ADD COLUMN IF NOT EXISTS "verification_code" VARCHAR(255),
+        ADD COLUMN IF NOT EXISTS "verification_expires" TIMESTAMPTZ;
+    `);
   }
 };

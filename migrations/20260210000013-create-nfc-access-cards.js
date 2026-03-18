@@ -13,7 +13,7 @@ module.exports = {
       last_used: { type: Sequelize.DATE },
       created_at: { type: Sequelize.DATE, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
       updated_at: { type: Sequelize.DATE, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') }
-    });
+    }, { ifNotExists: true });
 
     await queryInterface.addConstraint('nfc_cards', {
       fields: ['user_id', 'estate_id'],
@@ -31,15 +31,15 @@ module.exports = {
       status: { type: Sequelize.STRING(20), allowNull: false },
       denial_reason: { type: Sequelize.STRING(100) },
       timestamp: { type: Sequelize.DATE, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') }
-    });
+    }, { ifNotExists: true });
 
-    await queryInterface.addIndex('nfc_cards', ['card_uid'], { name: 'idx_nfc_cards_uid' });
-    await queryInterface.addIndex('nfc_cards', ['user_id'], { name: 'idx_nfc_cards_user' });
-    await queryInterface.addIndex('nfc_cards', ['estate_id'], { name: 'idx_nfc_cards_estate' });
-    await queryInterface.addIndex('nfc_cards', ['status'], { name: 'idx_nfc_cards_status' });
-    await queryInterface.addIndex('nfc_access_logs', ['card_id'], { name: 'idx_nfc_access_logs_card' });
-    await queryInterface.addIndex('nfc_access_logs', ['user_id'], { name: 'idx_nfc_access_logs_user' });
-    await queryInterface.addIndex('nfc_access_logs', ['timestamp'], { name: 'idx_nfc_access_logs_timestamp' });
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_nfc_cards_uid" ON "nfc_cards" ("card_uid")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_nfc_cards_user" ON "nfc_cards" ("user_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_nfc_cards_estate" ON "nfc_cards" ("estate_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_nfc_cards_status" ON "nfc_cards" ("status")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_nfc_access_logs_card" ON "nfc_access_logs" ("card_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_nfc_access_logs_user" ON "nfc_access_logs" ("user_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_nfc_access_logs_timestamp" ON "nfc_access_logs" ("timestamp")');
   },
 
   down: async (queryInterface, Sequelize) => {

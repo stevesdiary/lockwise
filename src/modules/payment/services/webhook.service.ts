@@ -21,18 +21,6 @@ export const webhookService = {
     return hash === signature;
   },
 
-  verifyFlutterwaveSignature(body: any, signature: string): boolean {
-    if (!process.env.FLUTTERWAVE_SECRET_HASH) {
-      throw new Error('FLUTTERWAVE_SECRET_HASH not configured');
-    }
-
-    const hash = crypto.createHash('sha256')
-      .update(JSON.stringify(body) + process.env.FLUTTERWAVE_SECRET_HASH)
-      .digest('hex');
-
-    return hash === signature;
-  },
-
   async processPaystackWebhook(event: string, data: any): Promise<WebhookResult> {
     try {
       if (event === 'charge.success') {
@@ -69,47 +57,6 @@ export const webhookService = {
             const { referralService } = require('./referral.service');
             await referralService.createBonusOnPayment(payment.estate_id, data.amount / 100);
           }
-        }
-
-        return {
-          success: true,
-          message: 'Webhook processed successfully',
-          statusCode: 200
-        };
-      }
-
-      return {
-        success: true,
-        message: 'Event not handled',
-        statusCode: 200
-      };
-    } catch (error) {
-      throw new Error(`Webhook processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-  },
-
-  async processFlutterwaveWebhook(event: string, data: any): Promise<WebhookResult> {
-    try {
-      if (event === 'charge.completed' && data.status === 'successful') {
-        const [updatedRows] = await Payment.update(
-          { 
-            payment_status: 'completed',
-            payment_data: data
-          },
-          { where: { reference: data.tx_ref }}
-        );
-
-        if (updatedRows === 0) {
-          return {
-            success: false,
-            message: 'Payment not found',
-            statusCode: 404
-          };
-        }
-
-        const payment = await Payment.findOne({ where: { reference: data.tx_ref }});
-        if (payment) {
-          await this.createOrExtendSubscription(payment);
         }
 
         return {

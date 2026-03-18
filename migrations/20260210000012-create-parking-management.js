@@ -14,7 +14,7 @@ module.exports = {
       charger_power: { type: Sequelize.INTEGER },
       created_at: { type: Sequelize.DATE, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
       updated_at: { type: Sequelize.DATE, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') }
-    });
+    }, { ifNotExists: true });
 
     await queryInterface.addConstraint('parking_slots', {
       fields: ['estate_id', 'slot_number'],
@@ -32,7 +32,7 @@ module.exports = {
       status: { type: Sequelize.STRING(20), defaultValue: 'active' },
       created_at: { type: Sequelize.DATE, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
       updated_at: { type: Sequelize.DATE, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') }
-    });
+    }, { ifNotExists: true });
 
     await queryInterface.createTable('guest_parking', {
       id: { type: Sequelize.UUID, defaultValue: Sequelize.literal('gen_random_uuid()'), primaryKey: true },
@@ -47,7 +47,7 @@ module.exports = {
       access_code: { type: Sequelize.STRING(10) },
       created_at: { type: Sequelize.DATE, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
       updated_at: { type: Sequelize.DATE, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') }
-    });
+    }, { ifNotExists: true });
 
     await queryInterface.createTable('ev_charging_sessions', {
       id: { type: Sequelize.UUID, defaultValue: Sequelize.literal('gen_random_uuid()'), primaryKey: true },
@@ -63,17 +63,17 @@ module.exports = {
       status: { type: Sequelize.STRING(20), defaultValue: 'active' },
       created_at: { type: Sequelize.DATE, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
       updated_at: { type: Sequelize.DATE, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') }
-    });
+    }, { ifNotExists: true });
 
-    await queryInterface.addIndex('parking_slots', ['estate_id'], { name: 'idx_parking_slots_estate' });
-    await queryInterface.addIndex('parking_slots', ['status'], { name: 'idx_parking_slots_status' });
-    await queryInterface.addIndex('parking_assignments', ['user_id'], { name: 'idx_parking_assignments_user' });
-    await queryInterface.addIndex('parking_assignments', ['slot_id'], { name: 'idx_parking_assignments_slot' });
-    await queryInterface.addIndex('guest_parking', ['owner_id'], { name: 'idx_guest_parking_owner' });
-    await queryInterface.addIndex('guest_parking', ['start_time', 'end_time'], { name: 'idx_guest_parking_time' });
-    await queryInterface.addIndex('ev_charging_sessions', ['user_id'], { name: 'idx_ev_sessions_user' });
-    await queryInterface.addIndex('ev_charging_sessions', ['slot_id'], { name: 'idx_ev_sessions_slot' });
-    await queryInterface.addIndex('ev_charging_sessions', ['status'], { name: 'idx_ev_sessions_status' });
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_parking_slots_estate" ON "parking_slots" ("estate_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_parking_slots_status" ON "parking_slots" ("status")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_parking_assignments_user" ON "parking_assignments" ("user_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_parking_assignments_slot" ON "parking_assignments" ("slot_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_guest_parking_owner" ON "guest_parking" ("owner_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_guest_parking_time" ON "guest_parking" ("start_time", "end_time")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_ev_sessions_user" ON "ev_charging_sessions" ("user_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_ev_sessions_slot" ON "ev_charging_sessions" ("slot_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_ev_sessions_status" ON "ev_charging_sessions" ("status")');
   },
 
   down: async (queryInterface, Sequelize) => {

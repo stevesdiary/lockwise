@@ -9,7 +9,7 @@ module.exports = {
       properties: { type: Sequelize.JSONB },
       session_id: { type: Sequelize.STRING(255) },
       created_at: { type: Sequelize.DATE, defaultValue: Sequelize.literal('NOW()') }
-    });
+    }, { ifNotExists: true });
 
     await queryInterface.createTable('performance_metrics', {
       id: { type: Sequelize.UUID, defaultValue: Sequelize.literal('gen_random_uuid()'), primaryKey: true },
@@ -20,7 +20,7 @@ module.exports = {
       memory_usage_mb: { type: Sequelize.DECIMAL(10, 2) },
       cpu_usage_percent: { type: Sequelize.DECIMAL(5, 2) },
       created_at: { type: Sequelize.DATE, defaultValue: Sequelize.literal('NOW()') }
-    });
+    }, { ifNotExists: true });
 
     await queryInterface.createTable('system_health', {
       id: { type: Sequelize.UUID, defaultValue: Sequelize.literal('gen_random_uuid()'), primaryKey: true },
@@ -30,15 +30,15 @@ module.exports = {
       error_message: { type: Sequelize.TEXT },
       metadata: { type: Sequelize.JSONB },
       created_at: { type: Sequelize.DATE, defaultValue: Sequelize.literal('NOW()') }
-    });
+    }, { ifNotExists: true });
 
-    await queryInterface.addIndex('analytics_events', ['user_id'], { name: 'idx_analytics_events_user' });
-    await queryInterface.addIndex('analytics_events', ['event_name'], { name: 'idx_analytics_events_name' });
-    await queryInterface.addIndex('analytics_events', ['created_at'], { name: 'idx_analytics_events_created' });
-    await queryInterface.addIndex('performance_metrics', ['endpoint'], { name: 'idx_performance_metrics_endpoint' });
-    await queryInterface.addIndex('performance_metrics', ['created_at'], { name: 'idx_performance_metrics_created' });
-    await queryInterface.addIndex('system_health', ['service_name'], { name: 'idx_system_health_service' });
-    await queryInterface.addIndex('system_health', ['created_at'], { name: 'idx_system_health_created' });
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_analytics_events_user" ON "analytics_events" ("user_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_analytics_events_name" ON "analytics_events" ("event_name")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_analytics_events_created" ON "analytics_events" ("created_at")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_performance_metrics_endpoint" ON "performance_metrics" ("endpoint")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_performance_metrics_created" ON "performance_metrics" ("created_at")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_system_health_service" ON "system_health" ("service_name")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "idx_system_health_created" ON "system_health" ("created_at")');
   },
 
   down: async (queryInterface, Sequelize) => {

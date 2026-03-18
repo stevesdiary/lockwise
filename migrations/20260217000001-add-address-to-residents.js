@@ -1,15 +1,15 @@
 'use strict';
 
-/** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up (queryInterface, Sequelize) {
-    await queryInterface.addColumn('residents', 'address', {
-      type: Sequelize.TEXT,
-      allowNull: true
-    });
+  up: async (queryInterface) => {
+    await queryInterface.sequelize.query(`
+      ALTER TABLE "residents" ADD COLUMN IF NOT EXISTS "address" TEXT;
+    `);
   },
 
-  async down (queryInterface, Sequelize) {
-    await queryInterface.removeColumn('residents', 'address');
+  down: async (queryInterface) => {
+    await queryInterface.sequelize.query(`
+      ALTER TABLE "residents" DROP COLUMN IF EXISTS "address";
+    `);
   }
 };

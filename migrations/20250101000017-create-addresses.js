@@ -72,12 +72,12 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: true
       }
-    });
+    }, { ifNotExists: true });
 
     // Add indexes
-    await queryInterface.addIndex('addresses', ['estate_id']);
-    await queryInterface.addIndex('addresses', ['apartment_number']);
-    await queryInterface.addIndex('addresses', ['available']);
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "addresses_estate_id" ON "addresses" ("estate_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "addresses_apartment_number" ON "addresses" ("apartment_number")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "addresses_available" ON "addresses" ("available")');
   },
 
   down: async (queryInterface, Sequelize) => {

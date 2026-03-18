@@ -1,4 +1,3 @@
-import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { Response } from "express";
 import { User } from "../models/user.model";
@@ -9,6 +8,8 @@ import { Street } from "../../estate/models/street.model";
 import { Estate } from "../../estate/models/estate.model";
 import sessionService from "./session.service";
 
+const getBcrypt = async () => (await import('bcrypt')).default;
+
 // Define environment variables with proper types
 const jwtExpiry: string | number = process.env.JWT_EXPIRY || "1h";
 const jwtSecret: string = process.env.JWT_SECRET || "secret";
@@ -17,6 +18,7 @@ const refreshSecret: string = process.env.REFRESH_TOKEN_SECRET || 'refresh_secre
 
 export const loginUser = async (email: string, password: string) => {
   try {
+    const bcrypt = await getBcrypt();
     const user = await User.findOne({ 
       where: { email },
       include: [

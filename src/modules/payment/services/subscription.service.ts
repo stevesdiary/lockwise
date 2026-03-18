@@ -8,7 +8,7 @@ interface SubscriptionData {
   estate_id: string;
   plan_id: string;
   payment_method?: string;
-  payment_provider?: 'paystack' | 'flutterwave';
+  payment_provider?: 'paystack';
   user_id: string;
   user_email: string;
 }
@@ -35,14 +35,13 @@ class SubscriptionService {
         throw new Error('Estate already has an active subscription');
       }
 
-      // Create pending subscription
+      // Create pending subscription (paid_on set when payment completes)
       const subscription = await Subscription.create({
         estate_id: data.estate_id,
         plan_id: data.plan_id,
         status: 'inactive',
         start_date: new Date(),
         end_date: new Date(),
-        paid_on: new Date(),
       });
 
       // Initiate payment for subscription
@@ -58,6 +57,7 @@ class SubscriptionService {
       });
 
       if (paymentResult.statusCode !== 200) {
+        await subscription.destroy();
         throw new Error('Payment initialization failed');
       }
 

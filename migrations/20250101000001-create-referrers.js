@@ -41,11 +41,10 @@ module.exports = {
         allowNull: false,
         defaultValue: Sequelize.NOW
       }
-    });
+    }, { ifNotExists: true });
 
-    // Add indexes
-    await queryInterface.addIndex('referrers', ['referral_code']);
-    await queryInterface.addIndex('referrers', ['email']);
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "referrers_referral_code" ON "referrers" ("referral_code")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "referrers_email" ON "referrers" ("email")');
   },
 
   async down (queryInterface, Sequelize) {

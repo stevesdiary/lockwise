@@ -93,7 +93,7 @@ module.exports = {
       deleted_at: {
         type: Sequelize.DATE
       }
-    })
+    }, { ifNotExists: true })
   },
 
   async down (queryInterface, Sequelize) {

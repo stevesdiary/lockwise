@@ -54,10 +54,10 @@ module.exports = {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
       }
-    });
+    }, { ifNotExists: true });
 
-    await queryInterface.addIndex('user_devices', ['user_id']);
-    await queryInterface.addIndex('user_devices', ['fcm_token']);
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "user_devices_user_id" ON "user_devices" ("user_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "user_devices_fcm_token" ON "user_devices" ("fcm_token")');
   },
 
   async down(queryInterface, Sequelize) {

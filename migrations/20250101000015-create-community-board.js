@@ -57,7 +57,7 @@ module.exports = {
         allowNull: false,
         defaultValue: Sequelize.NOW
       }
-    });
+    }, { ifNotExists: true });
 
     // Create community_comments table
     await queryInterface.createTable('community_comments', {
@@ -98,15 +98,15 @@ module.exports = {
         allowNull: false,
         defaultValue: Sequelize.NOW
       }
-    });
+    }, { ifNotExists: true });
 
     // Add indexes
-    await queryInterface.addIndex('community_posts', ['estate_id']);
-    await queryInterface.addIndex('community_posts', ['type']);
-    await queryInterface.addIndex('community_posts', ['is_pinned']);
-    await queryInterface.addIndex('community_posts', ['created_at']);
-    await queryInterface.addIndex('community_comments', ['post_id']);
-    await queryInterface.addIndex('community_comments', ['created_at']);
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "community_posts_estate_id" ON "community_posts" ("estate_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "community_posts_type" ON "community_posts" ("type")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "community_posts_is_pinned" ON "community_posts" ("is_pinned")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "community_posts_created_at" ON "community_posts" ("created_at")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "community_comments_post_id" ON "community_comments" ("post_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "community_comments_created_at" ON "community_comments" ("created_at")');
   },
 
   down: async (queryInterface, Sequelize) => {

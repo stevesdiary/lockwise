@@ -61,7 +61,7 @@ module.exports = {
         allowNull: false,
         defaultValue: Sequelize.NOW
       }
-    });
+    }, { ifNotExists: true });
 
     // Create emergency_contacts table
     await queryInterface.createTable('emergency_contacts', {
@@ -114,7 +114,7 @@ module.exports = {
         allowNull: false,
         defaultValue: Sequelize.NOW
       }
-    });
+    }, { ifNotExists: true });
 
     // Create support_tickets table
     await queryInterface.createTable('support_tickets', {
@@ -172,7 +172,7 @@ module.exports = {
         allowNull: false,
         defaultValue: Sequelize.NOW
       }
-    });
+    }, { ifNotExists: true });
 
     // Create support_messages table
     await queryInterface.createTable('support_messages', {
@@ -218,16 +218,16 @@ module.exports = {
         allowNull: false,
         defaultValue: Sequelize.NOW
       }
-    });
+    }, { ifNotExists: true });
 
     // Add indexes
-    await queryInterface.addIndex('emergency_alerts', ['estate_id']);
-    await queryInterface.addIndex('emergency_alerts', ['status']);
-    await queryInterface.addIndex('emergency_contacts', ['estate_id']);
-    await queryInterface.addIndex('emergency_contacts', ['type']);
-    await queryInterface.addIndex('support_tickets', ['user_id']);
-    await queryInterface.addIndex('support_tickets', ['status']);
-    await queryInterface.addIndex('support_messages', ['ticket_id']);
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "emergency_alerts_estate_id" ON "emergency_alerts" ("estate_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "emergency_alerts_status" ON "emergency_alerts" ("status")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "emergency_contacts_estate_id" ON "emergency_contacts" ("estate_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "emergency_contacts_type" ON "emergency_contacts" ("type")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "support_tickets_user_id" ON "support_tickets" ("user_id")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "support_tickets_status" ON "support_tickets" ("status")');
+    await queryInterface.sequelize.query('CREATE INDEX IF NOT EXISTS "support_messages_ticket_id" ON "support_messages" ("ticket_id")');
   },
 
   down: async (queryInterface, Sequelize) => {

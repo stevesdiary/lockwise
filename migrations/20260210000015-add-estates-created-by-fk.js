@@ -1,21 +1,24 @@
 'use strict';
 
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
-    await queryInterface.addConstraint('estates', {
-      fields: ['created_by'],
-      type: 'foreign key',
-      name: 'estates_created_by_fkey',
-      references: {
-        table: 'users',
-        field: 'id'
-      },
-      onDelete: 'SET NULL',
-      onUpdate: 'CASCADE'
-    });
+  up: async (queryInterface) => {
+    await queryInterface.sequelize.query(`
+      DO $$ BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_constraint WHERE conname = 'estates_created_by_fkey'
+        ) THEN
+          ALTER TABLE "estates"
+            ADD CONSTRAINT "estates_created_by_fkey"
+            FOREIGN KEY ("created_by") REFERENCES "users"("id")
+            ON DELETE SET NULL ON UPDATE CASCADE;
+        END IF;
+      END $$;
+    `);
   },
 
-  down: async (queryInterface, Sequelize) => {
-    await queryInterface.removeConstraint('estates', 'estates_created_by_fkey');
+  down: async (queryInterface) => {
+    await queryInterface.sequelize.query(`
+      ALTER TABLE "estates" DROP CONSTRAINT IF EXISTS "estates_created_by_fkey";
+    `);
   }
 };

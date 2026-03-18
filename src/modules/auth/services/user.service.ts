@@ -1,4 +1,3 @@
-import bcrypt from 'bcrypt';
 import { UserRepository } from '../repositories/user.repository';
 import { User } from '../models/user.model';
 import { Role } from '../models/role.model';
@@ -7,6 +6,7 @@ import { Estate } from '../../estate/models/estate.model';
 import { Resident } from '../../estate/models/resident.model';
 
 const userRepository = new UserRepository();
+const getBcrypt = async () => (await import('bcrypt')).default;
 
 // Cache for role mappings (loaded once at startup)
 let roleCache: Record<string, string> | null = null;
@@ -36,6 +36,7 @@ export const registerUser = async (userData: {
   role_id?: string;
 }) => {
   try {
+    const bcrypt = await getBcrypt();
     const existingUser = await userRepository.findUserByEmail(userData.email);
     if (existingUser) {
       return { statusCode: 400, message: 'User already exists' };

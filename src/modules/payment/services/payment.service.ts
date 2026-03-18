@@ -3,13 +3,13 @@ import { Payment } from '../../payment/models/payment.model';
 import { Subscription } from '../../payment/models/subscription.model';
 import { Plan } from '../../payment/models/plan.model';
 import PaystackService from './paystack.service';
-import FlutterwaveService from './flutterwave.service';
+import { referralService } from './referral.service';
 
 interface PaymentData {
   amount: number;
   email: string;
   currency?: string;
-  payment_provider?: 'paystack' | 'flutterwave';
+  payment_provider?: 'paystack';
   payment_method: string;
   user_id: string;
   estate_id?: string;
@@ -47,38 +47,20 @@ class PaymentService {
       }
 
       const reference = `LW_${nanoid(10)}_${Date.now()}`;
-      const provider = data.payment_provider || 'paystack';
       const paymentMethod = this.normalizePaymentMethod(data.payment_method);
 
-      let providerResponse;
-      
-      if (provider === 'paystack') {
-        providerResponse = await PaystackService.initializeTransaction({
-          amount: data.amount,
-          email: data.email,
-          currency: data.currency || 'NGN',
-          reference,
-          callback_url: `${process.env.BASE_URL}/api/v1/payment/callback`,
-          metadata: {
-            user_id: data.user_id,
-            estate_id: data.estate_id,
-            subscription_id: data.subscription_id,
-          },
-        });
-      } else {
-        providerResponse = await FlutterwaveService.initializePayment({
-          amount: data.amount,
-          currency: data.currency || 'NGN',
-          email: data.email,
-          tx_ref: reference,
-          redirect_url: `${process.env.BASE_URL}/api/v1/payment/callback`,
-          meta: {
-            user_id: data.user_id,
-            estate_id: data.estate_id,
-            subscription_id: data.subscription_id,
-          },
-        });
-      }
+      const providerResponse = await PaystackService.initializeTransaction({
+        amount: data.amount,
+        email: data.email,
+        currency: data.currency || 'NGN',
+        reference,
+        callback_url: `${process.env.BASE_URL}/api/v1/payment/callback`,
+        metadata: {
+          user_id: data.user_id,
+          estate_id: data.estate_id,
+          subscription_id: data.subscription_id,
+        },
+      });
 
       // Save payment record
       await Payment.create({
@@ -89,7 +71,7 @@ class PaymentService {
         payment_date: new Date(),
         payment_status: 'pending',
         reference,
-        payment_provider: provider,
+        payment_provider: 'paystack',
         payment_method: paymentMethod,
         email: data.email,
         payment_data: providerResponse,
@@ -101,9 +83,7 @@ class PaymentService {
         message: 'Payment initialized successfully',
         data: {
           reference,
-          authorization_url: provider === 'paystack' 
-            ? providerResponse.data.authorization_url 
-            : providerResponse.data.link,
+          authorization_url: providerResponse.data.authorization_url,
           access_code: providerResponse.data.access_code,
         },
       };
@@ -128,21 +108,22 @@ class PaymentService {
         };
       }
 
-      let verificationResponse;
-      
-      if (payment.payment_provider === 'paystack') {
-        verificationResponse = await PaystackService.verifyTransaction(data.reference);
-      } else {
-        // For Flutterwave, we need transaction ID from webhook
-        const providerData = payment.payment_data as any || {};
-        verificationResponse = await FlutterwaveService.verifyTransaction(
-          providerData.data?.id || data.reference
-        );
+      // Idempotency: skip re-processing if already completed
+      if (payment.payment_status === 'completed') {
+        return {
+          statusCode: 200,
+          status: 'success',
+          message: 'Payment already verified',
+          data: {
+            payment_status: payment.payment_status,
+            amount: payment.amount,
+            reference: payment.reference,
+          },
+        };
       }
 
-      const isSuccessful = payment.payment_provider === 'paystack' 
-        ? verificationResponse.data.status === 'success'
-        : verificationResponse.data.status === 'successful';
+      const verificationResponse = await PaystackService.verifyTransaction(data.reference);
+      const isSuccessful = verificationResponse.data.status === 'success';
 
       // Update payment status
       await payment.update({
@@ -150,9 +131,16 @@ class PaymentService {
         payment_data: verificationResponse,
       });
 
-      // Handle subscription if payment is for a plan
+      // Handle subscription and referral bonus if payment succeeded
       if (isSuccessful && payment.subscription_id) {
         await this.handleSubscriptionPayment(payment);
+      }
+
+      // Create referral bonus for estate payments
+      if (isSuccessful && payment.estate_id) {
+        await referralService.createBonusOnPayment(payment.estate_id, payment.amount).catch((err) => {
+          console.error('Referral bonus creation failed:', err);
+        });
       }
 
       return {
@@ -199,6 +187,7 @@ class PaymentService {
         status: 'active',
         start_date: new Date(),
         end_date: endDate,
+        paid_on: new Date(),
       });
     } catch (error) {
       console.error('Subscription update failed:', error);

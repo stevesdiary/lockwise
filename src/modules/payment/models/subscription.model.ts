@@ -22,7 +22,7 @@ export class Subscription extends Model {
   @ForeignKey(() => Estate)
   @Column({
     type: DataType.UUID,
-    field: 'estata_id',
+    field: 'estate_id',
     allowNull: false
   })
   declare estate_id: string;

@@ -44,34 +44,6 @@ export const webhookController = {
     }
   },
 
-  async flutterwaveWebhook(req: Request, res: Response) {
-    try {
-      const secretHash = process.env.FLUTTERWAVE_SECRET_HASH;
-      const signature = req.headers['verif-hash'];
-
-      if (!signature || signature !== secretHash) {
-        return res.status(400).json({ error: 'Invalid signature' });
-      }
-
-      const payload = req.body;
-
-      if (payload.event === 'charge.completed') {
-        if (payload.data.status === 'successful') {
-          await handleSuccessfulPayment(payload.data);
-        } else {
-          await handleFailedPayment(payload.data);
-        }
-      } else {
-        console.log('Unhandled Flutterwave event:', payload.event?.replace(/[\r\n]/g, '') || 'unknown');
-      }
-
-      res.status(200).json({ status: 'success' });
-    } catch (error: any) {
-      const sanitizedError = error?.message?.replace(/[\r\n]/g, '') || 'Unknown error';
-      console.error('Flutterwave webhook error:', sanitizedError);
-      res.status(500).json({ error: 'Webhook processing failed' });
-    }
-  }
 };
 
 // Helper functions

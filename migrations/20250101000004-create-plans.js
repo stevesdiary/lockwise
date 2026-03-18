@@ -9,7 +9,7 @@ module.exports = {
      * Add altering commands here.
      *
      * Example:
-     * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
+     * await queryInterface.createTable('users', { id: Sequelize.INTEGER }, { ifNotExists: true });
      */
     await queryInterface.createTable('plans', {
       id: {
@@ -59,7 +59,7 @@ module.exports = {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
       }
-    });
+    }, { ifNotExists: true });
   },
 
   async down (queryInterface, Sequelize) {
