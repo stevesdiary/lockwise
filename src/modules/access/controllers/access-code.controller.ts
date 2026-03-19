@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import { Op } from 'sequelize';
 import { AuthRequest } from '../../auth/middleware/auth.middleware';
 import accessCodeService from '../services/access-code.service';
 import AccessLog from '../models/access-log.model';
@@ -37,7 +38,7 @@ export const accessCodeController = {
     try {
       const userId = req.user?.id;
       const estateId = req.user?.estate_id;
-      const { visitor_name, valid_until, valid_from } = req.body;
+      const { visitor_name, valid_until, valid_from, visitor_phone, access_type } = req.body;
 
       if (!userId) {
         return res.status(401).json({ message: 'Unauthorized' });
@@ -71,8 +72,10 @@ export const accessCodeController = {
         estate_id: estateId,
         code,
         guest_name: visitor_name,
+        guest_phone: visitor_phone,
+        access_type,
         valid_from: validFromDate,
-        valid_until: validUntilDate
+        valid_until: validUntilDate,
       });
 
       // Format share message
@@ -191,7 +194,7 @@ export const accessCodeController = {
       const userId = req.user?.id;
 
       const accessLog = await AccessLog.findOne({
-        where: { access_code: code, user_id: userId, status: 'active' }
+        where: { access_code: code, user_id: userId, status: { [Op.in]: ['active', 'pending'] } }
       });
 
       if (!accessLog) {

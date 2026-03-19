@@ -147,6 +147,27 @@ export const communityController = {
     }
   },
 
+  async removeReaction(req: Request, res: Response) {
+    try {
+      const user = (req as any).user;
+      const { messageId, emoji } = req.params;
+
+      const reaction = await MessageReaction.findOne({
+        where: { message_id: messageId, user_id: user.id, emoji: decodeURIComponent(String(emoji)) },
+      });
+
+      if (!reaction) {
+        return res.status(404).json({ success: false, error: 'Reaction not found' });
+      }
+
+      await reaction.destroy();
+      res.json({ success: true, message: 'Reaction removed' });
+    } catch (error) {
+      console.error('Remove reaction error:', error);
+      res.status(500).json({ success: false, error: 'Failed to remove reaction' });
+    }
+  },
+
   async sendAnnouncement(req: Request, res: Response) {
     try {
       const user = (req as any).user;

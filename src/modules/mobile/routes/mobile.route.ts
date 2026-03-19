@@ -8,5 +8,8 @@ router.use(authenticateToken);
 
 router.post('/device/register', deviceController.registerDevice);
 router.delete('/device/register', deviceController.unregisterDevice);
+router.post('/push/test', async (req, res) => {
+  res.json({ success: true, message: 'Test push notification sent (FCM not configured)' });
+});
 
 export default router;
