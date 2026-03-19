@@ -3,7 +3,7 @@ import { Notification } from '../models/notification.model';
 import NotificationService from '../../communication/services/notification.service';
 import EmailService from '../../communication/services/email.service';
 import SMSService from '../../communication/services/sms.service';
-import { AuthRequest } from '../../auth/middleware/auth.middleware';
+import { AuthRequest } from '../../../shared/middleware/auth.middleware';
 
 export const notificationController = {
   async getUserNotifications(req: AuthRequest, res: Response) {

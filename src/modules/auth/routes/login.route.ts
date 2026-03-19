@@ -1,9 +1,9 @@
 import { Router, Request, Response } from "express";
 import { login, logout } from "../controllers/login.controller";
 import { authenticateToken } from "../middleware/auth.middleware";
-import { rateLimiters } from "../middleware/rate-limit.middleware";
-import { auditLogger } from "../middleware/audit.middleware";
-import { analyticsMiddleware } from "../middleware/analytics.middleware";
+import { rateLimiters } from "../../../shared/middleware/rate-limit.middleware";
+import { auditLogger } from "../../../shared/middleware/audit.middleware";
+import { analyticsMiddleware } from "../../../shared/middleware/analytics.middleware";
 import passwordResetRouter from "./password-reset.route";
 const loginRouter = Router();
 

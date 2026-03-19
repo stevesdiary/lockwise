@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticateToken, requireResident } from '../../auth/middleware/auth.middleware';
+import { authenticateToken, requireResident } from '../../../shared/middleware/auth.middleware';
 import { accessCodeController } from '../controllers/access-code.controller';
 
 const router = Router();

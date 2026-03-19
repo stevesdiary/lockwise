@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { loginUser, logoutUser } from '../../auth/services/login.service';
 import { loginSchema } from '../../../shared/utils/validator';
-import { AuthRequest } from '../../auth/middleware/auth.middleware';
+import { AuthRequest } from '../../../shared/middleware/auth.middleware';
 
 export const login = async (req: Request, res: Response) => {
   try {

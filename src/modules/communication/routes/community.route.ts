@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { communityController } from '../controllers/community.controller';
-import { authenticateToken } from '../../auth/middleware/auth.middleware';
+import { authenticateToken } from '../../../shared/middleware/auth.middleware';
 import multer from 'multer';
 
 const router = Router();

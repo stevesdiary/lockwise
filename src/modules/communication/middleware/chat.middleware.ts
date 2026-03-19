@@ -1,5 +1,5 @@
 import { Response, NextFunction } from 'express';
-import { AuthRequest } from '../../auth/middleware/auth.middleware';
+import { AuthRequest } from '../../../shared/middleware/auth.middleware';
 import { UserRole } from '../../auth/types/user.types';
 
 export const validateChatAccess = (req: AuthRequest, res: Response, next: NextFunction) => {

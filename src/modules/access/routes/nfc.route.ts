@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { nfcController } from '../controllers/nfc.controller';
-import { authenticateToken } from '../../auth/middleware/auth.middleware';
-import { rateLimiters } from '../../admin/middleware/rate-limit.middleware';
+import { authenticateToken } from '../../../shared/middleware/auth.middleware';
+import { rateLimiters } from '../../../shared/middleware/rate-limit.middleware';
 
 const router = Router();
 

@@ -1,14 +1,6 @@
-import { Request, Response, NextFunction } from 'express';
-import { UserRole, Permission, Resource, hasPermission } from '../../../shared/constants/permissions';
-
-interface AuthRequest extends Request {
-  user?: {
-    id: string;
-    email: string;
-    role: string;
-    sessionId: string;
-  };
-}
+import { Response, NextFunction } from 'express';
+import { UserRole, Permission, Resource, hasPermission } from '../constants/permissions';
+import { AuthRequest } from './auth.middleware';
 
 export const requirePermission = (resource: Resource, permission: Permission) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -17,9 +9,9 @@ export const requirePermission = (resource: Resource, permission: Permission) =>
     }
 
     const userRole = req.user.role as UserRole;
-    
+
     if (!hasPermission(userRole, resource, permission)) {
-      return res.status(403).json({ 
+      return res.status(403).json({
         error: 'Insufficient permissions',
         required: { resource, permission },
         role: userRole
@@ -37,12 +29,12 @@ export const requireAnyPermission = (resource: Resource, permissions: Permission
     }
 
     const userRole = req.user.role as UserRole;
-    const hasAnyPermission = permissions.some(permission => 
+    const hasAnyPermission = permissions.some(permission =>
       hasPermission(userRole, resource, permission)
     );
-    
+
     if (!hasAnyPermission) {
-      return res.status(403).json({ 
+      return res.status(403).json({
         error: 'Insufficient permissions',
         required: { resource, permissions },
         role: userRole
@@ -60,12 +52,12 @@ export const requireAllPermissions = (resource: Resource, permissions: Permissio
     }
 
     const userRole = req.user.role as UserRole;
-    const hasAllPermissions = permissions.every(permission => 
+    const hasAllPermissions = permissions.every(permission =>
       hasPermission(userRole, resource, permission)
     );
-    
+
     if (!hasAllPermissions) {
-      return res.status(403).json({ 
+      return res.status(403).json({
         error: 'Insufficient permissions',
         required: { resource, permissions },
         role: userRole
@@ -83,7 +75,7 @@ export const authorizeRoles = (roles: string[]) => {
     }
 
     if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ 
+      return res.status(403).json({
         error: 'Insufficient permissions',
         required: roles,
         role: req.user.role

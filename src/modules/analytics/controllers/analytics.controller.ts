@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { analyticsService } from '../services/analytics.service';
-import { AuthRequest } from '../../auth/middleware/auth.middleware';
+import { AuthRequest } from '../../../shared/middleware/auth.middleware';
 import { asString } from '../../../shared/utils/param.util';
 
 export const analyticsController = {

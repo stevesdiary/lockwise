@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { adminService } from '../services/admin.service';
-import { AuthRequest } from '../../auth/middleware/auth.middleware';
+import { AuthRequest } from '../../../shared/middleware/auth.middleware';
 
 export const adminController = {
   async registerAdmin(req: AuthRequest, res: Response) {

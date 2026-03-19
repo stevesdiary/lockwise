@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { supportService } from '../../support/services/support.service';
-import { AuthRequest } from '../../auth/middleware/auth.middleware';
+import { AuthRequest } from '../../../shared/middleware/auth.middleware';
 import { asString } from '../../../shared/utils/param.util';
 
 export const supportController = {

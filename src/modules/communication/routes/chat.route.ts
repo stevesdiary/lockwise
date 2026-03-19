@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticateToken } from '../../auth/middleware/auth.middleware';
+import { authenticateToken } from '../../../shared/middleware/auth.middleware';
 import { validateChatAccess, validateFileUpload } from '../middleware/chat.middleware';
 import fileUploadService from '../../upload/services/file-upload.service';
 import chatController from '../controllers/chat.controller';

@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { AuthRequest } from '../../auth/middleware/auth.middleware';
+import { AuthRequest } from '../../../shared/middleware/auth.middleware';
 import accessCodeService from '../services/access-code.service';
 import AccessLog from '../models/access-log.model';
 import { User } from '../../auth/models/user.model';

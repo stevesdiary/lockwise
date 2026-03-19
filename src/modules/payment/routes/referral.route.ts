@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { ReferralController } from '../controllers/referral.controller';
 import { asyncHandler } from '../../../shared/middleware/error-handler.middleware';
-import { authenticateToken, requireAdmin } from '../../auth/middleware/auth.middleware';
-import { rateLimiters } from '../../admin/middleware/rate-limit.middleware';
+import { authenticateToken, requireAdmin } from '../../../shared/middleware/auth.middleware';
+import { rateLimiters } from '../../../shared/middleware/rate-limit.middleware';
 
 const referralRouter = Router();
 
