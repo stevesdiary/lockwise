@@ -12,6 +12,8 @@ uploads/
 .DS_Store
 docs/SECURITY_AUDIT.md
 .env
+.env.development
+.env.production
 docs/
 coverage/
 lockwise-mobile/

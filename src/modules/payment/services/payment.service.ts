@@ -1,4 +1,6 @@
 import { nanoid } from 'nanoid';
+import { Transaction } from 'sequelize';
+import sequelize from '../../../shared/core/database';
 import { Payment } from '../../payment/models/payment.model';
 import { Subscription } from '../../payment/models/subscription.model';
 import { Plan } from '../../payment/models/plan.model';
@@ -122,33 +124,37 @@ class PaymentService {
         };
       }
 
+      // Verify with Paystack BEFORE opening the DB transaction (external call)
       const verificationResponse = await PaystackService.verifyTransaction(data.reference);
       const isSuccessful = verificationResponse.data.status === 'success';
 
-      // Update payment status
-      await payment.update({
-        payment_status: isSuccessful ? 'completed' : 'failed',
-        payment_data: verificationResponse,
-      });
+      // Atomically: update payment + activate subscription + record referral bonus
+      await sequelize.transaction(
+        { isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE },
+        async (t) => {
+          await payment.update(
+            { payment_status: isSuccessful ? 'completed' : 'failed', payment_data: verificationResponse },
+            { transaction: t },
+          );
 
-      // Handle subscription and referral bonus if payment succeeded
-      if (isSuccessful && payment.subscription_id) {
-        await this.handleSubscriptionPayment(payment);
-      }
+          if (isSuccessful && payment.subscription_id) {
+            await this.handleSubscriptionPayment(payment, t);
+          }
 
-      // Create referral bonus for estate payments
-      if (isSuccessful && payment.estate_id) {
-        await referralService.createBonusOnPayment(payment.estate_id, payment.amount).catch((err) => {
-          console.error('Referral bonus creation failed:', err);
-        });
-      }
+          if (isSuccessful && payment.estate_id) {
+            await referralService.createBonusOnPayment(payment.estate_id, payment.amount, t).catch((err: Error) => {
+              console.error('Referral bonus creation failed:', err);
+            });
+          }
+        },
+      );
 
       return {
         statusCode: 200,
         status: isSuccessful ? 'success' : 'failed',
         message: isSuccessful ? 'Payment verified successfully' : 'Payment verification failed',
         data: {
-          payment_status: payment.payment_status,
+          payment_status: isSuccessful ? 'completed' : 'failed',
           amount: payment.amount,
           reference: payment.reference,
         },
@@ -162,36 +168,25 @@ class PaymentService {
     }
   }
 
-  private async handleSubscriptionPayment(payment: any): Promise<void> {
-    try {
-      const subscription = await Subscription.findByPk(payment.subscription_id, { include: [Plan] });
-      if (!subscription || !subscription.plan) return;
+  private async handleSubscriptionPayment(payment: any, t?: Transaction): Promise<void> {
+    const subscription = await Subscription.findByPk(payment.subscription_id, {
+      include: [Plan],
+      transaction: t,
+    });
+    if (!subscription || !subscription.plan) return;
 
-      const endDate = new Date();
-      switch (subscription.plan.billing_cycle) {
-        case 'monthly':
-          endDate.setMonth(endDate.getMonth() + 1);
-          break;
-        case 'quarterly':
-          endDate.setMonth(endDate.getMonth() + 3);
-          break;
-        case 'biannually':
-          endDate.setMonth(endDate.getMonth() + 6);
-          break;
-        case 'annually':
-          endDate.setFullYear(endDate.getFullYear() + 1);
-          break;
-      }
-
-      await subscription.update({
-        status: 'active',
-        start_date: new Date(),
-        end_date: endDate,
-        paid_on: new Date(),
-      });
-    } catch (error) {
-      console.error('Subscription update failed:', error);
+    const endDate = new Date();
+    switch (subscription.plan.billing_cycle) {
+      case 'monthly':    endDate.setMonth(endDate.getMonth() + 1);         break;
+      case 'quarterly':  endDate.setMonth(endDate.getMonth() + 3);         break;
+      case 'biannually': endDate.setMonth(endDate.getMonth() + 6);         break;
+      case 'annually':   endDate.setFullYear(endDate.getFullYear() + 1);   break;
     }
+
+    await subscription.update(
+      { status: 'active', start_date: new Date(), end_date: endDate, paid_on: new Date() },
+      { transaction: t },
+    );
   }
 
   async handlePaymentFailure(reference: string, reason: string): Promise<void> {

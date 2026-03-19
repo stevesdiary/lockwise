@@ -1,3 +1,4 @@
+import sequelize from '../../../shared/core/database';
 import { EmergencyContact } from "../models/emergency.model";
 
 class DefaultEmergencyContactsService {
@@ -59,16 +60,17 @@ class DefaultEmergencyContactsService {
   }
 
   async updateDefaultContacts(estateId: string, customContacts: any[]) {
-    // Delete existing defaults
-    await EmergencyContact.destroy({ where: { estate_id: estateId } });
-
-    // Create new contacts
     const contacts = customContacts.map((contact) => ({
       ...contact,
       estate_id: estateId,
     }));
 
-    await EmergencyContact.bulkCreate(contacts);
+    // Atomically replace all contacts — if bulkCreate fails, destroy is rolled back
+    await sequelize.transaction(async (t) => {
+      await EmergencyContact.destroy({ where: { estate_id: estateId }, transaction: t });
+      await EmergencyContact.bulkCreate(contacts, { transaction: t });
+    });
+
     return contacts.length;
   }
 }

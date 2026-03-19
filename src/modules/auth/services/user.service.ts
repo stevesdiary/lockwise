@@ -1,3 +1,4 @@
+import sequelize from '../../../shared/core/database';
 import { UserRepository } from '../repositories/user.repository';
 import { User } from '../models/user.model';
 import { Role } from '../models/role.model';
@@ -58,32 +59,36 @@ export const registerUser = async (userData: {
       }
     }
     
-    const user = await userRepository.create({
-      title: userData.title,
-      email: userData.email,
-      password: hashedPassword,
-      first_name: userData.first_name,
-      last_name: userData.last_name,
-      phone: userData.phone,
-      user_type: userData.user_type,
-      status: 'pending' as const,
-      verified: false,
-      oauth_enabled: false,
-      estate_id: estateId,
-      role_id: roleId
-    } as any);
+    // Atomically create user + resident profile — if resident creation fails, user is also rolled back
+    const user = await sequelize.transaction(async (t) => {
+      const newUser = await User.create({
+        title: userData.title,
+        email: userData.email,
+        password: hashedPassword,
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+        phone: userData.phone,
+        user_type: userData.user_type,
+        status: 'pending' as const,
+        verified: false,
+        oauth_enabled: false,
+        estate_id: estateId,
+        role_id: roleId,
+      } as any, { transaction: t });
 
-    // Auto-create resident profile for resident accounts
-    if (userData.user_type === 'resident') {
-      await Resident.create({
-        user_id: user.id,
-        estate_id: estateId || null,
-        unit_id: null,
-        subscribed: false,
-      } as any);
-    }
+      if (userData.user_type === 'resident') {
+        await Resident.create({
+          user_id: newUser.id,
+          estate_id: estateId || null,
+          unit_id: null,
+          subscribed: false,
+        } as any, { transaction: t });
+      }
 
-    // Send verification code
+      return newUser;
+    });
+
+    // Send verification code outside the transaction (external call)
     await emailVerificationService.sendVerificationCode(userData.email);
 
     return {

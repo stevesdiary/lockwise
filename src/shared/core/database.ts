@@ -1,9 +1,12 @@
 import 'reflect-metadata';
 import dotenv from 'dotenv';
-dotenv.config();
+import path from 'path';
+
+const env = (process.env.NODE_ENV || 'development') as 'development' | 'production' | 'test';
+dotenv.config({ path: path.resolve(process.cwd(), `.env.${env}`) });
+console.log(`Environment: ${env}`);
 
 import fs from 'fs';
-import path from 'path';
 import { Sequelize, SequelizeOptions } from 'sequelize-typescript';
 import { Umzug, SequelizeStorage } from 'umzug';
 
@@ -53,7 +56,6 @@ import { SupportTicket, SupportMessage } from '../../modules/support/models/supp
 type AppEnvironment = 'development' | 'production' | 'test';
 
 // ── Runtime config (single source for app + migrations) ──────────────────────
-const env = (process.env.NODE_ENV || 'development') as AppEnvironment;
 const isProduction = env === 'production';
 const rawDatabaseUrl = process.env.DATABASE_URL;
 const dbHost = process.env.DB_HOST ?? process.env.DEV_DB_HOST;
@@ -193,7 +195,7 @@ export const runMigrations = async (): Promise<void> => {
       },
     },
     context: { queryInterface: sequelize.getQueryInterface(), Sequelize },
-    storage: new SequelizeStorage({ sequelize }),
+    storage: new SequelizeStorage({ sequelize, tableName: 'SequelizeMeta', columnName: 'name' }),
     logger: console,
   });
 

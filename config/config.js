@@ -1,16 +1,23 @@
 const dotenv = require('dotenv');
-dotenv.config();
+const path = require('path');
+
+const env = process.env.NODE_ENV || 'development';
+dotenv.config({ path: path.resolve(process.cwd(), `.env.${env}`) });
 
 const url = process.env.DATABASE_URL?.split('?')[0];
 
-const dialectOptions = {
-  ssl: {
-    require: true,
-    rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true',
-    minVersion: 'TLSv1.2',
-    ...(process.env.DB_SSL_CA ? { ca: process.env.DB_SSL_CA } : {}),
-  },
-};
+const sslEnabled = process.env.DB_SSL === 'true';
+
+const dialectOptions = sslEnabled
+  ? {
+      ssl: {
+        require: true,
+        rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true',
+        minVersion: 'TLSv1.2',
+        ...(process.env.DB_SSL_CA ? { ca: process.env.DB_SSL_CA } : {}),
+      },
+    }
+  : {};
 
 const pool = {
   production: { max: 50, min: 10 },
