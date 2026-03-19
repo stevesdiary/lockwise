@@ -9,7 +9,7 @@ class EmergencyController {
   async createAlert(req: Request, res: Response) {
     try {
       const userId = req.user?.id;
-      const estateId = req.user?.estateId;
+      const estateId = req.user?.estate_id;
       const { type, description, location } = req.body;
 
       if (!userId || !estateId) {
@@ -41,7 +41,7 @@ class EmergencyController {
 
   async getAlerts(req: Request, res: Response) {
     try {
-      const estateId = req.user?.estateId;
+      const estateId = req.user?.estate_id;
       const { status } = req.query;
 
       if (!estateId) {
@@ -84,7 +84,7 @@ class EmergencyController {
       }
 
       // Send status update notification
-      const estateId = req.user?.estateId;
+      const estateId = req.user?.estate_id;
       if (estateId) {
         await emergencyNotificationService.sendAlertUpdate(alertId, estateId, 'resolved');
       }
@@ -100,7 +100,7 @@ class EmergencyController {
 
   async getEmergencyContacts(req: Request, res: Response) {
     try {
-      const estateId = req.user?.estateId;
+      const estateId = req.user?.estate_id;
 
       if (!estateId) {
         return res.status(400).json({
@@ -122,7 +122,7 @@ class EmergencyController {
 
   async createEmergencyContact(req: Request, res: Response) {
     try {
-      const estateId = req.user?.estateId;
+      const estateId = req.user?.estate_id;
       const { name, type, phone, email, address } = req.body;
 
       if (!estateId) {
@@ -152,7 +152,7 @@ class EmergencyController {
 
   async setupDefaultContacts(req: Request, res: Response) {
     try {
-      const estateId = req.user?.estateId;
+      const estateId = req.user?.estate_id;
 
       if (!estateId) {
         return res.status(400).json({
