@@ -2,7 +2,7 @@ import { Table, Model, Column, DataType, Index, BelongsTo, HasMany, ForeignKey }
 import { EstateAttributes, EstateCreationAttributes } from '../types/estate.types';
 import { Street } from './street.model';
 import { Gate } from './gate.model';
-import { User } from '../../auth/models/user.model';
+import { User } from '../../auth';
 import AccessLog from '../../access/models/access-log.model';
 import { Referrer } from '../../payment/models/referrer.model';
 import { Plan } from '../../payment/models/plan.model';

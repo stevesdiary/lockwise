@@ -1,5 +1,5 @@
 import { Payment } from '../../payment/models/payment.model';
-import { User } from '../../auth/models/user.model';
+import { User } from '../../auth';
 import { Subscription } from '../../payment/models/subscription.model';
 import accessLogService from '../../access/services/access-log.service';
 import AccessLog from '../../access/models/access-log.model';

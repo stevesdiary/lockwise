@@ -1,6 +1,6 @@
 import { NFCCard } from '../../access/models/nfc-card.model';
 import { NFCAccessLog } from '../../access/models/nfc-access-log.model';
-import { User } from '../../auth/models/user.model';
+import { User } from '../../auth';
 
 export const nfcRepository = {
   async findCardByUID(cardUID: string) {

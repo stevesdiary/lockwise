@@ -11,7 +11,7 @@ import {
 } from 'sequelize-typescript';
 import {  Plan} from '../../payment/models/plan.model';
 import { Estate } from '../../estate/models/estate.model';
-import { User } from '../../auth/models/user.model';
+import { User } from '../../auth';
 import { Subscription } from './subscription.model';
 
 type PaymentStatus = 'pending' | 'completed' | 'failed' | 'refunded';

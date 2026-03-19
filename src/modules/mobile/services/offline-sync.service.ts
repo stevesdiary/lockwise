@@ -1,6 +1,6 @@
 import sequelize from '../../../shared/core/database';
 import { saveToRedis, getFromRedis, deleteFromRedis } from '../../../shared/core/redis';
-import { User } from '../../auth/models/user.model';
+import { User } from '../../auth';
 import { Estate } from '../../estate/models/estate.model';
 import { QueryTypes } from 'sequelize';
 

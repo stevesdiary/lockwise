@@ -1,6 +1,6 @@
 import { Table, Model, Column, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
 import { NFCCard } from './nfc-card.model';
-import { User } from '../../auth/models/user.model';
+import { User } from '../../auth';
 
 @Table({
   tableName: 'nfc_access_logs',

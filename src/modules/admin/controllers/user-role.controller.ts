@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
-import { User } from '../../auth/models/user.model';
-import { Role } from '../../auth/models/role.model';
+import { User, Role } from '../../auth';
 import { asString } from '../../../shared/utils/param.util';
 
 interface AuthRequest extends Request {

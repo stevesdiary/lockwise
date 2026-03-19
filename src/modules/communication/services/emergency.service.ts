@@ -1,5 +1,5 @@
 import { EmergencyAlert, EmergencyContact } from '../models/emergency.model';
-import { User } from '../../auth/models/user.model';
+import { User } from '../../auth';
 import pushNotificationService from './push-notification.service';
 
 class EmergencyService {

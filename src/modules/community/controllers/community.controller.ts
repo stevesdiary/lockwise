@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { CommunityMessage } from '../models/community-message.model';
 import { MessageReaction } from '../models/message-reaction.model';
-import { User } from '../../auth/models/user.model';
+import { User } from '../../auth';
 import { uploadService } from '../../upload/services/upload.service';
 import sequelize from '../../../shared/core/database';
 

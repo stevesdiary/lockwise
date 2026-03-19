@@ -1,5 +1,4 @@
-import { User } from '../../auth/models/user.model';
-import { Role } from '../../auth/models/role.model';
+import { User, Role } from '../../auth';
 import crypto from 'crypto';
 
 type UserRole = 'resident' | 'admin' | 'manager' | 'security' | 'super_admin' | 'customer_service';

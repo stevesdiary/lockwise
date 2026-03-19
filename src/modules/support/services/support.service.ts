@@ -1,6 +1,5 @@
 import { SupportTicket, SupportMessage } from '../../support/models/support.model';
-import { User } from '../../auth/models/user.model';
-import { Role } from '../../auth/models/role.model';
+import { User, Role } from '../../auth';
 import { Estate } from '../../estate/models/estate.model';
 import notificationService from '../../communication/services/notification.service';
 import { pushNotificationService } from '../../communication/services/push-notification.service';

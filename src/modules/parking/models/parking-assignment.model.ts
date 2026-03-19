@@ -1,6 +1,6 @@
 import { Table, Model, Column, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
 import { ParkingSlot } from './parking-slot.model';
-import { User } from '../../auth/models/user.model';
+import { User } from '../../auth';
 
 @Table({
   tableName: 'parking_assignments',

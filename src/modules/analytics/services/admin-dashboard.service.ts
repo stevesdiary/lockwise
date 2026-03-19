@@ -1,7 +1,7 @@
 import db from '../../../shared/core/database';
 import { QueryTypes } from 'sequelize';
 import { Estate } from '../../estate/models/estate.model';
-import { User } from '../../auth/models/user.model';
+import { User } from '../../auth';
 import { Referrer } from '../../payment/models/referrer.model';
 import AccessCode from '../../access/models/access-code.model';
 

@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { AuthRequest } from '../../../shared/middleware/auth.middleware';
 import accessCodeService from '../services/access-code.service';
 import AccessLog from '../models/access-log.model';
-import { User } from '../../auth/models/user.model';
+import { User } from '../../auth';
 import logger from '../../../shared/utils/logger';
 import { getResidentFullAddress, formatAccessCodeMessage, buildGoogleMapsSearchUrl } from '../../../shared/utils/address.util';
 import notificationService from '../../../shared/services/notification.service';

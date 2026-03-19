@@ -1,6 +1,6 @@
 import { Reservation } from '../../amenities/models/reservation.model';
 import { Amenity } from '../../amenities/models/amenity.model';
-import { User } from '../../auth/models/user.model';
+import { User } from '../../auth';
 import { Op } from 'sequelize';
 
 export const reservationRepository = {

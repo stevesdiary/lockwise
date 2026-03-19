@@ -1,6 +1,6 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../../../shared/core/database';
-import { User } from '../../auth/models/user.model';
+import { User } from '../../auth';
 
 class AccessLog extends Model {
   declare id: string;

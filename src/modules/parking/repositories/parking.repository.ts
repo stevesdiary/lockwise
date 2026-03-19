@@ -2,7 +2,7 @@ import { ParkingSlot } from '../../parking/models/parking-slot.model';
 import { ParkingAssignment } from '../../parking/models/parking-assignment.model';
 import { GuestParking } from '../../parking/models/guest-parking.model';
 import { EVChargingSession } from '../../parking/models/ev-charging-session.model';
-import { User } from '../../auth/models/user.model';
+import { User } from '../../auth';
 import { Op } from 'sequelize';
 
 export const parkingRepository = {

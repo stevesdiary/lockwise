@@ -1,5 +1,5 @@
 import { Faq } from '../models/faq.model';
-import { User } from '../../auth/models/user.model';
+import { User } from '../../auth';
 import { Op } from 'sequelize';
 
 class FaqService {

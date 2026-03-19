@@ -1,6 +1,6 @@
 import { Table, Model, Column, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
 import { Amenity } from './amenity.model';
-import { User } from '../../auth/models/user.model';
+import { User } from '../../auth';
 
 @Table({
   tableName: 'reservations',

@@ -4,7 +4,7 @@ import { authenticateToken, requireManager, requireAdmin } from '../../../shared
 import { verifyUser } from '../../../shared/middleware/verify-user.middleware';
 import estateInvitationService from '../services/estate-invitation.service';
 import { asString } from '../../../shared/utils/param.util';
-import { User } from '../../auth/models/user.model';
+import { User } from '../../auth';
 
 const estateRouter = Router();
 

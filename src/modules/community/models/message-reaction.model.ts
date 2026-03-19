@@ -1,5 +1,5 @@
 import { Table, Model, Column, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
-import { User } from '../../auth/models/user.model';
+import { User } from '../../auth';
 import { CommunityMessage } from './community-message.model';
 
 @Table({

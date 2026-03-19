@@ -1,6 +1,5 @@
 import { PermissionCreationAttributes, PermissionAttributes } from '../types/permission.types';
-import { Permission } from '../../auth/models/permission.model';
-import { PermissionRepository } from '../../auth/repositories/permission.repository';
+import { Permission, PermissionRepository } from '../../auth';
 
 class PermissionService {
   private permissionRepository: PermissionRepository;
