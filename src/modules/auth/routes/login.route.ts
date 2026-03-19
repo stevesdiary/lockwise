@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { login, logout } from "../controllers/login.controller";
-import { authenticateToken } from "../middleware/auth.middleware";
+import { authenticateToken } from "../../../shared/middleware/auth.middleware";
 import { rateLimiters } from "../../../shared/middleware/rate-limit.middleware";
 import { auditLogger } from "../../../shared/middleware/audit.middleware";
 import { analyticsMiddleware } from "../../../shared/middleware/analytics.middleware";
