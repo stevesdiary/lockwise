@@ -1,6 +1,6 @@
 import { EmergencyAlert } from "../models/emergency.model";
 import { User } from "../../auth/models/user.model";
-import pushNotificationService from "./push.notification.service";
+import pushNotificationService from "./push-notification.service";
 import { saveToRedis } from "../../../shared/core/redis";
 
 class EmergencyNotificationService {

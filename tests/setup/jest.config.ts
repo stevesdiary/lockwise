@@ -58,6 +58,7 @@ const config: Config.InitialOptions = {
   },
 
   // Setup files
+  setupFiles: ['<rootDir>/tests/setup/env-setup.ts'],
   setupFilesAfterEnv: ['<rootDir>/tests/setup/global-setup.ts'],
   globalTeardown: '<rootDir>/tests/setup/global-teardown.ts',
 
