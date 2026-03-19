@@ -1,4 +1,5 @@
-import { Request as ExpressRequest, Response } from 'express';
+import { Response } from 'express';
+import { AuthRequest } from '../../auth/middleware/auth.middleware';
 import { createEstateSchema } from '../../../shared/utils/validator';
 import estateService from '../../estate/services/estate.service';
 import { errorHandler, handleControllerError } from '../../../shared/middleware/error-handler.middleware';
@@ -7,7 +8,7 @@ import { customAlphabet } from 'nanoid';
 import { asString } from '../../../shared/utils/param.util';
 
 class EstateController {
-  async createEstate(req: ExpressRequest, res: Response) {
+  async createEstate(req: AuthRequest, res: Response) {
     try {
       const validatedData = await createEstateSchema.validate(req.body, {
         abortEarly: false});
@@ -75,7 +76,7 @@ class EstateController {
     }
   }
 
-  async getAllEstates(req: ExpressRequest, res: Response) {
+  async getAllEstates(req: AuthRequest, res: Response) {
     try {
       const estates = await estateService.getAllEstates();
       return res.status(estates.statusCode || 200).json({
@@ -89,7 +90,7 @@ class EstateController {
     }
   }
 
-  async getEstateById(req: ExpressRequest, res: Response): Promise<Response> {
+  async getEstateById(req: AuthRequest, res: Response): Promise<Response> {
     try {
       const estateId = asString(req.params.estateId);
       const estate_code = asString(req.params.estate_code);
@@ -111,7 +112,7 @@ class EstateController {
     }
   }
 
-  async getEstateByCode(req: ExpressRequest, res: Response): Promise<Response> {
+  async getEstateByCode(req: AuthRequest, res: Response): Promise<Response> {
     try {
       const estate_code = asString(req.params.estate_code);
       if (!estate_code) {
@@ -132,7 +133,7 @@ class EstateController {
     }
   }
 
-  async searchEstate(req: ExpressRequest, res: Response): Promise<Response> {
+  async searchEstate(req: AuthRequest, res: Response): Promise<Response> {
     try {
       const estate_code = asString(req.params.estate_code);
       if (!estate_code) {
@@ -149,9 +150,9 @@ class EstateController {
     }
   }
 
-  async updateEstate(req: ExpressRequest, res: Response): Promise<Response> {
+  async updateEstate(req: AuthRequest, res: Response): Promise<Response> {
     // const estateId = await idSchema.validate(req.params.estate_id)
-    const estateId = req.user?.estateId
+    const estateId = req.user?.estate_id
     if (!estateId) {
       return res.status(400).json({
         status: 'fail',
@@ -173,7 +174,7 @@ class EstateController {
     }
   }
 
-  async getPendingEstates(req: ExpressRequest, res: Response): Promise<Response> {
+  async getPendingEstates(req: AuthRequest, res: Response): Promise<Response> {
     try {
       const estates = await estateService.getEstatesByStatus('pending');
       return res.status(estates.statusCode || 200).json({
@@ -187,7 +188,7 @@ class EstateController {
     }
   }
 
-  async approveEstate(req: ExpressRequest, res: Response): Promise<Response> {
+  async approveEstate(req: AuthRequest, res: Response): Promise<Response> {
     try {
       const estateId = asString(req.params.estateId);
       const approvedBy = req.user!.id;
@@ -211,7 +212,7 @@ class EstateController {
     }
   }
 
-  async deleteEstate(req: ExpressRequest, res: Response) {
+  async deleteEstate(req: AuthRequest, res: Response) {
     try {
       const result = await estateService.deleteEstate(asString(req.params.estateId));
       if (!result) {
