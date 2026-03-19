@@ -27,8 +27,8 @@ import { Referrer }        from '../../modules/payment/models/referrer.model';
 import { ReferralBonus }   from '../../modules/payment/models/referral.bonus.model';
 import { Subscription }    from '../../modules/payment/models/subscription.model';
 
-import { CommunityMessage } from '../../modules/communication/models/community-message.model';
-import { MessageReaction }  from '../../modules/communication/models/message-reaction.model';
+import { CommunityMessage } from '../../modules/community/models/community-message.model';
+import { MessageReaction }  from '../../modules/community/models/message-reaction.model';
 import { Notification }     from '../../modules/communication/models/notification.model';
 import { EmergencyAlert, EmergencyContact } from '../../modules/communication/models/emergency.model';
 // UserDevice uses plain sequelize .init() — self-registers on import in its service

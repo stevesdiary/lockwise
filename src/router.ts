@@ -38,10 +38,9 @@ import adminSupportRouter from "./modules/support/routes/admin.support.route";
 import notificationRouter from "./modules/communication/routes/notification.route";
 import chatRouter from "./modules/communication/routes/chat.route";
 import emergencyRouter from "./modules/communication/routes/emergency.route";
-import communityRouter from "./modules/communication/routes/community.route";
-
 // Community Module
 import communityBoardRouter from "./modules/community/routes/community.board.route";
+import communityRouter from "./modules/community/routes/community.route";
 import faqRouter from "./modules/community/routes/faq.route";
 
 // Analytics Module
@@ -62,7 +61,7 @@ import mobileRouter from "./modules/mobile/routes/mobile.route";
 
 // Admin Module
 import adminRouter from "./modules/admin/routes/admin.route";
-import roleRouter from "./modules/admin/routes/role.router";
+import roleRouter from "./modules/admin/routes/role.route";
 import permissionRouter from "./modules/admin/routes/permission.route";
 import apiKeyRouter from "./modules/admin/routes/api-key.route";
 import configRouter from "./modules/admin/routes/config.route";
