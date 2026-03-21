@@ -3,6 +3,7 @@ import { ApiResponse } from '../../../shared/types/api.types';
 import { EstateRepository } from '../../estate/repositories/estate.repository';
 import { Estate } from '../../estate/models/estate.model';
 import { Referrer } from '../../payment/models/referrer.model';
+import { User } from '../../auth/models/user.model';
 
 class EstateService {
   private estateRepository: EstateRepository;
@@ -25,11 +26,23 @@ class EstateService {
       }
       
       delete estateData.referral_code;
-      
+
+      estateData.status = 'draft';
+      estateData.onboarding_step = 1;
+      estateData.setup_checklist = { gates_configured: false, residents_invited: false };
+
       const estate = await this.estateRepository.create(estateData);
       if (!estate) {
         throw new Error('Failed to create estate');
       }
+
+      if (data.created_by) {
+        await User.update(
+          { estate_id: estate.estate_id },
+          { where: { id: data.created_by } }
+        );
+      }
+
       return {
         success: true,
         message: 'Estate created successfully',
