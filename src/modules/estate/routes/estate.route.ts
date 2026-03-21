@@ -30,9 +30,12 @@ estateRouter.post('/register',
   }
 );
 
-estateRouter.get('/estates', async (req: ExpressRequest, res: Response) => {
-  await estateController.getAllEstates(req, res);
-});
+estateRouter.get('/estates',
+  authenticateToken,
+  async (req: ExpressRequest, res: Response) => {
+    await estateController.getAllEstates(req, res);
+  }
+);
 
 estateRouter.get('/estates/pending', 
   authenticateToken,

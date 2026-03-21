@@ -35,6 +35,7 @@ class EstateController {
           }
         : undefined;
       
+      const estateCodeAlphabet = customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 8);
       const estateCreationData = {
         name: validatedData.name,
         type: validatedData.type,
@@ -44,7 +45,7 @@ class EstateController {
         country_code: validatedData.country_code || 'NG',
         timezone: validatedData.timezone || 'Africa/Lagos',
         currency_code: validatedData.currency_code || 'NGN',
-        estate_code: `EST${Date.now()}`,
+        estate_code: `EST-${estateCodeAlphabet()}`,
         total_number_of_apartments: validatedData.number_of_appartments || 0,
         total_floors: validatedData.total_number_of_floors,
         location_details: {
@@ -168,7 +169,8 @@ class EstateController {
         }
       }
 
-      const estate = await estateService.updateEstate(estateId, req.body);
+      const { status, approval_status, created_by, approved_by, estate_id, ...safeBody } = req.body;
+      const estate = await estateService.updateEstate(estateId, safeBody);
       if (!estate) {
         return res.status(404).json({
           status: 'fail',
@@ -226,8 +228,17 @@ class EstateController {
       const { step, status } = req.body as { step: number; status?: string };
       const userId = req.user!.id;
 
-      if (!estateId || typeof step !== 'number') {
-        return res.status(400).json({ success: false, message: 'estateId and step are required' });
+      if (!estateId || typeof step !== 'number' || step < 1 || step > 3) {
+        return res.status(400).json({ success: false, message: 'estateId and step (1-3) are required' });
+      }
+
+      const userRole = (req.user!.role as string)?.toLowerCase() || '';
+      const isAdmin = ['master', 'super_admin', 'admin'].includes(userRole);
+      if (!isAdmin) {
+        const existing = await estateService.getOneEstate(estateId);
+        if (!existing?.data || existing.data.created_by !== userId) {
+          return res.status(403).json({ success: false, message: 'Forbidden: you do not own this estate' });
+        }
       }
 
       const result = await estateService.updateOnboardingStep(estateId, userId, step, status);
@@ -248,6 +259,15 @@ class EstateController {
 
       if (!estateId) {
         return res.status(400).json({ success: false, message: 'estateId is required' });
+      }
+
+      const userRole = (req.user!.role as string)?.toLowerCase() || '';
+      const isAdmin = ['master', 'super_admin', 'admin'].includes(userRole);
+      if (!isAdmin) {
+        const existing = await estateService.getOneEstate(estateId);
+        if (!existing?.data || existing.data.created_by !== userId) {
+          return res.status(403).json({ success: false, message: 'Forbidden: you do not own this estate' });
+        }
       }
 
       const result = await estateService.updateSetupChecklist(estateId, userId, updates);
@@ -324,6 +344,12 @@ class EstateController {
       const estateCheck = await estateService.getOneEstate(estateId);
       if (!estateCheck?.data) {
         return res.status(404).json({ success: false, message: 'Estate not found' });
+      }
+      const userId = req.user!.id;
+      const userRole = (req.user!.role as string)?.toLowerCase() || '';
+      const isAdmin = ['master', 'super_admin', 'admin'].includes(userRole);
+      if (!isAdmin && estateCheck.data.created_by !== userId) {
+        return res.status(403).json({ success: false, message: 'Forbidden: you do not own this estate' });
       }
       const result = await gateService.createGate(estateId, { gate_name, gate_type, access_control_type });
       return res.status(result.success ? 201 : 400).json(result);
