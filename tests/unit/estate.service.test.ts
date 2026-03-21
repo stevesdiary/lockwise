@@ -241,3 +241,97 @@ describe('updateOnboardingStep', () => {
     expect(notificationService.sendNotification).toHaveBeenCalled();
   });
 });
+
+describe('updateSetupChecklist', () => {
+  const estateId = 'test-estate-uuid';
+  const userId = 'test-user-uuid';
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    // Default: estate repository (findByPk) returns an estate with initialized checklist
+    (MockEstate.findByPk as jest.Mock).mockResolvedValue({
+      estate_id: estateId,
+      name: 'Test Estate',
+      status: 'draft',
+      setup_checklist: { gates_configured: false, residents_invited: false },
+    });
+    (MockEstate.update as jest.Mock).mockResolvedValue([1]);
+  });
+
+  it('should update gates_configured without touching residents_invited', async () => {
+    const result = await estateService.updateSetupChecklist(
+      estateId, userId, { gates_configured: true }
+    );
+    expect(result.success).toBe(true);
+    expect(result.message).toBe('Setup checklist updated');
+
+    // Verify Estate.update was called with merged checklist
+    expect(MockEstate.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        setup_checklist: { gates_configured: true, residents_invited: false }
+      }),
+      expect.objectContaining({ where: { estate_id: estateId } })
+    );
+  });
+
+  it('should update residents_invited without touching gates_configured', async () => {
+    const result = await estateService.updateSetupChecklist(
+      estateId, userId, { residents_invited: true }
+    );
+    expect(result.success).toBe(true);
+
+    expect(MockEstate.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        setup_checklist: { gates_configured: false, residents_invited: true }
+      }),
+      expect.objectContaining({ where: { estate_id: estateId } })
+    );
+  });
+
+  it('should update both fields when both provided', async () => {
+    const result = await estateService.updateSetupChecklist(
+      estateId, userId, { gates_configured: true, residents_invited: true }
+    );
+    expect(result.success).toBe(true);
+
+    expect(MockEstate.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        setup_checklist: { gates_configured: true, residents_invited: true }
+      }),
+      expect.objectContaining({ where: { estate_id: estateId } })
+    );
+  });
+
+  it('should return 404 if estate is not found', async () => {
+    (MockEstate.findByPk as jest.Mock).mockResolvedValue(null);
+
+    const result = await estateService.updateSetupChecklist(
+      'nonexistent-id', userId, { gates_configured: true }
+    );
+
+    expect(result.success).toBe(false);
+    expect(result.statusCode).toBe(404);
+    expect(result.message).toBe('Estate not found');
+  });
+
+  it('should initialize checklist if currently null', async () => {
+    (MockEstate.findByPk as jest.Mock).mockResolvedValue({
+      estate_id: estateId,
+      name: 'Test Estate',
+      status: 'draft',
+      setup_checklist: null,
+    });
+
+    const result = await estateService.updateSetupChecklist(
+      estateId, userId, { gates_configured: true }
+    );
+    expect(result.success).toBe(true);
+
+    expect(MockEstate.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        setup_checklist: { gates_configured: true, residents_invited: false }
+      }),
+      expect.objectContaining({ where: { estate_id: estateId } })
+    );
+  });
+});

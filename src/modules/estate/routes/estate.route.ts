@@ -166,4 +166,12 @@ estateRouter.patch('/:estateId/onboarding-step',
   }
 );
 
+estateRouter.patch('/:estateId/setup-checklist',
+  authenticateToken,
+  requireManager,
+  async (req: ExpressRequest, res: Response) => {
+    await estateController.updateSetupChecklist(req, res);
+  }
+);
+
 export default estateRouter;

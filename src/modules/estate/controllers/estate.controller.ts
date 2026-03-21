@@ -224,6 +224,23 @@ class EstateController {
     }
   }
 
+  async updateSetupChecklist(req: AuthRequest, res: Response): Promise<Response> {
+    try {
+      const estateId = asString(req.params.estateId);
+      const updates = req.body as Partial<{ gates_configured: boolean; residents_invited: boolean }>;
+      const userId = req.user!.id;
+
+      if (!estateId) {
+        return res.status(400).json({ success: false, message: 'estateId is required' });
+      }
+
+      const result = await estateService.updateSetupChecklist(estateId, userId, updates);
+      return res.status(result.statusCode || (result.success ? 200 : 400)).json(result);
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  }
+
   async deleteEstate(req: AuthRequest, res: Response) {
     try {
       const result = await estateService.deleteEstate(asString(req.params.estateId));

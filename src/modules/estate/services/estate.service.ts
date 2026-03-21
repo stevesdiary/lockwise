@@ -282,6 +282,31 @@ class EstateService {
     }
   }
 
+  async updateSetupChecklist(
+    estateId: string,
+    userId: string,
+    updates: Partial<{ gates_configured: boolean; residents_invited: boolean }>
+  ): Promise<ApiResponse & { statusCode?: number }> {
+    try {
+      const estate = await this.estateRepository.findById(estateId);
+      if (!estate) {
+        return { success: false, message: 'Estate not found', data: null, statusCode: 404 };
+      }
+
+      const current = (estate as any).setup_checklist || { gates_configured: false, residents_invited: false };
+      const merged = { ...current, ...updates };
+
+      await Estate.update(
+        { setup_checklist: merged },
+        { where: { estate_id: estateId } }
+      );
+
+      return { success: true, message: 'Setup checklist updated', data: merged };
+    } catch (error) {
+      throw error;
+    }
+  }
+
   private async notifyAdminsOnEstateSubmit(estate: any): Promise<void> {
     try {
       // Use a subquery via direct FK lookup — avoids relying on a Sequelize association
