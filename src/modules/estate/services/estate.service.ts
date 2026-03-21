@@ -312,7 +312,7 @@ class EstateService {
       // Use a subquery via direct FK lookup — avoids relying on a Sequelize association
       // being registered at runtime, which may silently fail if the include is not set up.
       const adminRoles = await Role.findAll({
-        where: { role: { [Op.in]: ['admin', 'super_admin'] } },
+        where: { role: { [Op.in]: ['admin', 'super_admin', 'master'] } },
         attributes: ['id'],
       });
       const adminRoleIds = adminRoles.map((r: any) => r.id);

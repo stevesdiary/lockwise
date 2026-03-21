@@ -227,7 +227,10 @@ class EstateController {
   async updateSetupChecklist(req: AuthRequest, res: Response): Promise<Response> {
     try {
       const estateId = asString(req.params.estateId);
-      const updates = req.body as Partial<{ gates_configured: boolean; residents_invited: boolean }>;
+      const { gates_configured, residents_invited } = req.body;
+      const updates: Partial<{ gates_configured: boolean; residents_invited: boolean }> = {};
+      if (typeof gates_configured === 'boolean') updates.gates_configured = gates_configured;
+      if (typeof residents_invited === 'boolean') updates.residents_invited = residents_invited;
       const userId = req.user!.id;
 
       if (!estateId) {

@@ -264,6 +264,7 @@ describe('updateSetupChecklist', () => {
     );
     expect(result.success).toBe(true);
     expect(result.message).toBe('Setup checklist updated');
+    expect(result.data).toEqual({ gates_configured: true, residents_invited: false });
 
     // Verify Estate.update was called with merged checklist
     expect(MockEstate.update).toHaveBeenCalledWith(
@@ -279,6 +280,7 @@ describe('updateSetupChecklist', () => {
       estateId, userId, { residents_invited: true }
     );
     expect(result.success).toBe(true);
+    expect(result.data).toEqual({ gates_configured: false, residents_invited: true });
 
     expect(MockEstate.update).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -293,6 +295,7 @@ describe('updateSetupChecklist', () => {
       estateId, userId, { gates_configured: true, residents_invited: true }
     );
     expect(result.success).toBe(true);
+    expect(result.data).toEqual({ gates_configured: true, residents_invited: true });
 
     expect(MockEstate.update).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -326,6 +329,7 @@ describe('updateSetupChecklist', () => {
       estateId, userId, { gates_configured: true }
     );
     expect(result.success).toBe(true);
+    expect(result.data).toEqual(expect.objectContaining({ gates_configured: true }));
 
     expect(MockEstate.update).toHaveBeenCalledWith(
       expect.objectContaining({
