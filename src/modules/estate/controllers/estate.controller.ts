@@ -146,8 +146,18 @@ class EstateController {
   }
 
   async updateEstate(req: AuthRequest, res: Response): Promise<Response> {
-    // const estateId = await idSchema.validate(req.params.estate_id)
-    const estateId = req.user?.estate_id
+    const estateId = asString(req.params.estateId);
+    const userId = req.user!.id;
+    const roleName = (req.user as any)?.role?.name?.toLowerCase() || '';
+    const isAdmin = ['master', 'super_admin', 'admin'].includes(roleName);
+
+    if (!isAdmin) {
+      const existing = await estateService.getOneEstate(estateId);
+      if (!existing?.data || existing.data.created_by !== userId) {
+        return res.status(403).json({ success: false, message: 'Forbidden: you do not own this estate' });
+      }
+    }
+
     if (!estateId) {
       return res.status(400).json({
         status: 'fail',
@@ -155,7 +165,7 @@ class EstateController {
       });
     }
     try {
-      const estate = await estateService.updateEstate(asString(req.params.estateId), req.body);
+      const estate = await estateService.updateEstate(estateId, req.body);
       if (!estate) {
         return res.status(404).json({
           status: 'fail',
@@ -239,6 +249,37 @@ class EstateController {
 
       const result = await estateService.updateSetupChecklist(estateId, userId, updates);
       return res.status(result.statusCode || (result.success ? 200 : 400)).json(result);
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  }
+
+  async deleteDraftEstate(req: AuthRequest, res: Response): Promise<Response> {
+    try {
+      const estateId = asString(req.params.estateId);
+      const userId = req.user!.id;
+
+      if (!estateId) {
+        return res.status(400).json({ success: false, message: 'estateId is required' });
+      }
+
+      const existing = await estateService.getOneEstate(estateId);
+      if (!existing?.data) {
+        return res.status(404).json({ success: false, message: 'Estate not found' });
+      }
+
+      if (existing.data.status !== 'draft') {
+        return res.status(400).json({ success: false, message: 'Only draft estates can be deleted this way' });
+      }
+
+      const roleName = (req.user as any)?.role?.name?.toLowerCase() || '';
+      const isAdmin = ['master', 'super_admin', 'admin'].includes(roleName);
+      if (!isAdmin && existing.data.created_by !== userId) {
+        return res.status(403).json({ success: false, message: 'Forbidden' });
+      }
+
+      await estateService.deleteEstate(estateId);
+      return res.status(200).json({ success: true, message: 'Draft estate deleted' });
     } catch (error) {
       return handleControllerError(error, res);
     }
