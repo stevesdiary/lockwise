@@ -15,6 +15,12 @@ jest.mock('../../src/modules/estate/models/estate.model', () => ({
 jest.mock('../../src/modules/auth/models/user.model', () => ({
   User: { update: jest.fn() },
 }));
+jest.mock('../../src/shared/core/database', () => ({
+  __esModule: true,
+  default: {
+    transaction: jest.fn((cb: (t: any) => Promise<any>) => cb({ /* mock transaction */ })),
+  },
+}));
 
 import { Estate } from '../../src/modules/estate/models/estate.model';
 import { User } from '../../src/modules/auth/models/user.model';
@@ -100,19 +106,20 @@ describe('createEstate (draft)', () => {
     expect(result.data.setup_checklist).toEqual({ gates_configured: false, residents_invited: false });
     expect(result.data.onboarding_step).toBe(1);
 
-    // Verify the service actually passed draft fields to the repository
+    // Verify the service actually passed draft fields to the repository (transaction is second arg)
     expect(MockEstate.create).toHaveBeenCalledWith(
       expect.objectContaining({
         status: 'draft',
         onboarding_step: 1,
         setup_checklist: { gates_configured: false, residents_invited: false },
-      })
+      }),
+      expect.objectContaining({ transaction: expect.anything() })
     );
 
-    // Verify user estate_id was linked
+    // Verify user estate_id was linked (transaction is included in options)
     expect(MockUser.update).toHaveBeenCalledWith(
       { estate_id: 'new-estate-uuid' },
-      { where: { id: 'test-user-uuid' } }
+      expect.objectContaining({ where: { id: 'test-user-uuid' }, transaction: expect.anything() })
     );
   });
 });

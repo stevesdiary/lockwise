@@ -4,6 +4,7 @@ import { EstateRepository } from '../../estate/repositories/estate.repository';
 import { Estate } from '../../estate/models/estate.model';
 import { Referrer } from '../../payment/models/referrer.model';
 import { User } from '../../auth/models/user.model';
+import sequelize from '../../../shared/core/database';
 
 class EstateService {
   private estateRepository: EstateRepository;
@@ -31,16 +32,24 @@ class EstateService {
       estateData.onboarding_step = 1;
       estateData.setup_checklist = { gates_configured: false, residents_invited: false };
 
-      const estate = await this.estateRepository.create(estateData);
+      const estate = await sequelize.transaction(async (t) => {
+        const created = await Estate.create(estateData, { transaction: t });
+        if (!created) {
+          throw new Error('Failed to create estate');
+        }
+
+        if (data.created_by) {
+          await User.update(
+            { estate_id: created.estate_id },
+            { where: { id: data.created_by }, transaction: t }
+          );
+        }
+
+        return created;
+      });
+
       if (!estate) {
         throw new Error('Failed to create estate');
-      }
-
-      if (data.created_by) {
-        await User.update(
-          { estate_id: estate.estate_id },
-          { where: { id: data.created_by } }
-        );
       }
 
       return {
