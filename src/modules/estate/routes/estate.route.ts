@@ -144,17 +144,35 @@ estateRouter.get('/search/:estate_code', async (req: ExpressRequest, res: Respon
   await estateController.searchEstate(req, res);
 });
 
-estateRouter.put('/update/:estateId', 
+estateRouter.put('/update/:estateId',
   authenticateToken,
+  requireManager,
   async (req: ExpressRequest, res: Response) => {
     await estateController.updateEstate(req, res);
   }
 );
 
-estateRouter.delete('/delete/:estateId', 
+estateRouter.delete('/delete/:estateId',
   authenticateToken,
+  requireManager,
   async (req: ExpressRequest, res: Response) => {
-    await estateController.deleteEstate(req, res);
+    await estateController.deleteDraftEstate(req, res);
+  }
+);
+
+estateRouter.patch('/:estateId/onboarding-step',
+  authenticateToken,
+  requireManager,
+  async (req: ExpressRequest, res: Response) => {
+    await estateController.updateOnboardingStep(req, res);
+  }
+);
+
+estateRouter.patch('/:estateId/setup-checklist',
+  authenticateToken,
+  requireManager,
+  async (req: ExpressRequest, res: Response) => {
+    await estateController.updateSetupChecklist(req, res);
   }
 );
 

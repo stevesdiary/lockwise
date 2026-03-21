@@ -146,16 +146,28 @@ class EstateController {
   }
 
   async updateEstate(req: AuthRequest, res: Response): Promise<Response> {
-    // const estateId = await idSchema.validate(req.params.estate_id)
-    const estateId = req.user?.estate_id
-    if (!estateId) {
-      return res.status(400).json({
-        status: 'fail',
-        message: 'Estate ID is required'
-      });
-    }
     try {
-      const estate = await estateService.updateEstate(asString(req.params.estateId), req.body);
+      const estateId = asString(req.params.estateId);
+
+      if (!estateId) {
+        return res.status(400).json({
+          status: 'fail',
+          message: 'Estate ID is required'
+        });
+      }
+
+      const userId = req.user!.id;
+      const userRole = (req.user!.role as string)?.toLowerCase() || '';
+      const isAdmin = ['master', 'super_admin', 'admin'].includes(userRole);
+
+      if (!isAdmin) {
+        const existing = await estateService.getOneEstate(estateId);
+        if (!existing?.data || existing.data.created_by !== userId) {
+          return res.status(403).json({ success: false, message: 'Forbidden: you do not own this estate' });
+        }
+      }
+
+      const estate = await estateService.updateEstate(estateId, req.body);
       if (!estate) {
         return res.status(404).json({
           status: 'fail',
@@ -203,6 +215,74 @@ class EstateController {
       });
     } catch (error) {
       console.error('Approve estate error:', error);
+      return handleControllerError(error, res);
+    }
+  }
+
+  async updateOnboardingStep(req: AuthRequest, res: Response): Promise<Response> {
+    try {
+      const estateId = asString(req.params.estateId);
+      const { step, status } = req.body as { step: number; status?: string };
+      const userId = req.user!.id;
+
+      if (!estateId || typeof step !== 'number') {
+        return res.status(400).json({ success: false, message: 'estateId and step are required' });
+      }
+
+      const result = await estateService.updateOnboardingStep(estateId, userId, step, status);
+      return res.status(result.statusCode || (result.success ? 200 : 400)).json(result);
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  }
+
+  async updateSetupChecklist(req: AuthRequest, res: Response): Promise<Response> {
+    try {
+      const estateId = asString(req.params.estateId);
+      const { gates_configured, residents_invited } = req.body;
+      const updates: Partial<{ gates_configured: boolean; residents_invited: boolean }> = {};
+      if (typeof gates_configured === 'boolean') updates.gates_configured = gates_configured;
+      if (typeof residents_invited === 'boolean') updates.residents_invited = residents_invited;
+      const userId = req.user!.id;
+
+      if (!estateId) {
+        return res.status(400).json({ success: false, message: 'estateId is required' });
+      }
+
+      const result = await estateService.updateSetupChecklist(estateId, userId, updates);
+      return res.status(result.statusCode || (result.success ? 200 : 400)).json(result);
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  }
+
+  async deleteDraftEstate(req: AuthRequest, res: Response): Promise<Response> {
+    try {
+      const estateId = asString(req.params.estateId);
+      const userId = req.user!.id;
+
+      if (!estateId) {
+        return res.status(400).json({ success: false, message: 'estateId is required' });
+      }
+
+      const existing = await estateService.getOneEstate(estateId);
+      if (!existing?.data) {
+        return res.status(404).json({ success: false, message: 'Estate not found' });
+      }
+
+      if (existing.data.status !== 'draft') {
+        return res.status(400).json({ success: false, message: 'Only draft estates can be deleted this way' });
+      }
+
+      const userRole = (req.user!.role as string)?.toLowerCase() || '';
+      const isAdmin = ['master', 'super_admin', 'admin'].includes(userRole);
+      if (!isAdmin && existing.data.created_by !== userId) {
+        return res.status(403).json({ success: false, message: 'Forbidden' });
+      }
+
+      await estateService.deleteEstate(estateId);
+      return res.status(200).json({ success: true, message: 'Draft estate deleted' });
+    } catch (error) {
       return handleControllerError(error, res);
     }
   }

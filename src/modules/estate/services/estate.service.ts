@@ -1,9 +1,15 @@
+import { Op } from 'sequelize';
 import { EstateCreationAttributes } from '../types/estate.types';
 import { ApiResponse } from '../../../shared/types/api.types';
 import { EstateRepository } from '../../estate/repositories/estate.repository';
 import { Estate } from '../../estate/models/estate.model';
 import { Referrer } from '../../payment/models/referrer.model';
 import { User } from '../../auth/models/user.model';
+import { Role } from '../../auth/models/role.model';
+import sequelize from '../../../shared/core/database';
+import emailService from '../../communication/services/email.service';
+import notificationService from '../../communication/services/notification.service';
+import logger from '../../../shared/utils/logger';
 
 class EstateService {
   private estateRepository: EstateRepository;
@@ -31,16 +37,24 @@ class EstateService {
       estateData.onboarding_step = 1;
       estateData.setup_checklist = { gates_configured: false, residents_invited: false };
 
-      const estate = await this.estateRepository.create(estateData);
+      const estate = await sequelize.transaction(async (t) => {
+        const created = await Estate.create(estateData, { transaction: t });
+        if (!created) {
+          throw new Error('Failed to create estate');
+        }
+
+        if (data.created_by) {
+          await User.update(
+            { estate_id: created.estate_id },
+            { where: { id: data.created_by }, transaction: t }
+          );
+        }
+
+        return created;
+      });
+
       if (!estate) {
         throw new Error('Failed to create estate');
-      }
-
-      if (data.created_by) {
-        await User.update(
-          { estate_id: estate.estate_id },
-          { where: { id: data.created_by } }
-        );
       }
 
       return {
@@ -230,6 +244,104 @@ class EstateService {
       };
     } catch (error) {
       throw error;
+    }
+  }
+
+  async updateOnboardingStep(
+    estateId: string,
+    // userId is accepted for future ownership-check extension; auth enforced at route middleware layer
+    userId: string,
+    step: number,
+    status?: string
+  ): Promise<ApiResponse & { statusCode?: number }> {
+    try {
+      const estate = await this.estateRepository.findById(estateId);
+      if (!estate) {
+        return { success: false, message: 'Estate not found', data: null, statusCode: 404 };
+      }
+
+      // Guard: cannot flip to pending unless currently draft
+      if (status === 'pending' && (estate as any).status !== 'draft') {
+        return { success: false, message: 'Estate is not in draft status', data: null, statusCode: 409 };
+      }
+
+      const updates: Partial<{ onboarding_step: number; status: string }> = { onboarding_step: step };
+      if (status === 'pending') {
+        updates.status = 'pending';
+      }
+
+      await Estate.update(updates as any, { where: { estate_id: estateId } });
+
+      if (status === 'pending') {
+        await this.notifyAdminsOnEstateSubmit(estate);
+      }
+
+      return { success: true, message: 'Onboarding step updated', data: null };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateSetupChecklist(
+    estateId: string,
+    userId: string,
+    updates: Partial<{ gates_configured: boolean; residents_invited: boolean }>
+  ): Promise<ApiResponse & { statusCode?: number }> {
+    try {
+      const estate = await this.estateRepository.findById(estateId);
+      if (!estate) {
+        return { success: false, message: 'Estate not found', data: null, statusCode: 404 };
+      }
+
+      const current = (estate as any).setup_checklist || { gates_configured: false, residents_invited: false };
+      const merged = { ...current, ...updates };
+
+      await Estate.update(
+        { setup_checklist: merged },
+        { where: { estate_id: estateId } }
+      );
+
+      return { success: true, message: 'Setup checklist updated', data: merged };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  private async notifyAdminsOnEstateSubmit(estate: any): Promise<void> {
+    try {
+      // Use a subquery via direct FK lookup — avoids relying on a Sequelize association
+      // being registered at runtime, which may silently fail if the include is not set up.
+      const adminRoles = await Role.findAll({
+        where: { role: { [Op.in]: ['admin', 'super_admin', 'master'] } },
+        attributes: ['id'],
+      });
+      const adminRoleIds = adminRoles.map((r: any) => r.id);
+      const admins = await User.findAll({
+        where: { role_id: { [Op.in]: adminRoleIds } },
+      });
+
+      for (const admin of admins) {
+        try {
+          await emailService.sendEstateSubmittedEmail(admin.email, {
+            admin_name: (admin as any).first_name || admin.email,
+            estate_name: estate.name,
+          });
+
+          await notificationService.sendNotification({
+            type: 'email',
+            to: admin.email,
+            template: 'estateSubmitted',
+            data: { admin_name: (admin as any).first_name || admin.email, estate_name: estate.name },
+            priority: 'high',
+          });
+        } catch (err) {
+          // Non-fatal — one admin failing to notify must not block the rest
+          logger.error('Failed to notify admin on estate submit', { email: admin.email, error: err });
+        }
+      }
+    } catch (err) {
+      // Non-fatal — log and continue
+      logger.error('Failed to notify admins on estate submit', { error: err });
     }
   }
 }

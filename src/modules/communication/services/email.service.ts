@@ -270,6 +270,17 @@ class EmailService {
       data,
     });
   }
+
+  async sendEstateSubmittedEmail(
+    to: string,
+    data: { admin_name: string; estate_name: string }
+  ): Promise<boolean> {
+    return this.sendEmail({
+      to,
+      template: 'estateSubmitted',
+      data,
+    });
+  }
 }
 
 export default new EmailService();

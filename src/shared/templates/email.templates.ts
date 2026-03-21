@@ -230,5 +230,22 @@ ${data.invitation_link}
 
 Best regards,
 The Lockwise Team`
+  }),
+
+  estateSubmitted: (data: any) => ({
+    subject: `New estate "${data.estate_name || 'Unknown'}" submitted for approval`,
+    html: baseTemplate(`
+      <div class="content">
+        <h2>Estate Approval Required</h2>
+        <p>Hello ${data.admin_name || 'Admin'},</p>
+        <p>A new estate has been submitted for your approval on Lockwise.</p>
+        <div class="code-box">
+          <p><strong>Estate Name:</strong> ${data.estate_name || 'N/A'}</p>
+        </div>
+        <p>Please log in to review and approve or decline this estate.</p>
+        <p>Best regards,<br>The Lockwise Team</p>
+      </div>
+    `),
+    text: `New estate "${data.estate_name}" submitted for approval. Please review in the admin panel.`
   })
 };
