@@ -146,25 +146,27 @@ class EstateController {
   }
 
   async updateEstate(req: AuthRequest, res: Response): Promise<Response> {
-    const estateId = asString(req.params.estateId);
-    const userId = req.user!.id;
-    const roleName = (req.user as any)?.role?.name?.toLowerCase() || '';
-    const isAdmin = ['master', 'super_admin', 'admin'].includes(roleName);
-
-    if (!isAdmin) {
-      const existing = await estateService.getOneEstate(estateId);
-      if (!existing?.data || existing.data.created_by !== userId) {
-        return res.status(403).json({ success: false, message: 'Forbidden: you do not own this estate' });
-      }
-    }
-
-    if (!estateId) {
-      return res.status(400).json({
-        status: 'fail',
-        message: 'Estate ID is required'
-      });
-    }
     try {
+      const estateId = asString(req.params.estateId);
+
+      if (!estateId) {
+        return res.status(400).json({
+          status: 'fail',
+          message: 'Estate ID is required'
+        });
+      }
+
+      const userId = req.user!.id;
+      const userRole = (req.user!.role as string)?.toLowerCase() || '';
+      const isAdmin = ['master', 'super_admin', 'admin'].includes(userRole);
+
+      if (!isAdmin) {
+        const existing = await estateService.getOneEstate(estateId);
+        if (!existing?.data || existing.data.created_by !== userId) {
+          return res.status(403).json({ success: false, message: 'Forbidden: you do not own this estate' });
+        }
+      }
+
       const estate = await estateService.updateEstate(estateId, req.body);
       if (!estate) {
         return res.status(404).json({
@@ -272,8 +274,8 @@ class EstateController {
         return res.status(400).json({ success: false, message: 'Only draft estates can be deleted this way' });
       }
 
-      const roleName = (req.user as any)?.role?.name?.toLowerCase() || '';
-      const isAdmin = ['master', 'super_admin', 'admin'].includes(roleName);
+      const userRole = (req.user!.role as string)?.toLowerCase() || '';
+      const isAdmin = ['master', 'super_admin', 'admin'].includes(userRole);
       if (!isAdmin && existing.data.created_by !== userId) {
         return res.status(403).json({ success: false, message: 'Forbidden' });
       }
