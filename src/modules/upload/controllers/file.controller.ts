@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { cloudStorage } from '../services/unified-storage.service';
+import { cloudStorage } from '../services/cloud-storage.service';
 
 export const serveFile = async (req: Request, res: Response) => {
   try {

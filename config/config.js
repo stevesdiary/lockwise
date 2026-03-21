@@ -1,60 +1,40 @@
 const dotenv = require('dotenv');
+const path = require('path');
 
-dotenv.config();
+const env = process.env.NODE_ENV || 'development';
+dotenv.config({ path: path.resolve(process.cwd(), `.env.${env}`) });
+
+const url = process.env.DATABASE_URL?.split('?')[0];
+
+const sslEnabled = process.env.DB_SSL === 'true';
+
+const dialectOptions = sslEnabled
+  ? {
+      ssl: {
+        require: true,
+        rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true',
+        minVersion: 'TLSv1.2',
+        ...(process.env.DB_SSL_CA ? { ca: process.env.DB_SSL_CA } : {}),
+      },
+    }
+  : {};
+
+const pool = {
+  production: { max: 50, min: 10 },
+  development: { max: 5, min: 0 },
+  test: { max: 2, min: 0 },
+};
 
 const baseConfig = {
   dialect: 'postgres',
+  migrationStorageTableName: 'migrations',
   seedersStorage: 'sequelize',
   seedersStorageTableName: 'seeders',
-  migrationStorageTableName: 'migrations',
+  dialectOptions,
 };
 
 module.exports = {
-  development: {
-    ...baseConfig,
-    host: process.env.DEV_DB_HOST || 'localhost',
-    username: process.env.DEV_DB_USER || 'postgres',
-    password: process.env.DEV_DB_PASSWORD,
-    database: process.env.DEV_DB_NAME,
-    port: process.env.DEV_DB_PORT || 5432,
-    dialectOptions: process.env.SSL === 'true' ? {
-      ssl: {
-        require: true,
-        rejectUnauthorized: true,
-        ca: process.env.DB_SSL_CA
-      }
-    } : {}
-  },
-  
-  production: {
-    ...baseConfig,
-    host: process.env.PROD_DB_HOST,
-    username: process.env.PROD_DB_USER,
-    password: process.env.PROD_DB_PASSWORD,
-    database: process.env.PROD_DB_NAME,
-    port: process.env.PROD_DB_PORT || 5432,
-    logging: false,
-    dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false
-      }
-    }
-  },
-  
-  test: {
-    ...baseConfig,
-    host: process.env.TEST_DB_HOST || 'localhost',
-    username: process.env.TEST_DB_USER || 'postgres',
-    password: process.env.TEST_DB_PASSWORD,
-    database: process.env.TEST_DB_NAME || 'lockwise_test',
-    port: process.env.TEST_DB_PORT || 5432,
-    logging: false,
-    dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false
-      }
-    }
-  }
-}
+  development: { ...baseConfig, url, pool: pool.development },
+  production:  { ...baseConfig, url, pool: pool.production, logging: false },
+  test:        { ...baseConfig, url, pool: pool.test, logging: false },
+};

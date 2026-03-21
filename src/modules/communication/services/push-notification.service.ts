@@ -1,36 +1,71 @@
-import admin from 'firebase-admin';
 import db from '../../../shared/core/database';
 import { QueryTypes } from 'sequelize';
 
-// Initialize Firebase Admin
-try {
-  if (!admin.apps.length) {
-    const projectId = process.env.FIREBASE_PROJECT_ID;
-    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-    const privateKey = process.env.FIREBASE_PRIVATE_KEY;
-    
-    if (projectId && clientEmail && privateKey && 
-        projectId !== 'your_firebase_project_id' && 
-        privateKey !== 'your_firebase_private_key') {
-      admin.initializeApp({
-        credential: admin.credential.cert({
-          projectId,
-          clientEmail,
-          privateKey: privateKey.replace(/\\n/g, '\n'),
-        }),
-      });
-    } else {
-      console.warn('Firebase credentials not configured, push notification service disabled');
-    }
+type FirebaseAdmin = typeof import('firebase-admin');
+
+let firebaseAdmin: FirebaseAdmin | null = null;
+let firebaseDisabledReason: string | null = null;
+
+const getFirebaseAdmin = async (): Promise<FirebaseAdmin | null> => {
+  if (firebaseDisabledReason) {
+    return null;
   }
-} catch (error) {
-  console.warn('Firebase initialization failed, push notification service disabled');
-}
+
+  if (!firebaseAdmin) {
+    firebaseAdmin = await import('firebase-admin');
+  }
+
+  return firebaseAdmin;
+};
+
+const ensureFirebaseAdmin = async (): Promise<FirebaseAdmin | null> => {
+  const admin = await getFirebaseAdmin();
+  if (!admin) {
+    return null;
+  }
+
+  if (admin.apps.length > 0) {
+    return admin;
+  }
+
+  const projectId = process.env.FIREBASE_PROJECT_ID;
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+
+  if (
+    !projectId ||
+    !clientEmail ||
+    !privateKey ||
+    projectId === 'your_firebase_project_id' ||
+    privateKey === 'your_firebase_private_key'
+  ) {
+    firebaseDisabledReason = 'Firebase credentials not configured, push notification service disabled';
+    console.warn(firebaseDisabledReason);
+    return null;
+  }
+
+  try {
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId,
+        clientEmail,
+        privateKey: privateKey.replace(/\\n/g, '\n'),
+      }),
+    });
+
+    return admin;
+  } catch (error) {
+    firebaseDisabledReason = 'Firebase initialization failed, push notification service disabled';
+    console.warn(firebaseDisabledReason);
+    return null;
+  }
+};
 
 export const pushNotificationService = {
   async sendToUser(userId: string, title: string, body: string, data?: any) {
     try {
-      if (!admin.apps.length) {
+      const admin = await ensureFirebaseAdmin();
+      if (!admin) {
         console.warn('Firebase not initialized, skipping push notification');
         return;
       }

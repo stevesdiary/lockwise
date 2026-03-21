@@ -34,7 +34,9 @@ export interface EstateAttributes {
   total_floors?: number;
   total_parking_spaces?: number;
   number_of_staff?: number;
-  status?: string;
+  status?: 'active' | 'inactive' | 'under_maintenance' | 'suspended' | 'pending' | 'draft';
+  onboarding_step?: number;
+  setup_checklist?: { gates_configured: boolean; residents_invited: boolean };
   contact_info?: {
     phone?: string;
     email?: string;

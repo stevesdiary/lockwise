@@ -1,17 +1,19 @@
 import { nanoid } from 'nanoid';
+import { Transaction } from 'sequelize';
+import sequelize from '../../../shared/core/database';
 import { Payment } from '../../payment/models/payment.model';
 import { Subscription } from '../../payment/models/subscription.model';
 import { Plan } from '../../payment/models/plan.model';
 import PaystackService from './paystack.service';
-import FlutterwaveService from './flutterwave.service';
+import { referralService } from './referral.service';
 
 interface PaymentData {
   amount: number;
   email: string;
   currency?: string;
-  payment_provider?: 'paystack' | 'flutterwave';
+  payment_provider?: 'paystack';
   payment_method: string;
-  user_id?: string;
+  user_id: string;
   estate_id?: string;
   subscription_id?: string;
 }
@@ -24,52 +26,55 @@ interface PaymentResult {
 }
 
 class PaymentService {
+  private normalizePaymentMethod(method: string): 'credit_card' | 'debit_card' | 'bank_transfer' | 'cash' | 'POS' | 'paystack' {
+    const normalized = method.trim().toLowerCase();
+    if (normalized === 'card') return 'credit_card';
+    if (normalized === 'credit_card') return 'credit_card';
+    if (normalized === 'debit_card') return 'debit_card';
+    if (normalized === 'bank_transfer') return 'bank_transfer';
+    if (normalized === 'cash') return 'cash';
+    if (normalized === 'pos') return 'POS';
+    if (normalized === 'paystack') return 'paystack';
+    return 'credit_card';
+  }
+
   async initiatePayment(data: PaymentData): Promise<PaymentResult> {
     try {
-      const reference = `LW_${nanoid(10)}_${Date.now()}`;
-      const provider = data.payment_provider || 'paystack';
-
-      let providerResponse;
-      
-      if (provider === 'paystack') {
-        providerResponse = await PaystackService.initializeTransaction({
-          amount: data.amount,
-          email: data.email,
-          currency: data.currency || 'NGN',
-          reference,
-          callback_url: `${process.env.BASE_URL}/api/v1/payment/callback`,
-          metadata: {
-            user_id: data.user_id,
-            estate_id: data.estate_id,
-            subscription_id: data.subscription_id,
-          },
-        });
-      } else {
-        providerResponse = await FlutterwaveService.initializePayment({
-          amount: data.amount,
-          currency: data.currency || 'NGN',
-          email: data.email,
-          tx_ref: reference,
-          redirect_url: `${process.env.BASE_URL}/api/v1/payment/callback`,
-          meta: {
-            user_id: data.user_id,
-            estate_id: data.estate_id,
-            subscription_id: data.subscription_id,
-          },
-        });
+      if (!data.user_id) {
+        return {
+          statusCode: 400,
+          status: 'error',
+          message: 'User ID is required to initiate payment',
+        };
       }
+
+      const reference = `LW_${nanoid(10)}_${Date.now()}`;
+      const paymentMethod = this.normalizePaymentMethod(data.payment_method);
+
+      const providerResponse = await PaystackService.initializeTransaction({
+        amount: data.amount,
+        email: data.email,
+        currency: data.currency || 'NGN',
+        reference,
+        callback_url: `${process.env.BASE_URL}/api/v1/payment/callback`,
+        metadata: {
+          user_id: data.user_id,
+          estate_id: data.estate_id,
+          subscription_id: data.subscription_id,
+        },
+      });
 
       // Save payment record
       await Payment.create({
-        user_id: data.user_id || nanoid(),
+        user_id: data.user_id,
         estate_id: data.estate_id,
         subscription_id: data.subscription_id,
         amount: data.amount,
         payment_date: new Date(),
         payment_status: 'pending',
         reference,
-        payment_provider: provider,
-        payment_method: data.payment_method,
+        payment_provider: 'paystack',
+        payment_method: paymentMethod,
         email: data.email,
         payment_data: providerResponse,
       });
@@ -80,9 +85,7 @@ class PaymentService {
         message: 'Payment initialized successfully',
         data: {
           reference,
-          authorization_url: provider === 'paystack' 
-            ? providerResponse.data.authorization_url 
-            : providerResponse.data.link,
+          authorization_url: providerResponse.data.authorization_url,
           access_code: providerResponse.data.access_code,
         },
       };
@@ -107,39 +110,51 @@ class PaymentService {
         };
       }
 
-      let verificationResponse;
-      
-      if (payment.payment_provider === 'paystack') {
-        verificationResponse = await PaystackService.verifyTransaction(data.reference);
-      } else {
-        // For Flutterwave, we need transaction ID from webhook
-        const providerData = payment.payment_data as any || {};
-        verificationResponse = await FlutterwaveService.verifyTransaction(
-          providerData.data?.id || data.reference
-        );
+      // Idempotency: skip re-processing if already completed
+      if (payment.payment_status === 'completed') {
+        return {
+          statusCode: 200,
+          status: 'success',
+          message: 'Payment already verified',
+          data: {
+            payment_status: payment.payment_status,
+            amount: payment.amount,
+            reference: payment.reference,
+          },
+        };
       }
 
-      const isSuccessful = payment.payment_provider === 'paystack' 
-        ? verificationResponse.data.status === 'success'
-        : verificationResponse.data.status === 'successful';
+      // Verify with Paystack BEFORE opening the DB transaction (external call)
+      const verificationResponse = await PaystackService.verifyTransaction(data.reference);
+      const isSuccessful = verificationResponse.data.status === 'success';
 
-      // Update payment status
-      await payment.update({
-        payment_status: isSuccessful ? 'completed' : 'failed',
-        payment_data: verificationResponse,
-      });
+      // Atomically: update payment + activate subscription + record referral bonus
+      await sequelize.transaction(
+        { isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE },
+        async (t) => {
+          await payment.update(
+            { payment_status: isSuccessful ? 'completed' : 'failed', payment_data: verificationResponse },
+            { transaction: t },
+          );
 
-      // Handle subscription if payment is for a plan
-      if (isSuccessful && payment.subscription_id) {
-        await this.handleSubscriptionPayment(payment);
-      }
+          if (isSuccessful && payment.subscription_id) {
+            await this.handleSubscriptionPayment(payment, t);
+          }
+
+          if (isSuccessful && payment.estate_id) {
+            await referralService.createBonusOnPayment(payment.estate_id, payment.amount, t).catch((err: Error) => {
+              console.error('Referral bonus creation failed:', err);
+            });
+          }
+        },
+      );
 
       return {
         statusCode: 200,
         status: isSuccessful ? 'success' : 'failed',
         message: isSuccessful ? 'Payment verified successfully' : 'Payment verification failed',
         data: {
-          payment_status: payment.payment_status,
+          payment_status: isSuccessful ? 'completed' : 'failed',
           amount: payment.amount,
           reference: payment.reference,
         },
@@ -153,35 +168,25 @@ class PaymentService {
     }
   }
 
-  private async handleSubscriptionPayment(payment: any): Promise<void> {
-    try {
-      const subscription = await Subscription.findByPk(payment.subscription_id, { include: [Plan] });
-      if (!subscription || !subscription.plan) return;
+  private async handleSubscriptionPayment(payment: any, t?: Transaction): Promise<void> {
+    const subscription = await Subscription.findByPk(payment.subscription_id, {
+      include: [Plan],
+      transaction: t,
+    });
+    if (!subscription || !subscription.plan) return;
 
-      const endDate = new Date();
-      switch (subscription.plan.billing_cycle) {
-        case 'monthly':
-          endDate.setMonth(endDate.getMonth() + 1);
-          break;
-        case 'quarterly':
-          endDate.setMonth(endDate.getMonth() + 3);
-          break;
-        case 'biannually':
-          endDate.setMonth(endDate.getMonth() + 6);
-          break;
-        case 'annually':
-          endDate.setFullYear(endDate.getFullYear() + 1);
-          break;
-      }
-
-      await subscription.update({
-        status: 'active',
-        start_date: new Date(),
-        end_date: endDate,
-      });
-    } catch (error) {
-      console.error('Subscription update failed:', error);
+    const endDate = new Date();
+    switch (subscription.plan.billing_cycle) {
+      case 'monthly':    endDate.setMonth(endDate.getMonth() + 1);         break;
+      case 'quarterly':  endDate.setMonth(endDate.getMonth() + 3);         break;
+      case 'biannually': endDate.setMonth(endDate.getMonth() + 6);         break;
+      case 'annually':   endDate.setFullYear(endDate.getFullYear() + 1);   break;
     }
+
+    await subscription.update(
+      { status: 'active', start_date: new Date(), end_date: endDate, paid_on: new Date() },
+      { transaction: t },
+    );
   }
 
   async handlePaymentFailure(reference: string, reason: string): Promise<void> {
@@ -200,9 +205,18 @@ class PaymentService {
     }
   }
 
-  async getAllPayments(options: { limit: number; offset: number; status?: string }): Promise<PaymentResult> {
+  async getAllPayments(options: {
+    limit: number;
+    offset: number;
+    status?: string;
+    user_id?: string;
+    estate_id?: string;
+  }): Promise<PaymentResult> {
     try {
-      const whereClause = options.status ? { payment_status: options.status } : {};
+      const whereClause: Record<string, any> = {};
+      if (options.status) whereClause.payment_status = options.status;
+      if (options.user_id) whereClause.user_id = options.user_id;
+      if (options.estate_id) whereClause.estate_id = options.estate_id;
       
       const payments = await Payment.findAndCountAll({
         where: whereClause,
@@ -231,9 +245,16 @@ class PaymentService {
     }
   }
 
-  async getPaymentById(paymentId: string): Promise<PaymentResult> {
+  async getPaymentById(
+    paymentId: string,
+    options: { user_id?: string; estate_id?: string } = {}
+  ): Promise<PaymentResult> {
     try {
-      const payment = await Payment.findByPk(paymentId);
+      const whereClause: Record<string, any> = { id: paymentId };
+      if (options.user_id) whereClause.user_id = options.user_id;
+      if (options.estate_id) whereClause.estate_id = options.estate_id;
+
+      const payment = await Payment.findOne({ where: whereClause });
       
       if (!payment) {
         return {
@@ -258,9 +279,16 @@ class PaymentService {
     }
   }
 
-  async getPaymentByReference(reference: string): Promise<PaymentResult> {
+  async getPaymentByReference(
+    reference: string,
+    options: { user_id?: string; estate_id?: string } = {}
+  ): Promise<PaymentResult> {
     try {
-      const payment = await Payment.findOne({ where: { reference } });
+      const whereClause: Record<string, any> = { reference };
+      if (options.user_id) whereClause.user_id = options.user_id;
+      if (options.estate_id) whereClause.estate_id = options.estate_id;
+
+      const payment = await Payment.findOne({ where: whereClause });
       
       if (!payment) {
         return {

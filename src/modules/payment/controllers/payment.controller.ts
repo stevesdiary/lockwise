@@ -1,7 +1,6 @@
 import { Request as ExpressRequest, Response } from 'express';
 import * as yup from 'yup';
 
-import { webSocketService } from '../../../shared/core';
 import { 
   paymentInitiationSchema, 
   paymentVerificationSchema 
@@ -9,25 +8,49 @@ import {
 import { paymentService } from '../../payment/services/payment.service';
 import realTimeNotificationService from '../../communication/services/realtime-notification.service';
 import { asString } from '../../../shared/utils/param.util';
+import subscriptionService from '../services/subscription.service';
+import { UserRole } from '../../../shared/constants/permissions';
+
+const subscriptionInitiationSchema = yup.object().shape({
+  plan_id: yup.string().required('Plan ID is required'),
+  paymentMethod: yup.string().trim().optional().default('card')
+});
+
+const isGlobalPaymentReader = (role?: string) =>
+  role === UserRole.MASTER || role === UserRole.SUPER_ADMIN || role === UserRole.ADMIN;
+
+const isEstateScopedReader = (role?: string) => role === UserRole.MANAGER;
 
 const paymentController = {
   initiatePayment: async (req: ExpressRequest, res: Response) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({
+          status: 'error',
+          message: 'Authentication required'
+        });
+      }
+
       const transactionData = await paymentInitiationSchema.validate(req.body, { 
         abortEarly: false 
       });
-      // if (!req.user){
-      //   return ('User not authenticated!')
-      // }
-      // console.log(req.user, transactionData)
+
+      const userEmail = req.user.email || transactionData.email;
+      if (!userEmail) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'User email is required to initiate payment'
+        });
+      }
+
       const paymentData = {
         amount: transactionData.amount,
-        email: transactionData.email,
+        email: userEmail,
         currency: transactionData.currency || 'NGN',
-        payment_provider: (transactionData.paymentProvider === 'paystack' || transactionData.paymentProvider === 'flutterwave' 
-          ? transactionData.paymentProvider 
-          : 'paystack') as 'paystack' | 'flutterwave',
-        payment_method: transactionData.paymentMethod
+        payment_provider: 'paystack' as const,
+        payment_method: transactionData.paymentMethod,
+        user_id: req.user.id,
+        estate_id: req.user.estate_id,
       };
       const paymentResult = await paymentService.initiatePayment(paymentData);
       if (!paymentResult) {
@@ -40,7 +63,7 @@ const paymentController = {
       
       // Send real-time notification
       await realTimeNotificationService.sendNotification(
-        parseInt(transactionData.email) || 0, // userId as number
+        req.user.id,
         `Payment of ${paymentData.amount} ${paymentData.currency} initiated` // message
       );
       
@@ -70,6 +93,13 @@ const paymentController = {
 
   verifyPayment: async (req: ExpressRequest, res: Response) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({
+          status: 'error',
+          message: 'Authentication required'
+        });
+      }
+
       const validatedData = await paymentVerificationSchema.validate(req.params, { 
         abortEarly: false 
       });
@@ -98,13 +128,34 @@ const paymentController = {
 
   getAllPayments: async (req: ExpressRequest, res: Response) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({
+          status: 'error',
+          message: 'Authentication required'
+        });
+      }
+
       const { page = 1, limit = 50, status } = req.query;
       const offset = (Number(page) - 1) * Number(limit);
+      const scope: { user_id?: string; estate_id?: string } = {};
+
+      if (!isGlobalPaymentReader(req.user.role)) {
+        if (isEstateScopedReader(req.user.role)) {
+          if (req.user.estate_id) {
+            scope.estate_id = req.user.estate_id;
+          } else {
+            scope.user_id = req.user.id;
+          }
+        } else {
+          scope.user_id = req.user.id;
+        }
+      }
       
       const payments = await paymentService.getAllPayments({
         limit: Number(limit),
         offset,
-        status: status as string
+        status: status as string,
+        ...scope,
       });
 
       return res.status(payments.statusCode).json(payments);
@@ -119,8 +170,24 @@ const paymentController = {
 
   getPaymentById: async (req: ExpressRequest, res: Response) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({
+          status: 'error',
+          message: 'Authentication required'
+        });
+      }
+
       const paymentId = asString(req.params.paymentId);
-      const payment = await paymentService.getPaymentById(paymentId);
+      const scope: { user_id?: string; estate_id?: string } = {};
+      if (!isGlobalPaymentReader(req.user.role)) {
+        if (isEstateScopedReader(req.user.role)) {
+          scope.estate_id = req.user.estate_id;
+        } else {
+          scope.user_id = req.user.id;
+        }
+      }
+
+      const payment = await paymentService.getPaymentById(paymentId, scope);
       return res.status(payment.statusCode).json(payment);
     } catch (error) {
       return res.status(500).json({
@@ -133,9 +200,133 @@ const paymentController = {
 
   getPaymentByReference: async (req: ExpressRequest, res: Response) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({
+          status: 'error',
+          message: 'Authentication required'
+        });
+      }
+
       const reference = asString(req.params.reference);
-      const payment = await paymentService.getPaymentByReference(reference);
+      const scope: { user_id?: string; estate_id?: string } = {};
+      if (!isGlobalPaymentReader(req.user.role)) {
+        if (isEstateScopedReader(req.user.role)) {
+          scope.estate_id = req.user.estate_id;
+        } else {
+          scope.user_id = req.user.id;
+        }
+      }
+
+      const payment = await paymentService.getPaymentByReference(reference, scope);
       return res.status(payment.statusCode).json(payment);
+    } catch (error) {
+      return res.status(500).json({
+        status: 'error',
+        message: 'Internal server error',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  },
+
+  paymentCallback: async (req: ExpressRequest, res: Response) => {
+    try {
+      const rawReference = req.query.reference || req.query.trxref || req.query.tx_ref;
+      let reference = '';
+      if (typeof rawReference === 'string') {
+        reference = rawReference;
+      } else if (Array.isArray(rawReference)) {
+        const firstString = rawReference.find((item): item is string => typeof item === 'string');
+        reference = firstString || '';
+      }
+      if (!reference) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'Missing payment reference in callback'
+        });
+      }
+
+      const verificationResult = await paymentService.verifyPayment({ reference });
+      return res.status(verificationResult.statusCode).json({
+        status: verificationResult.status,
+        message: verificationResult.message,
+        data: {
+          reference,
+          ...verificationResult.data,
+        },
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: 'error',
+        message: 'Failed to process payment callback',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  },
+
+  initiateSubscription: async (req: ExpressRequest, res: Response) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({
+          status: 'error',
+          message: 'Authentication required'
+        });
+      }
+
+      if (!req.user.estate_id) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'User is not linked to an estate'
+        });
+      }
+
+      const data = await subscriptionInitiationSchema.validate(req.body, { abortEarly: false });
+      const result = await subscriptionService.createSubscription({
+        estate_id: req.user.estate_id,
+        plan_id: data.plan_id,
+        payment_method: data.paymentMethod,
+        user_id: req.user.id,
+        user_email: req.user.email,
+      });
+
+      return res.status(result.statusCode).json(result);
+    } catch (error) {
+      if (error instanceof yup.ValidationError) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'Validation failed',
+          errors: error.inner.map((err) => ({
+            field: err.path || 'unknown',
+            message: err.message
+          }))
+        });
+      }
+
+      return res.status(500).json({
+        status: 'error',
+        message: 'Internal server error',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  },
+
+  getCurrentSubscription: async (req: ExpressRequest, res: Response) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({
+          status: 'error',
+          message: 'Authentication required'
+        });
+      }
+
+      if (!req.user.estate_id) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'User is not linked to an estate'
+        });
+      }
+
+      const result = await subscriptionService.getCurrentSubscriptionForEstate(req.user.estate_id);
+      return res.status(result.statusCode).json(result);
     } catch (error) {
       return res.status(500).json({
         status: 'error',

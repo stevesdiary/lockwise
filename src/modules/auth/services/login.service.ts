@@ -1,11 +1,14 @@
-import bcrypt from "bcrypt";
-import jwt, { SignOptions } from "jsonwebtoken";
-import cookieParser from "cookie-parser";
+import jwt from "jsonwebtoken";
 import { Response } from "express";
 import { User } from "../models/user.model";
 import { Role } from "../models/role.model";
-import { saveToRedis } from "../../../shared/core/redis";
+import { Resident } from "../../estate/models/resident.model";
+import { Unit } from "../../estate/models/unit.model";
+import { Street } from "../../estate/models/street.model";
+import { Estate } from "../../estate/models/estate.model";
 import sessionService from "./session.service";
+
+const getBcrypt = async () => (await import('bcryptjs')).default;
 
 // Define environment variables with proper types
 const jwtExpiry: string | number = process.env.JWT_EXPIRY || "1h";
@@ -15,37 +18,48 @@ const refreshSecret: string = process.env.REFRESH_TOKEN_SECRET || 'refresh_secre
 
 export const loginUser = async (email: string, password: string) => {
   try {
+    const bcrypt = await getBcrypt();
     const user = await User.findOne({ 
       where: { email },
-      include: [{ model: Role, as: 'role' }]
+      include: [
+        { model: Role, as: 'role' },
+        { model: Estate, as: 'estate', attributes: ['estate_id', 'name'] },
+        {
+          model: Resident,
+          as: 'residentProfile',
+          required: false,
+          include: [{
+            model: Unit,
+            as: 'unit',
+            attributes: ['id', 'unit_identifier', 'block'],
+            required: false,
+            include: [{
+              model: Street,
+              as: 'street',
+              attributes: ['street_id', 'name'],
+              required: false
+            }]
+          }]
+        }
+      ]
     });
     
     if (!user) {
-      return {
-        statusCode: 401,
-        message: 'Invalid email or password'
-      };
+      return { statusCode: 401, message: 'Invalid email or password' };
     }
 
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
-      return {
-        statusCode: 401,
-        message: 'Invalid email or password'
-      };
+      return { statusCode: 401, message: 'Invalid email or password' };
     }
 
-    // Create session
     const sessionData = await sessionService.createSession(user.id, {
       userId: user.id,
       estateId: user.estate_id || '',
       role: user.role?.role || 'resident'
     });
     if (!sessionData) {
-      return {
-        statusCode: 429,
-        message: 'Maximum concurrent sessions reached'
-      };
+      return { statusCode: 429, message: 'Maximum concurrent sessions reached' };
     }
 
     const token = jwt.sign(
@@ -56,9 +70,12 @@ export const loginUser = async (email: string, password: string) => {
         estate_id: user.estate_id,
         sessionId: sessionData.sessionId
       },
-      process.env.JWT_SECRET || 'default_secret',
+      process.env.JWT_SECRET || jwtSecret,
       { expiresIn: '15m' }
     );
+
+    const resident = user.residentProfile;
+    const unit = resident?.unit;
 
     return {
       statusCode: 200,
@@ -70,8 +87,15 @@ export const loginUser = async (email: string, password: string) => {
           first_name: user.first_name,
           last_name: user.last_name,
           phone: user.phone,
+          profile_picture: user.profile_picture,
+          role: user.role?.role,
+          user_type: user.user_type,
           estate_id: user.estate_id,
-          role: user.role?.role
+          estate_name: user.estate?.name ?? null,
+          unit_id: unit?.id ?? null,
+          unit_number: unit?.unit_identifier ?? null,
+          block: unit?.block ?? null,
+          street_name: unit?.street?.name ?? null,
         },
         token
       }

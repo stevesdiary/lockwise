@@ -1,10 +1,12 @@
-import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { User } from '../../auth/models/user.model';
 import { Role } from '../../auth/models/role.model';
 import SessionService from './session.service';
 
+const getBcrypt = async () => (await import('bcryptjs')).default;
+
 export const loginService = async (email: string, password: string, deviceInfo?: string) => {
+  const bcrypt = await getBcrypt();
   const user = await User.findOne({ 
     where: { email },
     include: [{ model: Role, as: 'role' }]

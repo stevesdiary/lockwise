@@ -20,8 +20,12 @@ export class Subscription extends Model {
   declare id: string;
 
   @ForeignKey(() => Estate)
-  @Column(DataType.UUID)
-  declare estata_id: string;
+  @Column({
+    type: DataType.UUID,
+    field: 'estate_id',
+    allowNull: false
+  })
+  declare estate_id: string;
 
   @ForeignKey(() => Plan)
   @Column({

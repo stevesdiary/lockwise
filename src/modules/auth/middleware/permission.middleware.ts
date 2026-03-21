@@ -1,14 +1,6 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import { UserRole, Permission, Resource, hasPermission } from '../../../shared/constants/permissions';
-
-interface AuthRequest extends Request {
-  user?: {
-    id: string;
-    email: string;
-    role: string;
-    sessionId: string;
-  };
-}
+import { AuthRequest } from './auth.middleware';
 
 export const requirePermission = (resource: Resource, permission: Permission) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {

@@ -5,8 +5,8 @@ import accessLogService from '../services/access-log.service';
 // Create access request
 async function createAccessRecord(req: Request, res: Response) {
   try {
-    const user_id = req.user.id;
-    const estate_id = req.user.estate_id;
+    const user_id = req.user!.id;
+    const estate_id = req.user!.estate_id;
     const { scheduled_entry_date, scheduled_exit_date, vehicle_number, remarks, is_multi_entry, max_entries, access_type, valid_from, valid_until } = req.body;
     
     // For unlimited entry types, set is_multi_entry to true automatically

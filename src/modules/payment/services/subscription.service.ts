@@ -1,13 +1,15 @@
-import { nanoid } from 'nanoid';
 import { Subscription } from '../../payment/models/subscription.model';
 import { Plan } from '../../payment/models/plan.model';
 import { Estate } from '../../estate/models/estate.model';
 import { paymentService } from '../../payment/services/payment.service';
+import { Op } from 'sequelize';
 
 interface SubscriptionData {
   estate_id: string;
   plan_id: string;
   payment_method?: string;
+  payment_provider?: 'paystack';
+  user_id: string;
   user_email: string;
 }
 
@@ -24,7 +26,7 @@ class SubscriptionService {
       // Check for existing active subscription
       const existingSubscription = await Subscription.findOne({
         where: {
-          estata_id: data.estate_id,
+          estate_id: data.estate_id,
           status: 'active'
         }
       });
@@ -33,14 +35,13 @@ class SubscriptionService {
         throw new Error('Estate already has an active subscription');
       }
 
-      // Create pending subscription
+      // Create pending subscription (paid_on set when payment completes)
       const subscription = await Subscription.create({
-        estata_id: data.estate_id,
+        estate_id: data.estate_id,
         plan_id: data.plan_id,
         status: 'inactive',
         start_date: new Date(),
         end_date: new Date(),
-        paid_on: new Date(),
       });
 
       // Initiate payment for subscription
@@ -48,12 +49,15 @@ class SubscriptionService {
         amount: parseFloat(plan.price.toString()),
         email: data.user_email,
         currency: plan.currency || 'NGN',
+        payment_provider: data.payment_provider || 'paystack',
         payment_method: data.payment_method || 'card',
+        user_id: data.user_id,
         estate_id: data.estate_id,
         subscription_id: subscription.id,
       });
 
       if (paymentResult.statusCode !== 200) {
+        await subscription.destroy();
         throw new Error('Payment initialization failed');
       }
 
@@ -77,7 +81,7 @@ class SubscriptionService {
       const subscription = await Subscription.findOne({
         where: {
           id: subscriptionId,
-          estata_id: estateId,
+          estate_id: estateId,
         }
       });
 
@@ -104,7 +108,7 @@ class SubscriptionService {
     }
   }
 
-  async renewSubscription(subscriptionId: string, userEmail: string) {
+  async renewSubscription(subscriptionId: string, userId: string, userEmail: string) {
     try {
       const subscription = await Subscription.findByPk(subscriptionId, {
         include: [Plan, Estate]
@@ -122,8 +126,9 @@ class SubscriptionService {
         amount: parseFloat(plan.price.toString()),
         email: userEmail,
         currency: plan.currency || 'NGN',
+        user_id: userId,
         payment_method: 'card',
-        estate_id: estate.id,
+        estate_id: estate?.estate_id || (estate as any)?.id,
         subscription_id: subscription.id,
       });
 
@@ -145,7 +150,7 @@ class SubscriptionService {
   async getEstateSubscriptions(estateId: string) {
     try {
       const subscriptions = await Subscription.findAll({
-        where: { estata_id: estateId },
+        where: { estate_id: estateId },
         include: [Plan],
         order: [['created_at', 'DESC']],
       });
@@ -164,13 +169,58 @@ class SubscriptionService {
     }
   }
 
+  async getCurrentSubscriptionForEstate(estateId: string) {
+    try {
+      const subscription = await Subscription.findOne({
+        where: {
+          estate_id: estateId,
+          status: {
+            [Op.in]: ['active', 'inactive']
+          }
+        },
+        include: [Plan],
+        order: [['end_date', 'DESC']]
+      });
+
+      if (subscription) {
+        return {
+          statusCode: 200,
+          status: 'success',
+          message: 'Current subscription retrieved successfully',
+          data: subscription,
+        };
+      }
+
+      const latestSubscription = await Subscription.findOne({
+        where: { estate_id: estateId },
+        include: [Plan],
+        order: [['created_at', 'DESC']]
+      });
+
+      return {
+        statusCode: 200,
+        status: 'success',
+        message: latestSubscription
+          ? 'Latest subscription retrieved successfully'
+          : 'No subscription found for this estate',
+        data: latestSubscription || null,
+      };
+    } catch (error: any) {
+      return {
+        statusCode: 500,
+        status: 'error',
+        message: error.message || 'Failed to retrieve current subscription',
+      };
+    }
+  }
+
   async checkExpiredSubscriptions() {
     try {
       const expiredSubscriptions = await Subscription.findAll({
         where: {
           status: 'active',
           end_date: {
-            [require('sequelize').Op.lt]: new Date(),
+            [Op.lt]: new Date(),
           },
         },
       });

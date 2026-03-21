@@ -1,3 +1,4 @@
+import sequelize from '../../../shared/core/database';
 import { Role } from "../../auth/models/role.model";
 import { Permission } from "../../auth/models/permission.model";
 
@@ -120,14 +121,16 @@ export class RoleService {
         };
       }
 
-      // Create role-permission associations
+      // Atomically create all role-permission associations
       const { RolePermission } = require('../models/role.permission.model');
       const associations = permissionIds.map(permissionId => ({
         role_id: roleId,
         permission_id: permissionId
       }));
-      
-      await RolePermission.bulkCreate(associations, { ignoreDuplicates: true });
+
+      await sequelize.transaction(async (t) => {
+        await RolePermission.bulkCreate(associations, { ignoreDuplicates: true, transaction: t });
+      });
       
       return {
         status: 'success',

@@ -32,7 +32,6 @@ class CloudStorageService {
       Key: key,
       Body: buffer,
       ContentType: contentType,
-      ACL: 'public-read'
     });
 
     await this.s3Client.send(command);

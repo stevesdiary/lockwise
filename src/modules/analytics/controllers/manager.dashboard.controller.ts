@@ -132,7 +132,7 @@ const managerDashboardController = {
   approveAccessRequest: async (req: Request, res: Response) => {
     try {
       const access_id = asString(req.params.access_id);
-      await managerDashboardService.approveAccessRequest(access_id, req.user?.id);
+      await managerDashboardService.approveAccessRequest(access_id, req.user!.id);
       res.json({ status: 'success', message: 'Access approved' });
     } catch (error) {
       return handleControllerError(error, res);
@@ -142,7 +142,7 @@ const managerDashboardController = {
   revokeAccessRequest: async (req: Request, res: Response) => {
     try {
       const access_id = asString(req.params.access_id);
-      await managerDashboardService.revokeAccessRequest(access_id, req.user?.id);
+      await managerDashboardService.revokeAccessRequest(access_id, req.user!.id);
       res.json({ status: 'success', message: 'Access revoked' });
     } catch (error) {
       return handleControllerError(error, res);

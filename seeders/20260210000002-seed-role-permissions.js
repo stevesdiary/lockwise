@@ -97,7 +97,17 @@ module.exports = {
       'read:support', 'create:support', 'update:support'
     ]);
 
-    await queryInterface.bulkInsert('role_permissions', rolePermissions);
+    if (rolePermissions.length > 0) {
+      const values = rolePermissions
+        .filter(r => r.role_id && r.permission_id)
+        .map(r => `(gen_random_uuid(), '${r.role_id}', '${r.permission_id}', NOW(), NOW())`)
+        .join(',');
+      if (values) {
+        await queryInterface.sequelize.query(
+          `INSERT INTO role_permissions (id, role_id, permission_id, created_at, updated_at) VALUES ${values} ON CONFLICT (role_id, permission_id) DO NOTHING`
+        );
+      }
+    }
   },
 
   down: async (queryInterface) => {

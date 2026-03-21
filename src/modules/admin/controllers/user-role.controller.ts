@@ -1,15 +1,8 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { User } from '../../auth/models/user.model';
 import { Role } from '../../auth/models/role.model';
 import { asString } from '../../../shared/utils/param.util';
-
-interface AuthRequest extends Request {
-  user?: {
-    id: string;
-    role: string;
-    estate_id?: string;
-  };
-}
+import { AuthRequest } from '../../auth/middleware/auth.middleware';
 
 export const updateUserRole = async (req: AuthRequest, res: Response) => {
   try {

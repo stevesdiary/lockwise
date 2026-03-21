@@ -3,7 +3,7 @@ import { Estate } from '../../estate/models/estate.model';
 import { Unit } from '../../estate/models/unit.model';
 import { User } from '../../auth/models/user.model';
 
-@Table
+@Table({ tableName: 'residents', underscored: true })
 export class Resident extends Model<Resident> {
   @Column({
     type: DataType.UUID,
@@ -31,9 +31,9 @@ export class Resident extends Model<Resident> {
   @ForeignKey(() => Estate)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: true,
   })
-  declare estate_id: string;
+  declare estate_id: string | null;
 
   @BelongsTo(() => Estate)
   declare estate: Estate;
@@ -41,9 +41,9 @@ export class Resident extends Model<Resident> {
   @ForeignKey(() => Unit)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: true
   })
-  declare unit_id: string;
+  declare unit_id: string | null;
 
   @BelongsTo(() => User)
   declare user: User;

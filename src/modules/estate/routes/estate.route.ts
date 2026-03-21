@@ -20,10 +20,10 @@ estateRouter.get('/health', (req: ExpressRequest, res: Response) => {
 });
 
 // Estate routes - Requires authentication and verification
-// Only Master and Admin can create estates
-estateRouter.post('/register', 
+// Managers (and above) can create estates
+estateRouter.post('/register',
   authenticateToken,
-  requireAdmin,
+  requireManager,
   verifyUser,
   async (req: ExpressRequest, res: Response) => {
     await estateController.createEstate(req, res);

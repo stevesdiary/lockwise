@@ -1,11 +1,13 @@
-import bcrypt from 'bcrypt';
+import sequelize from '../../../shared/core/database';
 import { UserRepository } from '../repositories/user.repository';
 import { User } from '../models/user.model';
 import { Role } from '../models/role.model';
 import emailVerificationService from './email-verification.service';
-import { title } from 'process';
+import { Estate } from '../../estate/models/estate.model';
+import { Resident } from '../../estate/models/resident.model';
 
 const userRepository = new UserRepository();
+const getBcrypt = async () => (await import('bcryptjs')).default;
 
 // Cache for role mappings (loaded once at startup)
 let roleCache: Record<string, string> | null = null;
@@ -35,6 +37,7 @@ export const registerUser = async (userData: {
   role_id?: string;
 }) => {
   try {
+    const bcrypt = await getBcrypt();
     const existingUser = await userRepository.findUserByEmail(userData.email);
     if (existingUser) {
       return { statusCode: 400, message: 'User already exists' };
@@ -56,22 +59,36 @@ export const registerUser = async (userData: {
       }
     }
     
-    const user = await userRepository.create({
-      title: userData.title,
-      email: userData.email,
-      password: hashedPassword,
-      first_name: userData.first_name,
-      last_name: userData.last_name,
-      phone: userData.phone,
-      user_type: userData.user_type,
-      status: 'pending' as const,
-      verified: false,
-      oauth_enabled: false,
-      estate_id: estateId,
-      role_id: roleId
-    } as any);
+    // Atomically create user + resident profile — if resident creation fails, user is also rolled back
+    const user = await sequelize.transaction(async (t) => {
+      const newUser = await User.create({
+        title: userData.title,
+        email: userData.email,
+        password: hashedPassword,
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+        phone: userData.phone,
+        user_type: userData.user_type || 'resident',
+        status: 'pending' as const,
+        verified: false,
+        oauth_enabled: false,
+        estate_id: estateId,
+        role_id: roleId,
+      } as any, { transaction: t });
 
-    // Send verification code
+      if (userData.user_type === 'resident') {
+        await Resident.create({
+          user_id: newUser.id,
+          estate_id: estateId || null,
+          unit_id: null,
+          subscribed: false,
+        } as any, { transaction: t });
+      }
+
+      return newUser;
+    });
+
+    // Send verification code outside the transaction (external call)
     await emailVerificationService.sendVerificationCode(userData.email);
 
     return {
@@ -195,5 +212,44 @@ export const uploadAvatar = async (userId: string, file: Express.Multer.File) =>
   } catch (error: any) {
     console.error('Upload avatar error:', error);
     return { statusCode: 500, message: 'Failed to upload profile picture', error: error.message };
+  }
+};
+
+export const getCurrentUserEstate = async (userId: string) => {
+  try {
+    const user = await User.findByPk(userId, {
+      attributes: ['id', 'estate_id'],
+      include: [{
+        model: Estate,
+        as: 'estate',
+        attributes: [
+          'estate_id',
+          'estate_code',
+          'name',
+          'city',
+          'state',
+          'country',
+          'location_details',
+          'contact_info'
+        ]
+      }]
+    });
+
+    if (!user) {
+      return { statusCode: 404, success: false, message: 'User not found' };
+    }
+
+    if (!user.estate_id || !user.estate) {
+      return { statusCode: 404, success: false, message: 'No estate linked to this user' };
+    }
+
+    return {
+      statusCode: 200,
+      success: true,
+      data: user.estate
+    };
+  } catch (error: any) {
+    console.error('Get current user estate error:', error);
+    return { statusCode: 500, success: false, message: 'Failed to fetch estate details', error: error.message };
   }
 };

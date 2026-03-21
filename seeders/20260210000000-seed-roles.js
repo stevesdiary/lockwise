@@ -16,8 +16,8 @@ module.exports = {
       { id: randomUUID(), role: 'manager', description: 'Manager - Manage own estate only' },
       { id: randomUUID(), role: 'security', description: 'Security - Gate operations' },
       { id: randomUUID(), role: 'resident', description: 'Resident - Basic access' },
-      { id: randomUUID(), role: 'staff', description: 'Staff - Limited access' },
-      { id: randomUUID(), role: 'customer_support', description: 'Customer Support - Help desk operations' }
+      { id: randomUUID(), role: 'domestic_staff', description: 'Staff - Limited access' },
+      { id: randomUUID(), role: 'customer_service', description: 'Customer Support - Help desk operations' }
     ].filter(r => !existingRoleNames.includes(r.role));
 
     if (roles.length > 0) {

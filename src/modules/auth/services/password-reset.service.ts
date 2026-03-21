@@ -1,9 +1,10 @@
 import crypto from 'crypto';
-import bcrypt from 'bcrypt';
 import { User } from '../../auth/models/user.model';
 import notificationService from '../../communication/services/notification.service';
 import { pushNotificationService } from '../../communication/services/push-notification.service';
 import { deepLinkService } from '../../mobile/services/deep-link.service';
+
+const getBcrypt = async () => (await import('bcryptjs')).default;
 
 export const passwordResetService = {
   async requestReset(email: string): Promise<{ success: boolean; message: string }> {
@@ -49,6 +50,7 @@ export const passwordResetService = {
 
   async resetPassword(token: string, password: string): Promise<{ success: boolean; message: string }> {
     try {
+      const bcrypt = await getBcrypt();
       const user = await User.findOne({
         where: { reset_token: token },
         attributes: ['id', 'reset_expires']

@@ -1,6 +1,9 @@
 import { Request, Response } from 'express';
 import crypto from 'crypto';
 import { paymentService } from '../../payment/services/payment.service';
+import { Subscription } from '../models/subscription.model';
+import { Payment } from '../models/payment.model';
+import { Op } from 'sequelize';
 
 export const webhookController = {
   async paystackWebhook(req: Request, res: Response) {
@@ -41,34 +44,6 @@ export const webhookController = {
     }
   },
 
-  async flutterwaveWebhook(req: Request, res: Response) {
-    try {
-      const secretHash = process.env.FLUTTERWAVE_SECRET_HASH;
-      const signature = req.headers['verif-hash'];
-
-      if (!signature || signature !== secretHash) {
-        return res.status(400).json({ error: 'Invalid signature' });
-      }
-
-      const payload = req.body;
-
-      if (payload.event === 'charge.completed') {
-        if (payload.data.status === 'successful') {
-          await handleSuccessfulPayment(payload.data);
-        } else {
-          await handleFailedPayment(payload.data);
-        }
-      } else {
-        console.log('Unhandled Flutterwave event:', payload.event?.replace(/[\r\n]/g, '') || 'unknown');
-      }
-
-      res.status(200).json({ status: 'success' });
-    } catch (error: any) {
-      const sanitizedError = error?.message?.replace(/[\r\n]/g, '') || 'Unknown error';
-      console.error('Flutterwave webhook error:', sanitizedError);
-      res.status(500).json({ error: 'Webhook processing failed' });
-    }
-  }
 };
 
 // Helper functions
@@ -105,8 +80,19 @@ async function handleFailedPayment(data: any) {
 
 async function handleSubscriptionCreated(data: any) {
   try {
-    console.log('Subscription created:', data);
-    // Handle subscription creation logic
+    const subscription = await findSubscriptionFromWebhookData(data);
+    if (!subscription) {
+      console.warn('Subscription created event received but no local subscription was matched');
+      return;
+    }
+
+    await subscription.update({
+      status: 'active',
+      auto_renew: true,
+      cancel_reason: null,
+    });
+
+    console.log('Subscription activated:', subscription.id);
   } catch (error: any) {
     const sanitizedError = error?.message?.replace(/[\r\n]/g, '') || 'Unknown error';
     console.error('Error handling subscription creation:', sanitizedError);
@@ -115,10 +101,62 @@ async function handleSubscriptionCreated(data: any) {
 
 async function handleSubscriptionDisabled(data: any) {
   try {
-    console.log('Subscription disabled:', data);
-    // Handle subscription cancellation logic
+    const subscription = await findSubscriptionFromWebhookData(data);
+    if (!subscription) {
+      console.warn('Subscription disable event received but no local subscription was matched');
+      return;
+    }
+
+    const reason = data?.reason || data?.status || 'Subscription disabled by provider';
+    await subscription.update({
+      status: 'cancelled',
+      auto_renew: false,
+      cancel_reason: reason,
+    });
+
+    console.log('Subscription cancelled:', subscription.id);
   } catch (error: any) {
     const sanitizedError = error?.message?.replace(/[\r\n]/g, '') || 'Unknown error';
     console.error('Error handling subscription cancellation:', sanitizedError);
   }
+}
+
+async function findSubscriptionFromWebhookData(data: any): Promise<Subscription | null> {
+  const metadata = data?.metadata || data?.meta || {};
+  const subscriptionId =
+    metadata?.subscription_id ||
+    metadata?.subscriptionId ||
+    data?.subscription_id ||
+    data?.subscriptionId;
+
+  if (subscriptionId && typeof subscriptionId === 'string') {
+    const byId = await Subscription.findByPk(subscriptionId);
+    if (byId) return byId;
+  }
+
+  const customerEmail =
+    data?.customer?.email ||
+    data?.customer_email ||
+    data?.email ||
+    metadata?.email;
+
+  if (!customerEmail || typeof customerEmail !== 'string') {
+    return null;
+  }
+
+  const latestPayment = await Payment.findOne({
+    where: {
+      email: customerEmail,
+      subscription_id: {
+        [Op.ne]: null,
+      },
+    },
+    order: [['created_at', 'DESC']],
+  });
+
+  if (!latestPayment?.subscription_id) {
+    return null;
+  }
+
+  return Subscription.findByPk(latestPayment.subscription_id);
 }
