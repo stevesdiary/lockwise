@@ -62,7 +62,7 @@ class EstateService {
     }
   }
 
-  async getOneEstate(estate_id: string, estate_code?: string): Promise<ApiResponse | null> {
+  async getOneEstate(estate_id: string): Promise<ApiResponse | null> {
     try {
       if (!estate_id) {
         return {
