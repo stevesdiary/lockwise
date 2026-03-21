@@ -321,6 +321,10 @@ class EstateController {
           message: 'estateId, gate_name, and gate_type are required',
         });
       }
+      const estateCheck = await estateService.getOneEstate(estateId);
+      if (!estateCheck?.data) {
+        return res.status(404).json({ success: false, message: 'Estate not found' });
+      }
       const result = await gateService.createGate(estateId, { gate_name, gate_type, access_control_type });
       return res.status(result.success ? 201 : 400).json(result);
     } catch (error) {

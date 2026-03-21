@@ -43,6 +43,11 @@ describe('GateService', () => {
       expect(result.data.gate_code).toMatch(/^GATE-/);
       expect(result.data.gate_name).toBe('Main Gate');
       expect(result.data.gate_type).toBe('main');
+      expect(MockGate.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          gate_code: expect.stringMatching(/^GATE-[A-Z0-9]{8}$/),
+        })
+      );
     });
 
     it('should create gate with default access_control_type if not provided', async () => {
