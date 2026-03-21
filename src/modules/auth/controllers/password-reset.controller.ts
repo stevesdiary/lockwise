@@ -3,7 +3,7 @@ import { passwordResetService } from '../services/password-reset.service';
 import { AuthRequest } from '../middleware/auth.middleware';
 import { User } from '../models/user.model';
 
-const getBcrypt = async () => (await import('bcrypt')).default;
+const getBcrypt = async () => (await import('bcryptjs')).default;
 
 export const passwordResetController = {
   async requestReset(req: Request, res: Response) {

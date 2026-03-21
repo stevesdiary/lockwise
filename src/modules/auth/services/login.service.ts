@@ -8,7 +8,7 @@ import { Street } from "../../estate/models/street.model";
 import { Estate } from "../../estate/models/estate.model";
 import sessionService from "./session.service";
 
-const getBcrypt = async () => (await import('bcrypt')).default;
+const getBcrypt = async () => (await import('bcryptjs')).default;
 
 // Define environment variables with proper types
 const jwtExpiry: string | number = process.env.JWT_EXPIRY || "1h";
@@ -70,7 +70,7 @@ export const loginUser = async (email: string, password: string) => {
         estate_id: user.estate_id,
         sessionId: sessionData.sessionId
       },
-      process.env.JWT_SECRET || 'default_secret',
+      process.env.JWT_SECRET || jwtSecret,
       { expiresIn: '15m' }
     );
 

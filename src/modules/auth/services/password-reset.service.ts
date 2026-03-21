@@ -4,7 +4,7 @@ import notificationService from '../../communication/services/notification.servi
 import { pushNotificationService } from '../../communication/services/push-notification.service';
 import { deepLinkService } from '../../mobile/services/deep-link.service';
 
-const getBcrypt = async () => (await import('bcrypt')).default;
+const getBcrypt = async () => (await import('bcryptjs')).default;
 
 export const passwordResetService = {
   async requestReset(email: string): Promise<{ success: boolean; message: string }> {

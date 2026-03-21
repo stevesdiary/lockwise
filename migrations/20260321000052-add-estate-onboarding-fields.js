@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = {
-  async up(queryInterface, Sequelize) {
+  up: async (queryInterface, Sequelize) => {
     // 1. Add 'draft' to the estates.status ENUM
     await queryInterface.sequelize.query(
       `ALTER TYPE "enum_estates_status" ADD VALUE IF NOT EXISTS 'draft'`
@@ -22,7 +22,7 @@ module.exports = {
     });
   },
 
-  async down(queryInterface) {
+  down: async (queryInterface) => {
     await queryInterface.removeColumn('estates', 'setup_checklist');
     await queryInterface.removeColumn('estates', 'onboarding_step');
     // Note: Postgres does not support removing ENUM values natively.

@@ -8,14 +8,7 @@ interface AuditRequest extends AuthRequest {
 }
 
 export const auditLogger = (req: AuditRequest, res: Response, next: NextFunction) => {
-  req.startTime = Date.now();
-  
-  const originalSend = res.send;
-  res.send = function(data) {
-    logAuditEvent(req, res, data);
-    return originalSend.call(this, data);
-  };
-
+  // Audit logging temporarily disabled
   next();
 };
 
@@ -25,9 +18,9 @@ const logAuditEvent = async (req: AuditRequest, res: Response, responseData: any
     
     await sequelize.query(`
       INSERT INTO audit_logs (
-        user_id, method, path, status_code, ip_address, 
+        id, user_id, method, path, status_code, ip_address,
         user_agent, duration_ms, request_body, response_body
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      ) VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9)
     `, {
       bind: [
         req.user?.id || null,

@@ -3,7 +3,7 @@ import { Role } from '../../auth/models/role.model';
 import crypto from 'crypto';
 
 type UserRole = 'resident' | 'admin' | 'manager' | 'security' | 'super_admin' | 'customer_service';
-const getBcrypt = async () => (await import('bcrypt')).default;
+const getBcrypt = async () => (await import('bcryptjs')).default;
 
 export const adminService = {
   async createAdmin(data: {

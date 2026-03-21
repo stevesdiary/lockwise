@@ -7,7 +7,7 @@ import { Estate } from '../../estate/models/estate.model';
 import { Resident } from '../../estate/models/resident.model';
 
 const userRepository = new UserRepository();
-const getBcrypt = async () => (await import('bcrypt')).default;
+const getBcrypt = async () => (await import('bcryptjs')).default;
 
 // Cache for role mappings (loaded once at startup)
 let roleCache: Record<string, string> | null = null;
@@ -68,7 +68,7 @@ export const registerUser = async (userData: {
         first_name: userData.first_name,
         last_name: userData.last_name,
         phone: userData.phone,
-        user_type: userData.user_type,
+        user_type: userData.user_type || 'resident',
         status: 'pending' as const,
         verified: false,
         oauth_enabled: false,
