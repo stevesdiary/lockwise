@@ -270,6 +270,20 @@ class EmailService {
       data,
     });
   }
+
+  // Stub: notifies an admin that a new estate has been submitted for review.
+  // Full template will be wired in Task 8.
+  async sendEstateSubmittedEmail(
+    to: string,
+    data: {
+      admin_name: string;
+      estate_name: string;
+    }
+  ): Promise<boolean> {
+    // TODO (Task 8): replace with a real 'estateSubmitted' email template
+    console.log(`[EmailService] estate submitted notification → ${to}: estate "${data.estate_name}" submitted for review`);
+    return true;
+  }
 }
 
 export default new EmailService();

@@ -207,6 +207,23 @@ class EstateController {
     }
   }
 
+  async updateOnboardingStep(req: AuthRequest, res: Response): Promise<Response> {
+    try {
+      const estateId = asString(req.params.estateId);
+      const { step, status } = req.body as { step: number; status?: string };
+      const userId = req.user!.id;
+
+      if (!estateId || typeof step !== 'number') {
+        return res.status(400).json({ success: false, message: 'estateId and step are required' });
+      }
+
+      const result = await estateService.updateOnboardingStep(estateId, userId, step, status);
+      return res.status(result.statusCode || (result.success ? 200 : 400)).json(result);
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  }
+
   async deleteEstate(req: AuthRequest, res: Response) {
     try {
       const result = await estateService.deleteEstate(asString(req.params.estateId));

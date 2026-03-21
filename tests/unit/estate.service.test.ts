@@ -1,5 +1,5 @@
-// Unit test for getOneEstate — verifies the method accepts estate_id alone (no estate_code required)
-// We spy directly on the private estateRepository instance inside the service singleton.
+// Unit tests for estate service methods.
+// All Sequelize models are mocked so tests run without a real DB.
 
 jest.mock('../../src/modules/payment/models/referrer.model', () => ({
   Referrer: { findOne: jest.fn() },
@@ -10,15 +10,34 @@ jest.mock('../../src/modules/estate/models/estate.model', () => ({
     findAll: jest.fn(),
     findByPk: jest.fn(),
     findOne: jest.fn(),
+    update: jest.fn(),
   },
 }));
 jest.mock('../../src/modules/auth/models/user.model', () => ({
-  User: { update: jest.fn() },
+  User: {
+    update: jest.fn(),
+    findAll: jest.fn(),
+  },
+}));
+jest.mock('../../src/modules/auth/models/role.model', () => ({
+  Role: {},
 }));
 jest.mock('../../src/shared/core/database', () => ({
   __esModule: true,
   default: {
     transaction: jest.fn((cb: (t: any) => Promise<any>) => cb({ /* mock transaction */ })),
+  },
+}));
+jest.mock('../../src/modules/communication/services/email.service', () => ({
+  __esModule: true,
+  default: {
+    sendEstateSubmittedEmail: jest.fn().mockResolvedValue(true),
+  },
+}));
+jest.mock('../../src/modules/communication/services/notification.service', () => ({
+  __esModule: true,
+  default: {
+    sendNotification: jest.fn().mockResolvedValue(undefined),
   },
 }));
 
@@ -27,8 +46,10 @@ import { User } from '../../src/modules/auth/models/user.model';
 import estateService from '../../src/modules/estate/services/estate.service';
 
 const MockUser = User as jest.Mocked<typeof User>;
-
 const MockEstate = Estate as jest.Mocked<typeof Estate>;
+
+// Helper: spy on the private estateRepository inside the service singleton
+// The repository calls Estate.findByPk; we mock that directly.
 
 describe('getOneEstate', () => {
   beforeEach(() => {
@@ -121,5 +142,94 @@ describe('createEstate (draft)', () => {
       { estate_id: 'new-estate-uuid' },
       expect.objectContaining({ where: { id: 'test-user-uuid' }, transaction: expect.anything() })
     );
+  });
+});
+
+describe('updateOnboardingStep', () => {
+  const estateId = 'test-estate-uuid';
+  const userId = 'test-user-uuid';
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    // Default: estate repository (findByPk) returns a draft estate
+    (MockEstate.findByPk as jest.Mock).mockResolvedValue({
+      estate_id: estateId,
+      name: 'Test Estate',
+      status: 'draft',
+      onboarding_step: 1,
+    });
+    (MockEstate.update as jest.Mock).mockResolvedValue([1]);
+    (MockUser.findAll as jest.Mock).mockResolvedValue([]);
+  });
+
+  it('should advance onboarding_step and return success', async () => {
+    const result = await estateService.updateOnboardingStep(estateId, userId, 2);
+
+    expect(result.success).toBe(true);
+    expect(result.message).toBe('Onboarding step updated');
+    expect(MockEstate.update).toHaveBeenCalledWith(
+      expect.objectContaining({ onboarding_step: 2 }),
+      expect.objectContaining({ where: { estate_id: estateId } })
+    );
+  });
+
+  it('should flip status to pending when status="pending" passed on a draft estate', async () => {
+    const result = await estateService.updateOnboardingStep(estateId, userId, 3, 'pending');
+
+    expect(result.success).toBe(true);
+    expect(MockEstate.update).toHaveBeenCalledWith(
+      expect.objectContaining({ onboarding_step: 3, status: 'pending' }),
+      expect.objectContaining({ where: { estate_id: estateId } })
+    );
+  });
+
+  it('should return 409 if estate is already in pending status', async () => {
+    // Override the mock to simulate estate already in 'pending' status
+    (MockEstate.findByPk as jest.Mock).mockResolvedValue({
+      estate_id: estateId,
+      name: 'Test Estate',
+      status: 'pending',
+      onboarding_step: 3,
+    });
+
+    const result = await estateService.updateOnboardingStep(estateId, userId, 3, 'pending');
+
+    expect(result.success).toBe(false);
+    expect(result.statusCode).toBe(409);
+    expect(result.message).toBe('Estate is not in draft status');
+  });
+
+  it('should return 404 if estate is not found', async () => {
+    (MockEstate.findByPk as jest.Mock).mockResolvedValue(null);
+
+    const result = await estateService.updateOnboardingStep('nonexistent-id', userId, 2);
+
+    expect(result.success).toBe(false);
+    expect(result.statusCode).toBe(404);
+    expect(result.message).toBe('Estate not found');
+  });
+
+  it('should not set status when status argument is omitted', async () => {
+    await estateService.updateOnboardingStep(estateId, userId, 2);
+
+    const updateCall = (MockEstate.update as jest.Mock).mock.calls[0][0];
+    expect(updateCall).not.toHaveProperty('status');
+  });
+
+  it('should attempt to notify admins when flipping to pending', async () => {
+    const mockAdmin = { email: 'admin@lockwise.com', first_name: 'Admin' };
+    (MockUser.findAll as jest.Mock).mockResolvedValue([mockAdmin]);
+
+    const emailService = require('../../src/modules/communication/services/email.service').default;
+    const notificationService = require('../../src/modules/communication/services/notification.service').default;
+
+    await estateService.updateOnboardingStep(estateId, userId, 3, 'pending');
+
+    expect(MockUser.findAll).toHaveBeenCalled();
+    expect(emailService.sendEstateSubmittedEmail).toHaveBeenCalledWith(
+      'admin@lockwise.com',
+      expect.objectContaining({ estate_name: 'Test Estate' })
+    );
+    expect(notificationService.sendNotification).toHaveBeenCalled();
   });
 });

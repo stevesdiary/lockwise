@@ -151,10 +151,18 @@ estateRouter.put('/update/:estateId',
   }
 );
 
-estateRouter.delete('/delete/:estateId', 
+estateRouter.delete('/delete/:estateId',
   authenticateToken,
   async (req: ExpressRequest, res: Response) => {
     await estateController.deleteEstate(req, res);
+  }
+);
+
+estateRouter.patch('/:estateId/onboarding-step',
+  authenticateToken,
+  requireManager,
+  async (req: ExpressRequest, res: Response) => {
+    await estateController.updateOnboardingStep(req, res);
   }
 );
 
