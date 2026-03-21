@@ -151,10 +151,24 @@ export class Estate extends Model<EstateAttributes, EstateCreationAttributes> {
   declare number_of_staff: number;
 
   @Column({
-    type: DataType.ENUM('active', 'inactive', 'under_maintenance', 'suspended', 'pending'),
+    type: DataType.ENUM('active', 'inactive', 'under_maintenance', 'suspended', 'pending', 'draft'),
     defaultValue: 'pending'
   })
   declare status: string;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+    defaultValue: 1,
+  })
+  declare onboarding_step: number;
+
+  @Column({
+    type: DataType.JSONB,
+    allowNull: true,
+    defaultValue: { gates_configured: false, residents_invited: false },
+  })
+  declare setup_checklist: { gates_configured: boolean; residents_invited: boolean };
 
   @Column({
     type: DataType.JSONB,
