@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { AuthRequest } from '../../auth/middleware/auth.middleware';
 import { createEstateSchema } from '../../../shared/utils/validator';
 import estateService from '../../estate/services/estate.service';
+import gateService from '../services/gate.service';
 import { errorHandler, handleControllerError } from '../../../shared/middleware/error-handler.middleware';
 import { idSchema } from '../../../shared/schemas/validation.schema';
 import { customAlphabet } from 'nanoid';
@@ -307,6 +308,36 @@ class EstateController {
         message: 'Failed to delete estate',
         error: error
       });
+    }
+  }
+
+  async createGate(req: AuthRequest, res: Response): Promise<Response> {
+    try {
+      const estateId = asString(req.params.estateId);
+      const { gate_name, gate_type, access_control_type } = req.body;
+      if (!estateId || !gate_name || !gate_type) {
+        return res.status(400).json({
+          success: false,
+          message: 'estateId, gate_name, and gate_type are required',
+        });
+      }
+      const result = await gateService.createGate(estateId, { gate_name, gate_type, access_control_type });
+      return res.status(result.success ? 201 : 400).json(result);
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  }
+
+  async getGates(req: AuthRequest, res: Response): Promise<Response> {
+    try {
+      const estateId = asString(req.params.estateId);
+      if (!estateId) {
+        return res.status(400).json({ success: false, message: 'estateId is required' });
+      }
+      const result = await gateService.getGates(estateId);
+      return res.status(200).json(result);
+    } catch (error) {
+      return handleControllerError(error, res);
     }
   }
 }

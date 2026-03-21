@@ -176,4 +176,20 @@ estateRouter.patch('/:estateId/setup-checklist',
   }
 );
 
+estateRouter.post('/:estateId/gates',
+  authenticateToken,
+  requireManager,
+  async (req: ExpressRequest, res: Response) => {
+    await estateController.createGate(req, res);
+  }
+);
+
+estateRouter.get('/:estateId/gates',
+  authenticateToken,
+  requireManager,
+  async (req: ExpressRequest, res: Response) => {
+    await estateController.getGates(req, res);
+  }
+);
+
 export default estateRouter;
