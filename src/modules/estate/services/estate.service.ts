@@ -9,6 +9,7 @@ import { Role } from '../../auth/models/role.model';
 import sequelize from '../../../shared/core/database';
 import emailService from '../../communication/services/email.service';
 import notificationService from '../../communication/services/notification.service';
+import logger from '../../../shared/utils/logger';
 
 class EstateService {
   private estateRepository: EstateRepository;
@@ -248,6 +249,7 @@ class EstateService {
 
   async updateOnboardingStep(
     estateId: string,
+    // userId is accepted for future ownership-check extension; auth enforced at route middleware layer
     userId: string,
     step: number,
     status?: string
@@ -282,27 +284,39 @@ class EstateService {
 
   private async notifyAdminsOnEstateSubmit(estate: any): Promise<void> {
     try {
+      // Use a subquery via direct FK lookup — avoids relying on a Sequelize association
+      // being registered at runtime, which may silently fail if the include is not set up.
+      const adminRoles = await Role.findAll({
+        where: { role: { [Op.in]: ['admin', 'super_admin'] } },
+        attributes: ['id'],
+      });
+      const adminRoleIds = adminRoles.map((r: any) => r.id);
       const admins = await User.findAll({
-        include: [{ model: Role, where: { role: { [Op.in]: ['admin', 'super_admin'] } } }],
+        where: { role_id: { [Op.in]: adminRoleIds } },
       });
 
       for (const admin of admins) {
-        await emailService.sendEstateSubmittedEmail(admin.email, {
-          admin_name: (admin as any).first_name || admin.email,
-          estate_name: estate.name,
-        });
+        try {
+          await emailService.sendEstateSubmittedEmail(admin.email, {
+            admin_name: (admin as any).first_name || admin.email,
+            estate_name: estate.name,
+          });
 
-        await notificationService.sendNotification({
-          type: 'email',
-          to: admin.email,
-          template: 'estateSubmitted',
-          data: { admin_name: (admin as any).first_name || admin.email, estate_name: estate.name },
-          priority: 'high',
-        });
+          await notificationService.sendNotification({
+            type: 'email',
+            to: admin.email,
+            template: 'estateSubmitted',
+            data: { admin_name: (admin as any).first_name || admin.email, estate_name: estate.name },
+            priority: 'high',
+          });
+        } catch (err) {
+          // Non-fatal — one admin failing to notify must not block the rest
+          logger.error('Failed to notify admin on estate submit', { email: admin.email, error: err });
+        }
       }
     } catch (err) {
       // Non-fatal — log and continue
-      console.error('Failed to notify admins on estate submit:', err);
+      logger.error('Failed to notify admins on estate submit', { error: err });
     }
   }
 }

@@ -20,7 +20,9 @@ jest.mock('../../src/modules/auth/models/user.model', () => ({
   },
 }));
 jest.mock('../../src/modules/auth/models/role.model', () => ({
-  Role: {},
+  Role: {
+    findAll: jest.fn(),
+  },
 }));
 jest.mock('../../src/shared/core/database', () => ({
   __esModule: true,
@@ -43,10 +45,12 @@ jest.mock('../../src/modules/communication/services/notification.service', () =>
 
 import { Estate } from '../../src/modules/estate/models/estate.model';
 import { User } from '../../src/modules/auth/models/user.model';
+import { Role } from '../../src/modules/auth/models/role.model';
 import estateService from '../../src/modules/estate/services/estate.service';
 
 const MockUser = User as jest.Mocked<typeof User>;
 const MockEstate = Estate as jest.Mocked<typeof Estate>;
+const MockRole = Role as jest.Mocked<typeof Role>;
 
 // Helper: spy on the private estateRepository inside the service singleton
 // The repository calls Estate.findByPk; we mock that directly.
@@ -159,6 +163,7 @@ describe('updateOnboardingStep', () => {
       onboarding_step: 1,
     });
     (MockEstate.update as jest.Mock).mockResolvedValue([1]);
+    (MockRole.findAll as jest.Mock).mockResolvedValue([]);
     (MockUser.findAll as jest.Mock).mockResolvedValue([]);
   });
 
@@ -217,7 +222,9 @@ describe('updateOnboardingStep', () => {
   });
 
   it('should attempt to notify admins when flipping to pending', async () => {
+    const mockAdminRole = { id: 'role-admin-uuid' };
     const mockAdmin = { email: 'admin@lockwise.com', first_name: 'Admin' };
+    (MockRole.findAll as jest.Mock).mockResolvedValue([mockAdminRole]);
     (MockUser.findAll as jest.Mock).mockResolvedValue([mockAdmin]);
 
     const emailService = require('../../src/modules/communication/services/email.service').default;
@@ -225,6 +232,7 @@ describe('updateOnboardingStep', () => {
 
     await estateService.updateOnboardingStep(estateId, userId, 3, 'pending');
 
+    expect(MockRole.findAll).toHaveBeenCalled();
     expect(MockUser.findAll).toHaveBeenCalled();
     expect(emailService.sendEstateSubmittedEmail).toHaveBeenCalledWith(
       'admin@lockwise.com',
