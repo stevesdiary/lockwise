@@ -93,18 +93,13 @@ class EstateController {
   async getEstateById(req: AuthRequest, res: Response): Promise<Response> {
     try {
       const estateId = asString(req.params.estateId);
-      const estate_code = asString(req.params.estate_code);
-      if (!estateId || !estate_code) {
+      if (!estateId) {
         return res.status(400).json({
           status: 'fail',
           message: 'Estate ID is required'
         });
       }
-      const getEstateData = {
-        estate_id: estateId,
-        estate_code: estate_code
-      };
-      const estate = await estateService.getOneEstate(getEstateData.estate_id, getEstateData.estate_code);
+      const estate = await estateService.getOneEstate(estateId);
       return res.json(estate);
     } catch (error) {
       console.error('Get estate by ID error:', error);

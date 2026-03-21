@@ -62,12 +62,12 @@ class EstateService {
     }
   }
 
-  async getOneEstate(estate_id: string, estate_code: string): Promise<ApiResponse | null> {
+  async getOneEstate(estate_id: string, estate_code?: string): Promise<ApiResponse | null> {
     try {
-      if (!estate_id || !estate_code) {
+      if (!estate_id) {
         return {
           success: false,
-          message: 'Estate ID or Code is required',
+          message: 'Estate ID is required',
           data: null
         };
       }
