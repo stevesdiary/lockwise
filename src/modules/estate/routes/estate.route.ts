@@ -75,7 +75,7 @@ estateRouter.post('/invite/:estateId',
   }
 );
 
-estateRouter.post('/validate-invite', 
+estateRouter.post('/validate-invite',
   async (req: ExpressRequest, res: Response) => {
     try {
       const { token } = req.body;
@@ -87,6 +87,13 @@ estateRouter.post('/validate-invite',
     } catch (error) {
       res.status(500).json({ valid: false, message: 'Failed to validate invitation' });
     }
+  }
+);
+
+estateRouter.post('/join-by-invite',
+  authenticateToken,
+  async (req: ExpressRequest, res: Response) => {
+    await estateController.joinByInvitation(req, res);
   }
 );
 

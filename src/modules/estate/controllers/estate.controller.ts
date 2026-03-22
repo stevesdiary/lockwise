@@ -3,10 +3,12 @@ import { AuthRequest } from '../../auth/middleware/auth.middleware';
 import { createEstateSchema } from '../../../shared/utils/validator';
 import estateService from '../../estate/services/estate.service';
 import gateService from '../services/gate.service';
+import estateInvitationService from '../services/estate-invitation.service';
 import { errorHandler, handleControllerError } from '../../../shared/middleware/error-handler.middleware';
 import { idSchema } from '../../../shared/schemas/validation.schema';
 import { customAlphabet } from 'nanoid';
 import { asString } from '../../../shared/utils/param.util';
+import { User } from '../../auth/models/user.model';
 
 class EstateController {
   async createEstate(req: AuthRequest, res: Response) {
@@ -366,6 +368,33 @@ class EstateController {
       }
       const result = await gateService.getGates(estateId);
       return res.status(200).json(result);
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  }
+
+  async joinByInvitation(req: AuthRequest, res: Response): Promise<Response> {
+    try {
+      const { token } = req.body;
+      if (!token) {
+        return res.status(400).json({ success: false, message: 'Invitation token is required' });
+      }
+
+      // Validate the token
+      const validation = await estateInvitationService.validateInvitationToken(token);
+      if (!validation.valid || !validation.estate_id) {
+        return res.status(400).json({ success: false, message: validation.message || 'Invalid or expired invitation' });
+      }
+
+      // Link user to estate
+      const userId = req.user!.id;
+      await User.update({ estate_id: validation.estate_id }, { where: { id: userId } });
+
+      return res.status(200).json({
+        success: true,
+        message: 'Successfully joined estate',
+        data: { estate_id: validation.estate_id },
+      });
     } catch (error) {
       return handleControllerError(error, res);
     }
