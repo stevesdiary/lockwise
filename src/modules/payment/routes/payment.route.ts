@@ -1,6 +1,6 @@
 import Router, { Request as ExpressRequest, Response } from 'express';
 const paymentRouter = Router();
-import { authenticateToken, requireManager, requireResident } from '../../auth/middleware/auth.middleware';
+import { authenticateToken, requireManager, requireResident, requireAdmin } from '../../auth/middleware/auth.middleware';
 
 // CSRF Protection: POST routes use JWT tokens in Authorization header (not cookies)
 // which inherently protects against CSRF attacks as browsers don't auto-send custom headers
@@ -62,5 +62,14 @@ paymentRouter.get("/ref/:reference",
   async (req: ExpressRequest, res: Response) => {
   await paymentController.getPaymentByReference(req, res);
 });
+
+paymentRouter.delete(
+  "/subscription/:subscriptionId",
+  authenticateToken,
+  requireAdmin,
+  async (req: ExpressRequest, res: Response) => {
+    await paymentController.cancelSubscription(req, res);
+  }
+);
 
 export default paymentRouter;
