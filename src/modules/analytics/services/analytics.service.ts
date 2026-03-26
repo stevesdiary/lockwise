@@ -1,15 +1,6 @@
 import sequelize from '../../../shared/core/database';
 import { QueryTypes } from 'sequelize';
-import { Redis } from 'ioredis';
-
-let redisClient: Redis | null = null;
-
-async function getRedisClient(): Promise<Redis> {
-  if (!redisClient) {
-    redisClient = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
-  }
-  return redisClient;
-}
+import redis from '../../../shared/core/redis';
 
 export const analyticsService = {
   async trackEvent(userId: string, event: string, properties?: any) {
@@ -22,7 +13,6 @@ export const analyticsService = {
     });
 
     // Update real-time counters in Redis
-    const redis = await getRedisClient();
     const today = new Date().toISOString().split('T')[0];
     await redis.incr(`analytics:events:${event}:${today}`);
     await redis.incr(`analytics:users:${userId}:${today}`);
@@ -111,7 +101,6 @@ export const analyticsService = {
   },
 
   async getSystemHealth() {
-    const redis = await getRedisClient();
     const [[dbHealth], redisHealth] = await Promise.all([
       sequelize.query('SELECT NOW() as timestamp, COUNT(*) as user_count FROM users', {
         type: QueryTypes.SELECT

@@ -1,0 +1,50 @@
+import { Router, Request, Response } from 'express';
+import { Receiver } from '@upstash/qstash';
+import NotificationService from '../../communication/services/notification.service';
+
+const workerRouter = Router();
+
+const receiver = new Receiver({
+  currentSigningKey: process.env.QSTASH_CURRENT_SIGNING_KEY!,
+  nextSigningKey: process.env.QSTASH_NEXT_SIGNING_KEY!,
+});
+
+async function verifyQStash(req: Request, res: Response): Promise<boolean> {
+  try {
+    const signature = req.headers['upstash-signature'] as string;
+    const rawBody = JSON.stringify(req.body);
+    const isValid = await receiver.verify({ signature, body: rawBody });
+    if (!isValid) {
+      res.status(401).json({ error: 'Invalid QStash signature' });
+      return false;
+    }
+    return true;
+  } catch {
+    res.status(401).json({ error: 'Signature verification failed' });
+    return false;
+  }
+}
+
+workerRouter.post('/email-notifications', async (req: Request, res: Response) => {
+  if (!await verifyQStash(req, res)) return;
+  try {
+    await NotificationService.processEmailJob(req.body);
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error('Email worker error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+workerRouter.post('/sms-notifications', async (req: Request, res: Response) => {
+  if (!await verifyQStash(req, res)) return;
+  try {
+    await NotificationService.processSMSJob(req.body);
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error('SMS worker error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+export default workerRouter;

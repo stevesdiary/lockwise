@@ -64,10 +64,14 @@ const dbName = process.env.DB_NAME ?? process.env.DEV_DB_NAME;
 const dbUser = process.env.DB_USER ?? process.env.DEV_DB_USER;
 const dbPassword = process.env.DB_PASSWORD ?? process.env.DEV_DB_PASSWORD;
 const dbSslEnabled = (process.env.DB_SSL ?? process.env.SSL ?? 'true') === 'true';
+const dbConnectTimeoutMs = Number(
+  process.env.DB_CONNECTION_TIMEOUT_MS ?? process.env.PGCONNECT_TIMEOUT ?? '30000',
+);
 
+const hasDatabaseUrl = Boolean(rawDatabaseUrl);
 const hasDiscreteDbConfig = Boolean(dbHost && dbName && dbUser && dbPassword);
 
-if (!hasDiscreteDbConfig && !rawDatabaseUrl) {
+if (!hasDatabaseUrl && !hasDiscreteDbConfig) {
   throw new Error(
     'Database configuration is required. Set DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD, and DB_SSL or DATABASE_URL.',
   );
@@ -86,17 +90,17 @@ const databaseUrl = (() => {
   return parsedDatabaseUrl.toString();
 })();
 
-const databaseTarget = hasDiscreteDbConfig
-  ? `${dbHost}:${dbPort}/${dbName}`
-  : (() => {
+const databaseTarget = hasDatabaseUrl
+  ? (() => {
       const { hostname, port, pathname } = new URL(databaseUrl as string);
       const databaseName = pathname.replace(/^\//, '') || 'postgres';
 
       return `${hostname}:${port || '5432'}/${databaseName}`;
-    })();
+    })()
+  : `${dbHost}:${dbPort}/${dbName}`;
 
 const dialectOptions = {
-  connectionTimeoutMillis: 10_000,
+  connectionTimeoutMillis: dbConnectTimeoutMs,
   ...(dbSslEnabled
     ? {
         ssl: {
@@ -169,16 +173,16 @@ const sequelizeOptions: SequelizeOptions = {
     SupportTicket, SupportMessage,
   ],
 };
-const sequelize = hasDiscreteDbConfig
-  ? new Sequelize({
+const sequelize = hasDatabaseUrl
+  ? new Sequelize(databaseUrl as string, sequelizeOptions)
+  : new Sequelize({
       ...sequelizeOptions,
       host: dbHost,
       port: dbPort,
       database: dbName,
       username: dbUser,
       password: dbPassword,
-    })
-  : new Sequelize(databaseUrl as string, sequelizeOptions);
+    });
 
 // ── Programmatic migration runner (same connection as the app) ────────────────
 export const runMigrations = async (): Promise<void> => {

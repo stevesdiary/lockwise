@@ -70,6 +70,7 @@ import userRoleRouter from "./modules/admin/routes/user-role.route";
 
 // Legal Module
 import legalRouter from "./modules/legal/routes/legal.route";
+import workerRouter from "./modules/communication/routes/worker.route";
 
 const router = Router();
 
@@ -143,6 +144,9 @@ router.use('/admin', userRoleRouter);
 
 // Legal Routes
 router.use('/legal', legalRouter);
+
+// Worker Routes (QStash delivery endpoints)
+router.use('/workers', workerRouter);
 
 // Legacy route for backward compatibility
 router.use("/log", loginRouter);

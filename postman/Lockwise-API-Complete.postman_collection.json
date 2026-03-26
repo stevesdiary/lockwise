@@ -58,7 +58,7 @@
                 "header": [{ "key": "Content-Type", "value": "application/json" }],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"first_name\": \"Steve\",\n  \"last_name\": \"Oyeyemi\",\n  \"email\": \"steve@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"phone\": \"08065876770\",\n  \"user_type\": \"resident\",\n  \"estate_code\": \"\"\n}",
+                  "raw": "{\n  \"first_name\": \"Steve\",\n  \"last_name\": \"Oyeyemi\",\n  \"email\": \"steve@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"phone\": \"08065876770\",\n  \"user_type\": \"resident\"\n}",
                   "options": { "raw": { "language": "json" } }
                 },
                 "url": { "raw": "{{baseUrl}}/user/register", "host": ["{{baseUrl}}"], "path": ["user", "register"] }
@@ -188,7 +188,7 @@
                 "header": [{ "key": "Content-Type", "value": "application/json" }],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"token\": \"\",\n  \"new_password\": \"NewSecurePass123!\"\n}",
+                  "raw": "{\n  \"token\": \"\",\n  \"password\": \"NewSecurePass123!\"\n}",
                   "options": { "raw": { "language": "json" } }
                 },
                 "url": { "raw": "{{baseUrl}}/auth/password/reset", "host": ["{{baseUrl}}"], "path": ["auth", "password", "reset"] }
@@ -201,7 +201,7 @@
                 "header": [{ "key": "Content-Type", "value": "application/json" }],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"old_password\": \"OldPass123!\",\n  \"new_password\": \"NewSecurePass123!\"\n}",
+                  "raw": "{\n  \"current_password\": \"OldPass123!\",\n  \"new_password\": \"NewSecurePass123!\"\n}",
                   "options": { "raw": { "language": "json" } }
                 },
                 "url": { "raw": "{{baseUrl}}/auth/password/change", "host": ["{{baseUrl}}"], "path": ["auth", "password", "change"] }
@@ -220,7 +220,7 @@
                 "header": [{ "key": "Content-Type", "value": "application/json" }],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"phone_number\": \"08065876770\"\n}",
+                  "raw": "{\n  \"phone\": \"08065876770\"\n}",
                   "options": { "raw": { "language": "json" } }
                 },
                 "url": { "raw": "{{baseUrl}}/auth/phone/send-otp", "host": ["{{baseUrl}}"], "path": ["auth", "phone", "send-otp"] }
@@ -234,7 +234,7 @@
                 "header": [{ "key": "Content-Type", "value": "application/json" }],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"phone_number\": \"08065876770\",\n  \"otp\": \"123456\"\n}",
+                  "raw": "{\n  \"phone\": \"08065876770\",\n  \"otp\": \"123456\"\n}",
                   "options": { "raw": { "language": "json" } }
                 },
                 "url": { "raw": "{{baseUrl}}/auth/phone/verify-otp", "host": ["{{baseUrl}}"], "path": ["auth", "phone", "verify-otp"] }
@@ -311,7 +311,7 @@
                 "header": [{ "key": "Content-Type", "value": "application/json" }],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"google_id\": \"\",\n  \"access_token\": \"\"\n}",
+                  "raw": "{\n  \"google_code\": \"\"\n}",
                   "options": { "raw": { "language": "json" } }
                 },
                 "url": { "raw": "{{baseUrl}}/auth/google/google/link", "host": ["{{baseUrl}}"], "path": ["auth", "google", "google", "link"] }
@@ -339,7 +339,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"estate_name\": \"Green Valley Estate\",\n  \"estate_code\": \"GVE001\",\n  \"country_code\": \"NG\",\n  \"timezone\": \"Africa/Lagos\",\n  \"currency_code\": \"NGN\",\n  \"address\": \"123 Estate Road\"\n}",
+              "raw": "{\n  \"name\": \"Green Valley Estate\",\n  \"type\": \"residential\",\n  \"country_code\": \"NG\",\n  \"timezone\": \"Africa/Lagos\",\n  \"currency_code\": \"NGN\",\n  \"state\": \"Lagos\",\n  \"address\": {\n    \"number\": \"12B\",\n    \"street\": \"Palm Avenue\",\n    \"city\": \"Lekki\",\n    \"country\": \"Nigeria\"\n  },\n  \"contact_phone\": \"08012345678\",\n  \"contact_email\": \"manager@example.com\"\n}",
               "options": { "raw": { "language": "json" } }
             },
             "url": { "raw": "{{baseUrl}}/estate/register", "host": ["{{baseUrl}}"], "path": ["estate", "register"] }
@@ -366,12 +366,7 @@
           "name": "Approve Estate",
           "request": {
             "method": "PATCH",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"approval_status\": \"approved\"\n}",
-              "options": { "raw": { "language": "json" } }
-            },
+            "header": [],
             "url": { "raw": "{{baseUrl}}/estate/estates/{{estateId}}/approve", "host": ["{{baseUrl}}"], "path": ["estate", "estates", "{{estateId}}", "approve"] }
           }
         },
@@ -409,7 +404,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"estate_name\": \"Updated Estate Name\",\n  \"timezone\": \"Africa/Lagos\"\n}",
+              "raw": "{\n  \"name\": \"Updated Estate Name\",\n  \"timezone\": \"Africa/Lagos\"\n}",
               "options": { "raw": { "language": "json" } }
             },
             "url": { "raw": "{{baseUrl}}/estate/update/{{estateId}}", "host": ["{{baseUrl}}"], "path": ["estate", "update", "{{estateId}}"] }
@@ -684,7 +679,7 @@
                 "header": [{ "key": "Content-Type", "value": "application/json" }],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"amount\": 50000,\n  \"reference\": \"\"\n}",
+                  "raw": "{\n  \"amount\": 50000,\n  \"paymentMethod\": \"card\",\n  \"currency\": \"NGN\"\n}",
                   "options": { "raw": { "language": "json" } }
                 },
                 "url": { "raw": "{{baseUrl}}/payment/initiate", "host": ["{{baseUrl}}"], "path": ["payment", "initiate"] }
@@ -697,7 +692,7 @@
                 "header": [{ "key": "Content-Type", "value": "application/json" }],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"plan_id\": \"{{planId}}\",\n  \"billing_cycle\": \"monthly\"\n}",
+                  "raw": "{\n  \"plan_id\": \"{{planId}}\",\n  \"paymentMethod\": \"card\"\n}",
                   "options": { "raw": { "language": "json" } }
                 },
                 "url": { "raw": "{{baseUrl}}/payment/subscription", "host": ["{{baseUrl}}"], "path": ["payment", "subscription"] }
@@ -830,7 +825,7 @@
                 "header": [{ "key": "Content-Type", "value": "application/json" }],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"email\": \"referrer@example.com\",\n  \"referral_code\": \"REF001\"\n}",
+                  "raw": "{\n  \"name\": \"Referrer Example\",\n  \"email\": \"referrer@example.com\",\n  \"phone\": \"08012345678\"\n}",
                   "options": { "raw": { "language": "json" } }
                 },
                 "url": { "raw": "{{baseUrl}}/referral/register", "host": ["{{baseUrl}}"], "path": ["referral", "register"] }
