@@ -18,7 +18,7 @@ class PhoneVerificationService {
     const key = `otp:${phone}`;
     const storedOTP = await getFromRedis(key);
     
-    if (!storedOTP || storedOTP !== otp) {
+    if (!storedOTP || String(storedOTP) !== otp) {
       return false;
     }
     

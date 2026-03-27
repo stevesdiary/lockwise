@@ -60,7 +60,7 @@ class EmailVerificationService {
         return { success: false, message: 'Verification code expired or not found' };
       }
 
-      if (storedCode !== code) {
+      if (String(storedCode) !== code) {
         return { success: false, message: 'Invalid verification code' };
       }
 
