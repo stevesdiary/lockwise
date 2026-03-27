@@ -10,6 +10,10 @@ const receiver = new Receiver({
 });
 
 async function verifyQStash(req: Request, res: Response): Promise<boolean> {
+  // In development, allow requests with a local dev secret to bypass QStash signature
+  if (process.env.NODE_ENV !== 'production' && req.headers['x-worker-secret'] === process.env.WORKER_SECRET) {
+    return true;
+  }
   try {
     const signature = req.headers['upstash-signature'] as string;
     const rawBody = JSON.stringify(req.body);
