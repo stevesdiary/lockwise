@@ -184,12 +184,14 @@ describe('updateOnboardingStep', () => {
     expect(result.success).toBe(true);
     expect(MockEstate.update).toHaveBeenCalledWith(
       expect.objectContaining({ onboarding_step: 3, status: 'pending' }),
-      expect.objectContaining({ where: { estate_id: estateId } })
+      expect.objectContaining({ where: { estate_id: estateId, status: 'draft' } })
     );
   });
 
   it('should return 409 if estate is already in pending status', async () => {
-    // Override the mock to simulate estate already in 'pending' status
+    // Simulate: atomic update finds no draft estate (already past draft)
+    (MockEstate.update as jest.Mock).mockResolvedValue([0]);
+    // findByPk returns estate in 'pending' status (not null, so it exists → 409)
     (MockEstate.findByPk as jest.Mock).mockResolvedValue({
       estate_id: estateId,
       name: 'Test Estate',
@@ -201,7 +203,7 @@ describe('updateOnboardingStep', () => {
 
     expect(result.success).toBe(false);
     expect(result.statusCode).toBe(409);
-    expect(result.message).toBe('Estate is not in draft status');
+    expect(result.message).toBe('Estate has already been submitted');
   });
 
   it('should return 404 if estate is not found', async () => {

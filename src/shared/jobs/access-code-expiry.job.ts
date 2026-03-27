@@ -11,7 +11,7 @@ export const startAccessCodeExpiryJob = () => {
         { status: 'expired' },
         {
           where: {
-            status: 'pending',
+            status: 'active',
             valid_until: {
               [Op.lt]: new Date()
             }

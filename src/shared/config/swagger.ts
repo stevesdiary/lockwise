@@ -79,15 +79,62 @@ const options = {
             }
           }
         },
+        UserRegistrationRequest: {
+          type: 'object',
+          required: ['first_name', 'last_name', 'email', 'password', 'phone', 'user_type'],
+          properties: {
+            title: {
+              type: 'string',
+              enum: ['Mr', 'Mrs', 'Ms', 'Dr', 'Prof', 'Alhj', 'Hon.', 'Chief', 'HRH', 'HRM'],
+              example: 'Mr'
+            },
+            first_name: { type: 'string', example: 'Steve' },
+            last_name: { type: 'string', example: 'Oyeyemi' },
+            email: { type: 'string', format: 'email', example: 'steve@example.com' },
+            password: {
+              type: 'string',
+              example: 'SecurePass123!',
+              description: 'Must include uppercase, lowercase, number, and special character'
+            },
+            phone: {
+              type: 'string',
+              example: '08065876770',
+              description: 'Valid Nigerian phone number'
+            },
+            user_type: {
+              type: 'string',
+              enum: ['resident', 'security', 'manager', 'admin', 'master'],
+              example: 'resident'
+            },
+            estate_code: {
+              type: 'string',
+              example: 'EST-AB12CD34',
+              description: 'Optional when linking a resident to an existing estate during registration'
+            },
+            role_id: { type: 'string', example: 'role-id-123', description: 'Optional explicit role override' }
+          }
+        },
         PaymentInitiation: {
           type: 'object',
-          required: ['amount', 'email'],
+          required: ['amount', 'paymentMethod'],
           properties: {
-            amount: { type: 'number', example: 5000 },
-            email: { type: 'string', format: 'email', example: 'user@example.com' },
+            amount: { type: 'number', example: 50000 },
+            email: {
+              type: 'string',
+              format: 'email',
+              example: 'resident@example.com',
+              description: 'Optional. The authenticated user email is used when omitted.'
+            },
             currency: { type: 'string', default: 'NGN', example: 'NGN' },
-            paymentProvider: { type: 'string', default: 'paystack', example: 'paystack' },
             paymentMethod: { type: 'string', example: 'card' }
+          }
+        },
+        SubscriptionInitiationRequest: {
+          type: 'object',
+          required: ['plan_id'],
+          properties: {
+            plan_id: { type: 'string', example: 'plan-id-123' },
+            paymentMethod: { type: 'string', example: 'card', default: 'card' }
           }
         },
         PaymentResponse: {
@@ -149,15 +196,54 @@ const options = {
           type: 'object',
           required: ['phone'],
           properties: {
-            phone: { type: 'string', example: '+2348012345678', description: 'Phone number in international format' }
+            phone: { type: 'string', example: '08065876770', description: 'Phone number to verify' }
           }
         },
         OTPVerification: {
           type: 'object',
           required: ['phone', 'otp'],
           properties: {
-            phone: { type: 'string', example: '+2348012345678', description: 'Phone number in international format' },
+            phone: { type: 'string', example: '08065876770', description: 'Phone number used when requesting the OTP' },
             otp: { type: 'string', example: '123456', description: '6-digit OTP code' }
+          }
+        },
+        PasswordResetRequest: {
+          type: 'object',
+          required: ['token', 'password'],
+          properties: {
+            token: { type: 'string', example: 'reset-token-from-email' },
+            password: {
+              type: 'string',
+              example: 'NewSecurePass123!',
+              description: 'New password to set for the account'
+            }
+          }
+        },
+        ChangePasswordRequest: {
+          type: 'object',
+          required: ['current_password', 'new_password'],
+          properties: {
+            current_password: { type: 'string', example: 'OldPass123!' },
+            new_password: { type: 'string', example: 'NewSecurePass123!' }
+          }
+        },
+        EmailVerificationRequest: {
+          type: 'object',
+          required: ['email', 'code'],
+          properties: {
+            email: { type: 'string', format: 'email', example: 'steve@example.com' },
+            code: { type: 'string', example: '123456' }
+          }
+        },
+        GoogleLinkRequest: {
+          type: 'object',
+          required: ['google_code'],
+          properties: {
+            google_code: {
+              type: 'string',
+              example: '4/0AVMBsJi-example-google-auth-code',
+              description: 'Authorization code returned by Google OAuth'
+            }
           }
         },
         OTPResponse: {
@@ -271,6 +357,13 @@ const options = {
             }
           }
         },
+        ValidateInvitationRequest: {
+          type: 'object',
+          required: ['token'],
+          properties: {
+            token: { type: 'string', example: 'eyJlc3RhdGVfaWQiOiI...' }
+          }
+        },
         BulkInvitationResponse: {
           type: 'object',
           properties: {
@@ -351,6 +444,15 @@ const options = {
             commission_rate: { type: 'number', example: 10 }
           }
         },
+        ReferrerRegistrationRequest: {
+          type: 'object',
+          required: ['name', 'email'],
+          properties: {
+            name: { type: 'string', example: 'John Doe' },
+            email: { type: 'string', format: 'email', example: 'john@example.com' },
+            phone: { type: 'string', example: '08012345678', description: 'Optional Nigerian phone number' }
+          }
+        },
         Address: {
           type: 'object',
           required: ['apartment_number', 'estate_id'],
@@ -429,8 +531,23 @@ const options = {
             contact_phone: { type: 'string', example: '08012345678' },
             contact_email: { type: 'string', format: 'email', example: 'estatemanager@mailinator.com' },
             contact_address: { $ref: '#/components/schemas/AddressObject' },
-            estate_code: { type: 'string', example: 'EST123456', description: 'Custom estate code (optional)' },
             referral_code: { type: 'string', example: 'REF123', description: 'Referral code (optional)' }
+          }
+        },
+        EstateUpdateRequest: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', example: 'Updated Estate Name' },
+            type: { type: 'string', enum: ['residential', 'commercial', 'mixed', 'other'], example: 'residential' },
+            state: { type: 'string', example: 'Lagos' },
+            country: { type: 'string', example: 'Nigeria' },
+            timezone: { type: 'string', example: 'Africa/Lagos' },
+            currency_code: { type: 'string', example: 'NGN' },
+            number_of_appartments: { type: 'number', example: 150 },
+            total_number_of_floors: { type: 'number', example: 8 },
+            contact_phone: { type: 'string', example: '08012345678' },
+            contact_email: { type: 'string', format: 'email', example: 'manager@example.com' },
+            contact_address: { type: 'string', example: '12 Palm Avenue, Lekki' }
           }
         },
         Notification: {
@@ -456,6 +573,379 @@ const options = {
       }
     },
     paths: {
+      '/user/register': {
+        post: {
+          tags: ['Users'],
+          summary: 'Register user',
+          description: 'Register a new Lockwise user account.',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/UserRegistrationRequest'
+                }
+              }
+            }
+          },
+          responses: {
+            '201': {
+              description: 'User registered successfully'
+            },
+            '400': {
+              description: 'Invalid request payload',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '500': {
+              description: 'Internal server error',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/auth/login': {
+        post: {
+          tags: ['Authentication'],
+          summary: 'Login user',
+          description: 'Authenticate a user with email and password.',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/LoginRequest'
+                }
+              }
+            }
+          },
+          responses: {
+            '200': {
+              description: 'Login successful',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/LoginResponse'
+                  }
+                }
+              }
+            },
+            '400': {
+              description: 'Invalid request payload',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '500': {
+              description: 'Internal server error',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/auth/password/request': {
+        post: {
+          tags: ['Authentication'],
+          summary: 'Request password reset',
+          description: 'Send a password reset email to the supplied address.',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['email'],
+                  properties: {
+                    email: { type: 'string', format: 'email', example: 'steve@example.com' }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            '200': {
+              description: 'Password reset email requested'
+            },
+            '400': {
+              description: 'Invalid request payload',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '500': {
+              description: 'Internal server error',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/auth/password/reset': {
+        post: {
+          tags: ['Authentication'],
+          summary: 'Reset password',
+          description: 'Reset password with the token from the password reset email.',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/PasswordResetRequest'
+                }
+              }
+            }
+          },
+          responses: {
+            '200': {
+              description: 'Password reset successfully'
+            },
+            '400': {
+              description: 'Invalid token or password payload',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '500': {
+              description: 'Internal server error',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/auth/password/change': {
+        post: {
+          tags: ['Authentication'],
+          summary: 'Change password',
+          description: 'Change the authenticated user password.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/ChangePasswordRequest'
+                }
+              }
+            }
+          },
+          responses: {
+            '200': {
+              description: 'Password changed successfully'
+            },
+            '400': {
+              description: 'Invalid request payload',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '401': {
+              description: 'Unauthorized',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '500': {
+              description: 'Internal server error',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/auth/email/send-code': {
+        post: {
+          tags: ['Authentication'],
+          summary: 'Send email verification code',
+          description: 'Send a verification code to the provided email address.',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['email'],
+                  properties: {
+                    email: { type: 'string', format: 'email', example: 'steve@example.com' }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            '200': {
+              description: 'Verification code sent'
+            },
+            '400': {
+              description: 'Invalid request payload',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '500': {
+              description: 'Internal server error',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/auth/email/verify-code': {
+        post: {
+          tags: ['Authentication'],
+          summary: 'Verify email code',
+          description: 'Verify the email verification code for an address.',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/EmailVerificationRequest'
+                }
+              }
+            }
+          },
+          responses: {
+            '200': {
+              description: 'Email verified successfully'
+            },
+            '400': {
+              description: 'Invalid request payload',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '500': {
+              description: 'Internal server error',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/auth/google/google/link': {
+        post: {
+          tags: ['Authentication'],
+          summary: 'Link Google account',
+          description: 'Link an authenticated user account with Google using a Google authorization code.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/GoogleLinkRequest'
+                }
+              }
+            }
+          },
+          responses: {
+            '200': {
+              description: 'Google account linked successfully'
+            },
+            '400': {
+              description: 'Invalid request payload',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '401': {
+              description: 'Unauthorized',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '500': {
+              description: 'Internal server error',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       '/auth/phone/send-otp': {
         post: {
           tags: ['Authentication'],
@@ -533,6 +1023,69 @@ const options = {
             },
             '400': {
               description: 'Bad request - invalid or expired OTP',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '500': {
+              description: 'Internal server error',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/estate/register': {
+        post: {
+          tags: ['Estates'],
+          summary: 'Create estate',
+          description: 'Create a new estate as an authenticated manager.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/EstateCreationRequest'
+                }
+              }
+            }
+          },
+          responses: {
+            '200': {
+              description: 'Estate created successfully'
+            },
+            '400': {
+              description: 'Invalid request payload',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '401': {
+              description: 'Unauthorized',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '403': {
+              description: 'Forbidden',
               content: {
                 'application/json': {
                   schema: {
@@ -685,6 +1238,90 @@ const options = {
           }
         }
       },
+      '/estate/update/{estateId}': {
+        put: {
+          tags: ['Estates'],
+          summary: 'Update estate',
+          description: 'Update editable estate fields.',
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            {
+              name: 'estateId',
+              in: 'path',
+              required: true,
+              schema: {
+                type: 'string'
+              },
+              description: 'ID of the estate to update'
+            }
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/EstateUpdateRequest'
+                }
+              }
+            }
+          },
+          responses: {
+            '200': {
+              description: 'Estate updated successfully'
+            },
+            '400': {
+              description: 'Invalid request payload',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '401': {
+              description: 'Unauthorized',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '403': {
+              description: 'Forbidden',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '404': {
+              description: 'Estate not found',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '500': {
+              description: 'Internal server error',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       '/estate/search/{estate_code}': {
         get: {
           tags: ['Estates'],
@@ -714,6 +1351,48 @@ const options = {
             },
             '404': {
               description: 'Estate not found',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '500': {
+              description: 'Internal server error',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/estate/validate-invite': {
+        post: {
+          tags: ['Estates'],
+          summary: 'Validate invitation token',
+          description: 'Validate an estate invitation token supplied in the request body.',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/ValidateInvitationRequest'
+                }
+              }
+            }
+          },
+          responses: {
+            '200': {
+              description: 'Invitation token validated'
+            },
+            '400': {
+              description: 'Token is missing or invalid',
               content: {
                 'application/json': {
                   schema: {
@@ -784,6 +1463,161 @@ const options = {
             },
             '404': {
               description: 'Estate not found',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '500': {
+              description: 'Internal server error',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/payment/initiate': {
+        post: {
+          tags: ['Payments'],
+          summary: 'Initiate payment',
+          description: 'Initiate a payment for the authenticated resident.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/PaymentInitiation'
+                }
+              }
+            }
+          },
+          responses: {
+            '200': {
+              description: 'Payment initiated successfully',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/PaymentResponse'
+                  }
+                }
+              }
+            },
+            '400': {
+              description: 'Invalid request payload',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '401': {
+              description: 'Unauthorized',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '500': {
+              description: 'Internal server error',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/payment/subscription': {
+        post: {
+          tags: ['Payments'],
+          summary: 'Initiate subscription',
+          description: 'Create a subscription checkout session for the authenticated manager.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/SubscriptionInitiationRequest'
+                }
+              }
+            }
+          },
+          responses: {
+            '200': {
+              description: 'Subscription initiated successfully'
+            },
+            '400': {
+              description: 'Invalid request payload',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '401': {
+              description: 'Unauthorized',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            },
+            '500': {
+              description: 'Internal server error',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/referral/register': {
+        post: {
+          tags: ['Referrals'],
+          summary: 'Register referrer',
+          description: 'Register a referrer record.',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/ReferrerRegistrationRequest'
+                }
+              }
+            }
+          },
+          responses: {
+            '201': {
+              description: 'Referrer registered successfully'
+            },
+            '400': {
+              description: 'Invalid request payload',
               content: {
                 'application/json': {
                   schema: {

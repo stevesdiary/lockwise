@@ -1,5 +1,5 @@
-import Bull from 'bull';
-import EmailService from '../../communication/services/email.service';
+import { Client } from '@upstash/qstash';
+import EmailService from './email.service';
 import SMSService from './sms.service';
 
 interface NotificationJob {
@@ -11,226 +11,94 @@ interface NotificationJob {
 }
 
 class NotificationService {
-  private emailQueue: Bull.Queue;
-  private smsQueue: Bull.Queue;
+  private qstash: Client;
+  private workerBaseUrl: string;
 
   constructor() {
-    const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
-    
-    const redisConfig = {
-      redis: {
-        maxRetriesPerRequest: null,
-      },
-    };
-
-    this.emailQueue = new Bull('email notifications', redisUrl, redisConfig);
-    this.smsQueue = new Bull('sms notifications', redisUrl, redisConfig);
-
-    this.setupProcessors();
-  }
-
-  private setupProcessors() {
-    // Email processor
-    this.emailQueue.process(async (job) => {
-      const { to, template, data } = job.data;
-      // console.log(`Processing email job: ${template} to ${to}`);
-      
-      const success = await EmailService.sendEmail({ to, template, data });
-      if (!success) {
-        throw new Error('Email sending failed');
-      }
-      
-      return { success: true, timestamp: new Date() };
-    });
-
-    // SMS processor
-    this.smsQueue.process(async (job) => {
-      const { to, data } = job.data;
-      // Format message based on template type
-      let message = '';
-      if (data.code) {
-        message = `${data.name}, your LOCKWISE verification code is: ${data.code}. Valid for 10 minutes.`;
-      } else if (data.access_code) {
-        message = `${data.name}, your LOCKWISE access code is: ${data.access_code}. Valid until: ${data.valid_until}`;
-      } else if (data.alert_type) {
-        message = `LOCKWISE EMERGENCY ALERT: ${data.alert_type} at ${data.location}. Please respond immediately.`;
-      } else if (data.amount) {
-        message = `${data.name}, your LOCKWISE payment of ${data.amount} was ${data.reference ? 'successful' : 'failed'}.`;
-      } else {
-        message = `LOCKWISE: ${JSON.stringify(data)}`;
-      }
-      
-      const success = await SMSService.sendSMS(to, message);
-      if (!success) {
-        throw new Error('SMS sending failed');
-      }
-      
-      return { success: true, timestamp: new Date() };
-    });
-
-    // Error handling
-    this.emailQueue.on('failed', (job, err) => {
-      console.error(`Email job ${job.id} failed:`, err);
-    });
-
-    this.smsQueue.on('failed', (job, err) => {
-      console.error(`SMS job ${job.id} failed:`, err);
-    });
-  }
-
-  private getPriority(priority: string = 'normal'): number {
-    const priorities = { low: 10, normal: 0, high: -5, critical: -10 };
-    return priorities[priority as keyof typeof priorities] || 0;
+    this.qstash = new Client({ token: process.env.QSTASH_TOKEN! });
+    this.workerBaseUrl = process.env.WORKER_BASE_URL || 'http://localhost:3002/api/v1';
   }
 
   async sendNotification(notification: NotificationJob): Promise<void> {
-    const options = {
-      priority: this.getPriority(notification.priority),
-      attempts: 3,
-      backoff: {
-        type: 'exponential',
-        delay: 2000,
-      },
-    };
-
-    if (notification.type === 'email') {
-      await this.emailQueue.add(notification, options);
-    } else {
-      await this.smsQueue.add(notification, options);
-    }
+    const queue = notification.type === 'email' ? 'email-notifications' : 'sms-notifications';
+    await this.qstash.publishJSON({
+      url: `${this.workerBaseUrl}/workers/${queue}`,
+      body: notification,
+      retries: 3,
+    });
   }
 
-  // Convenience methods
+  // Called directly by worker routes — no queue involved
+  async processEmailJob(job: NotificationJob): Promise<void> {
+    const success = await EmailService.sendEmail({ to: job.to, template: job.template as any, data: job.data });
+    if (!success) throw new Error('Email sending failed');
+  }
+
+  async processSMSJob(job: NotificationJob): Promise<void> {
+    let message = '';
+    const d = job.data;
+    if (d.code)          message = `${d.name}, your LOCKWISE verification code is: ${d.code}. Valid for 10 minutes.`;
+    else if (d.access_code) message = `${d.name}, your LOCKWISE access code is: ${d.access_code}. Valid until: ${d.valid_until}`;
+    else if (d.alert_type)  message = `LOCKWISE EMERGENCY ALERT: ${d.alert_type} at ${d.location}. Please respond immediately.`;
+    else if (d.amount)      message = `${d.name}, your LOCKWISE payment of ${d.amount} was ${d.reference ? 'successful' : 'failed'}.`;
+    else                    message = `LOCKWISE: ${JSON.stringify(d)}`;
+
+    const success = await SMSService.sendSMS(job.to, message);
+    if (!success) throw new Error('SMS sending failed');
+  }
+
   async sendWelcomeNotifications(email: string, phone: string, name: string, estate_name?: string): Promise<void> {
     await Promise.all([
-      this.sendNotification({
-        type: 'email',
-        to: email,
-        template: 'welcome',
-        data: { name, estate_name },
-        priority: 'high'
-      }),
-      this.sendNotification({
-        type: 'sms',
-        to: phone,
-        template: 'verification',
-        data: { name, code: '123456' }, // This should be actual verification code
-        priority: 'high'
-      })
+      this.sendNotification({ type: 'email', to: email, template: 'welcome', data: { name, estate_name }, priority: 'high' }),
+      this.sendNotification({ type: 'sms',   to: phone, template: 'verification', data: { name, code: '123456' }, priority: 'high' }),
     ]);
   }
 
   async sendVerificationNotifications(email: string, phone: string, name: string, code: string): Promise<void> {
     await Promise.all([
-      this.sendNotification({
-        type: 'email',
-        to: email,
-        template: 'verification',
-        data: { name, code },
-        priority: 'critical'
-      }),
-      this.sendNotification({
-        type: 'sms',
-        to: phone,
-        template: 'verification',
-        data: { name, code },
-        priority: 'critical'
-      })
+      this.sendNotification({ type: 'email', to: email, template: 'verification', data: { name, code }, priority: 'critical' }),
+      this.sendNotification({ type: 'sms',   to: phone, template: 'verification', data: { name, code }, priority: 'critical' }),
     ]);
   }
 
   async sendAccessCodeNotifications(email: string, phone: string, name: string, access_code: string, valid_until: string): Promise<void> {
     await Promise.all([
-      this.sendNotification({
-        type: 'email',
-        to: email,
-        template: 'accessCode',
-        data: { name, access_code, valid_until },
-        priority: 'high'
-      }),
-      this.sendNotification({
-        type: 'sms',
-        to: phone,
-        template: 'accessCode',
-        data: { name, access_code, valid_until },
-        priority: 'high'
-      })
+      this.sendNotification({ type: 'email', to: email, template: 'accessCode', data: { name, access_code, valid_until }, priority: 'high' }),
+      this.sendNotification({ type: 'sms',   to: phone, template: 'accessCode', data: { name, access_code, valid_until }, priority: 'high' }),
     ]);
   }
 
   async sendPaymentNotifications(email: string, phone: string, name: string, amount: string, success: boolean, reference?: string): Promise<void> {
     const template = success ? 'paymentSuccess' : 'paymentFailed';
-    const data = success ? { name, amount, reference } : { name, amount };
-
     await Promise.all([
-      this.sendNotification({
-        type: 'email',
-        to: email,
-        template,
-        data,
-        priority: 'high'
-      }),
-      this.sendNotification({
-        type: 'sms',
-        to: phone,
-        template: success ? 'paymentSuccess' : 'paymentFailed',
-        data: { name, amount },
-        priority: 'high'
-      })
+      this.sendNotification({ type: 'email', to: email, template, data: success ? { name, amount, reference } : { name, amount }, priority: 'high' }),
+      this.sendNotification({ type: 'sms',   to: phone, template, data: { name, amount }, priority: 'high' }),
     ]);
   }
 
-  async sendEmergencyAlert(contacts: Array<{email: string, phone: string}>, alert_type: string, location: string): Promise<void> {
-    const notifications = contacts.flatMap(contact => [
-      this.sendNotification({
-        type: 'email',
-        to: contact.email,
-        template: 'emergencyAlert',
-        data: { alert_type, location },
-        priority: 'critical'
-      }),
-      this.sendNotification({
-        type: 'sms',
-        to: contact.phone,
-        template: 'emergencyAlert',
-        data: { alert_type, location },
-        priority: 'critical'
-      })
-    ]);
-
-    await Promise.all(notifications);
+  async sendEmergencyAlert(contacts: Array<{ email: string; phone: string }>, alert_type: string, location: string): Promise<void> {
+    await Promise.all(
+      contacts.flatMap(c => [
+        this.sendNotification({ type: 'email', to: c.email, template: 'emergencyAlert', data: { alert_type, location }, priority: 'critical' }),
+        this.sendNotification({ type: 'sms',   to: c.phone, template: 'emergencyAlert', data: { alert_type, location }, priority: 'critical' }),
+      ])
+    );
   }
 
   async getQueueStats() {
-    const [emailStats, smsStats] = await Promise.all([
-      {
-        waiting: await this.emailQueue.getWaiting(),
-        active: await this.emailQueue.getActive(),
-        completed: await this.emailQueue.getCompleted(),
-        failed: await this.emailQueue.getFailed(),
-      },
-      {
-        waiting: await this.smsQueue.getWaiting(),
-        active: await this.smsQueue.getActive(),
-        completed: await this.smsQueue.getCompleted(),
-        failed: await this.smsQueue.getFailed(),
-      }
-    ]);
-
-    return {
-      email: {
-        waiting: emailStats.waiting.length,
-        active: emailStats.active.length,
-        completed: emailStats.completed.length,
-        failed: emailStats.failed.length,
-      },
-      sms: {
-        waiting: smsStats.waiting.length,
-        active: smsStats.active.length,
-        completed: smsStats.completed.length,
-        failed: smsStats.failed.length,
-      }
-    };
+    try {
+      const res = await fetch('https://qstash.upstash.io/v2/queues', {
+        headers: { Authorization: `Bearer ${process.env.QSTASH_TOKEN}` },
+      });
+      const queues: any[] = res.ok ? await res.json() : [];
+      const find = (name: string) => queues.find((q: any) => q.name === name) || {};
+      return {
+        email: { waiting: find('email-notifications').lag ?? 0 },
+        sms:   { waiting: find('sms-notifications').lag ?? 0 },
+      };
+    } catch {
+      return { email: { waiting: 0 }, sms: { waiting: 0 } };
+    }
   }
 }
 

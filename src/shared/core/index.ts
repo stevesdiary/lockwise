@@ -20,7 +20,7 @@ const webSocketService = new WebSocketService(httpServer);
 // Initialize WebSocket service in notification service
 realTimeNotificationService.setWebSocketService(webSocketService);
 
-const port = process.env.LOCAL_PORT || 3000;
+const port = process.env.LOCAL_PORT || 3002;
 
 // CORS configuration
 server.use(cors({

@@ -30,9 +30,12 @@ estateRouter.post('/register',
   }
 );
 
-estateRouter.get('/estates', async (req: ExpressRequest, res: Response) => {
-  await estateController.getAllEstates(req, res);
-});
+estateRouter.get('/estates',
+  authenticateToken,
+  async (req: ExpressRequest, res: Response) => {
+    await estateController.getAllEstates(req, res);
+  }
+);
 
 estateRouter.get('/estates/pending', 
   authenticateToken,
@@ -72,7 +75,7 @@ estateRouter.post('/invite/:estateId',
   }
 );
 
-estateRouter.post('/validate-invite', 
+estateRouter.post('/validate-invite',
   async (req: ExpressRequest, res: Response) => {
     try {
       const { token } = req.body;
@@ -84,6 +87,13 @@ estateRouter.post('/validate-invite',
     } catch (error) {
       res.status(500).json({ valid: false, message: 'Failed to validate invitation' });
     }
+  }
+);
+
+estateRouter.post('/join-by-invite',
+  authenticateToken,
+  async (req: ExpressRequest, res: Response) => {
+    await estateController.joinByInvitation(req, res);
   }
 );
 
@@ -173,6 +183,22 @@ estateRouter.patch('/:estateId/setup-checklist',
   requireManager,
   async (req: ExpressRequest, res: Response) => {
     await estateController.updateSetupChecklist(req, res);
+  }
+);
+
+estateRouter.post('/:estateId/gates',
+  authenticateToken,
+  requireManager,
+  async (req: ExpressRequest, res: Response) => {
+    await estateController.createGate(req, res);
+  }
+);
+
+estateRouter.get('/:estateId/gates',
+  authenticateToken,
+  requireManager,
+  async (req: ExpressRequest, res: Response) => {
+    await estateController.getGates(req, res);
   }
 );
 

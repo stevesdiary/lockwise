@@ -255,26 +255,32 @@ class EstateService {
     status?: string
   ): Promise<ApiResponse & { statusCode?: number }> {
     try {
+      if (status === 'pending') {
+        // Atomic conditional update: only flips to pending if currently draft
+        const [affectedRows] = await Estate.update(
+          { onboarding_step: step, status: 'pending' } as any,
+          { where: { estate_id: estateId, status: 'draft' } as any }
+        );
+        if (affectedRows === 0) {
+          const check = await Estate.findByPk(estateId);
+          if (!check) {
+            return { success: false, statusCode: 404, message: 'Estate not found', data: null };
+          }
+          return { success: false, statusCode: 409, message: 'Estate has already been submitted', data: null };
+        }
+        // Notify admins after successful atomic transition
+        const estate = await Estate.findByPk(estateId);
+        await this.notifyAdminsOnEstateSubmit(estate);
+        return { success: true, statusCode: 200, message: 'Estate submitted for review', data: null };
+      }
+
+      // Non-status-change path: just update the step
       const estate = await this.estateRepository.findById(estateId);
       if (!estate) {
         return { success: false, message: 'Estate not found', data: null, statusCode: 404 };
       }
 
-      // Guard: cannot flip to pending unless currently draft
-      if (status === 'pending' && (estate as any).status !== 'draft') {
-        return { success: false, message: 'Estate is not in draft status', data: null, statusCode: 409 };
-      }
-
-      const updates: Partial<{ onboarding_step: number; status: string }> = { onboarding_step: step };
-      if (status === 'pending') {
-        updates.status = 'pending';
-      }
-
-      await Estate.update(updates as any, { where: { estate_id: estateId } });
-
-      if (status === 'pending') {
-        await this.notifyAdminsOnEstateSubmit(estate);
-      }
+      await Estate.update({ onboarding_step: step } as any, { where: { estate_id: estateId } });
 
       return { success: true, message: 'Onboarding step updated', data: null };
     } catch (error) {

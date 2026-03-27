@@ -334,8 +334,36 @@ const paymentController = {
         error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
+  },
+
+  cancelSubscription: async (req: ExpressRequest, res: Response) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({
+          status: 'error',
+          message: 'Authentication required'
+        });
+      }
+
+      const subscriptionId = asString(req.params.subscriptionId);
+      if (!subscriptionId) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'subscriptionId is required'
+        });
+      }
+
+      const result = await subscriptionService.cancelSubscription(subscriptionId, req.user.estate_id || '');
+      return res.status(result.statusCode).json(result);
+    } catch (error) {
+      return res.status(500).json({
+        status: 'error',
+        message: 'Failed to cancel subscription',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
   }
-  
+
 };
 
 export default paymentController;
