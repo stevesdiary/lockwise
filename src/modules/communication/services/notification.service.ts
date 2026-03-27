@@ -16,7 +16,7 @@ class NotificationService {
 
   constructor() {
     this.qstash = new Client({ token: process.env.QSTASH_TOKEN! });
-    this.workerBaseUrl = process.env.WORKER_BASE_URL || 'http://localhost:3000/api/v1';
+    this.workerBaseUrl = process.env.WORKER_BASE_URL || 'http://localhost:3002/api/v1';
   }
 
   async sendNotification(notification: NotificationJob): Promise<void> {
@@ -30,7 +30,7 @@ class NotificationService {
 
   // Called directly by worker routes — no queue involved
   async processEmailJob(job: NotificationJob): Promise<void> {
-    const success = await EmailService.sendEmail({ to: job.to, template: job.template, data: job.data });
+    const success = await EmailService.sendEmail({ to: job.to, template: job.template as any, data: job.data });
     if (!success) throw new Error('Email sending failed');
   }
 
