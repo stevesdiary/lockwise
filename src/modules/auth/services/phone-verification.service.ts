@@ -16,7 +16,7 @@ class PhoneVerificationService {
 
   async verifyOTP(phone: string, otp: string): Promise<boolean> {
     const key = `otp:${phone}`;
-    const storedOTP = await getFromRedis(key);
+    const storedOTP = await getFromRedis<string>(key);
     
     if (!storedOTP || String(storedOTP) !== otp) {
       return false;
