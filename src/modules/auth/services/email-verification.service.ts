@@ -21,7 +21,7 @@ class EmailVerificationService {
       }
 
       const rateLimitKey = `email_rate_limit:${email}`;
-      const existingRateLimit = await getFromRedis(rateLimitKey);
+      const existingRateLimit = await getFromRedis<string>(rateLimitKey);
       
       if (existingRateLimit) {
         return { success: false, message: 'Please wait before requesting another code' };
@@ -54,7 +54,7 @@ class EmailVerificationService {
       }
 
       const redisKey = `email_verification:${email}`;
-      const storedCode = await getFromRedis(redisKey);
+      const storedCode = await getFromRedis<string>(redisKey);
 
       if (!storedCode) {
         return { success: false, message: 'Verification code expired or not found' };

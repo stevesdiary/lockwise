@@ -40,8 +40,8 @@ export class RealTimeAnalytics {
     const today = new Date().toISOString().split('T')[0];
     
     const [activeUsers, totalEvents, systemHealth] = await Promise.all([
-      getFromRedis(`analytics:active_users:${today}`).then(v => v || '0'),
-      getFromRedis(`analytics:total_events:${today}`).then(v => v || '0'),
+      getFromRedis<string>(`analytics:active_users:${today}`).then(v => v ?? '0'),
+      getFromRedis<string>(`analytics:total_events:${today}`).then(v => v ?? '0'),
       analyticsService.getSystemHealth()
     ]);
 

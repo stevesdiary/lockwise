@@ -32,7 +32,7 @@ export class VerifyService {
       };
     }
     const key = `verify:${email}`
-    const verify = await getFromRedis(key);
+    const verify = await getFromRedis<string>(key);
     if (!verify || verify !== code) {
       return {
         success: false,
