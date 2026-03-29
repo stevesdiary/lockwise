@@ -11,7 +11,6 @@ interface SessionData {
 }
 
 class SessionService {
-  private readonly ACCESS_TOKEN_TIMEOUT = 15 * 60; // 15 minutes
   private readonly REFRESH_TOKEN_TIMEOUT = 30 * 24 * 60 * 60; // 30 days
   private readonly SESSION_TIMEOUT = 30 * 24 * 60 * 60; // 30 days
   private readonly MAX_CONCURRENT_SESSIONS = {
@@ -137,11 +136,11 @@ class SessionService {
   }
 
   private generateSessionId(): string {
-    return `sess_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `sess_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
   }
 
   private generateRefreshToken(): string {
-    return `ref_${Date.now()}_${Math.random().toString(36).substr(2, 16)}`;
+    return `ref_${Date.now()}_${Math.random().toString(36).slice(2, 18)}`;
   }
 }
 
