@@ -26,7 +26,7 @@ export const offlineSyncService = {
 
   async storePendingSync(userId: string, action: string, data: any) {
     const syncId = `sync:${userId}:${Date.now()}`;
-    await saveToRedis(syncId, JSON.stringify({ action, data, timestamp: new Date() }), 86400);
+    await saveToRedis(syncId, { action, data, timestamp: new Date() }, 86400);
     return syncId;
   },
 
@@ -36,9 +36,9 @@ export const offlineSyncService = {
 
     for (const { key } of keys) {
       try {
-        const syncData = await getFromRedis(key);
+        const syncData = await getFromRedis<{ action: string; data: unknown }>(key);
         if (syncData) {
-          const { action, data } = JSON.parse(syncData);
+          const { action, data } = syncData;
           const result = await this.executeSync(action, data);
           results.push({ key, success: true, result });
           await deleteFromRedis(key);
