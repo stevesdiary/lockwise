@@ -118,8 +118,8 @@ export const accessCodeController = {
         return res.status(400).json({ message: 'Code is required' });
       }
 
-      const accessLog = await AccessLog.findOne({ 
-        where: { access_code: code, status: 'pending' },
+      const accessLog = await AccessLog.findOne({
+        where: { access_code: code, status: 'active' },
         include: [{ model: User, as: 'user', attributes: ['id', 'first_name', 'last_name', 'phone'] }]
       });
 
@@ -151,8 +151,8 @@ export const accessCodeController = {
         return res.status(400).json({ success: false, message: 'Code is required' });
       }
 
-      const accessLog = await AccessLog.findOne({ 
-        where: { access_code: code, status: 'pending' },
+      const accessLog = await AccessLog.findOne({
+        where: { access_code: code, status: 'active' },
         include: [{ model: User, as: 'user', attributes: ['id', 'phone'] }]
       });
 
@@ -255,8 +255,8 @@ export const accessCodeController = {
         return res.status(400).json({ success: false, message: 'Code is required' });
       }
 
-      const accessLog = await AccessLog.findOne({ 
-        where: { access_code: code, status: 'pending' },
+      const accessLog = await AccessLog.findOne({
+        where: { access_code: code, status: 'active' },
         include: [{ model: User, as: 'user', attributes: ['id', 'phone'] }]
       });
 
