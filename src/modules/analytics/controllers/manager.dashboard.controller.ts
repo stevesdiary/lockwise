@@ -3,10 +3,23 @@ import { managerDashboardService } from '../services/manager.dashboard.service';
 import { asString } from '../../../shared/utils/param.util';
 import { handleControllerError } from '../../../shared/middleware/error-handler.middleware';
 
+/** Returns false (and sends 403) if a manager tries to access a different estate. */
+function assertEstateAccess(req: Request, res: Response, estateId: string): boolean {
+  const caller = (req as any).user;
+  const role = (caller?.role as string)?.toLowerCase() || '';
+  const isAdmin = ['master', 'super_admin', 'admin'].includes(role);
+  if (!isAdmin && caller?.estate_id !== estateId) {
+    res.status(403).json({ status: 'error', message: 'Access denied: estate mismatch' });
+    return false;
+  }
+  return true;
+}
+
 const managerDashboardController = {
   getEstateOverview: async (req: Request, res: Response) => {
     try {
       const estate_id = asString(req.params.estate_id);
+      if (!assertEstateAccess(req, res, estate_id)) return;
       const overview = await managerDashboardService.getEstateOverview(estate_id);
       
       res.json({
@@ -25,6 +38,7 @@ const managerDashboardController = {
   getEstateResidents: async (req: Request, res: Response) => {
     try {
       const estate_id = asString(req.params.estate_id);
+      if (!assertEstateAccess(req, res, estate_id)) return;
       const { page = 1, limit = 50 } = req.query;
       const offset = (Number(page) - 1) * Number(limit);
       
@@ -49,6 +63,7 @@ const managerDashboardController = {
   getPendingEstateResidents: async (req: Request, res: Response) => {
     try {
       const estate_id = asString(req.params.estate_id);
+      if (!assertEstateAccess(req, res, estate_id)) return;
       const { page = 1, limit = 50 } = req.query;
       const offset = (Number(page) - 1) * Number(limit);
 
@@ -73,6 +88,7 @@ const managerDashboardController = {
   getEstateAccessLogs: async (req: Request, res: Response) => {
     try {
       const estate_id = asString(req.params.estate_id);
+      if (!assertEstateAccess(req, res, estate_id)) return;
       const { page = 1, limit = 100 } = req.query;
       const offset = (Number(page) - 1) * Number(limit);
       
@@ -97,6 +113,7 @@ const managerDashboardController = {
   getEstatePayments: async (req: Request, res: Response) => {
     try {
       const estate_id = asString(req.params.estate_id);
+      if (!assertEstateAccess(req, res, estate_id)) return;
       const { page = 1, limit = 50, status } = req.query;
       const offset = (Number(page) - 1) * Number(limit);
       
@@ -122,6 +139,7 @@ const managerDashboardController = {
   getPendingAccessRequests: async (req: Request, res: Response) => {
     try {
       const estate_id = asString(req.params.estate_id);
+      if (!assertEstateAccess(req, res, estate_id)) return;
       const requests = await managerDashboardService.getPendingAccessRequests(estate_id);
       res.json({ status: 'success', data: requests });
     } catch (error) {
