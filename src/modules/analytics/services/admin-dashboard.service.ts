@@ -170,7 +170,7 @@ export const adminDashboardService = {
 
   async getSuperAdminAnalytics() {
     const [totalEstates, estatesWithoutActiveSub, revenueRows] = await Promise.all([
-      Estate.count({ where: { deleted_at: null } }),
+      Estate.count(),
 
       // Estates that exist but have no subscription with status='active'
       db.query<{ estate_id: string; name: string; approval_status: string }>(`
