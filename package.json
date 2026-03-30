@@ -15,6 +15,7 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
+    "prestart": "pnpm install",
     "build": "tsc",
     "start": "node ./build/src/main.js",
     "dev": "ts-node src/main.ts",
