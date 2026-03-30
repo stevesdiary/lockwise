@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+import jwt, { type SignOptions } from "jsonwebtoken";
 import { Response } from "express";
 import { User } from "../models/user.model";
 import { Role } from "../models/role.model";
@@ -10,10 +10,35 @@ import sessionService from "./session.service";
 
 const getBcrypt = async () => (await import('bcryptjs')).default;
 
-// Define environment variables with proper types
-const jwtExpiry: string | number = process.env.JWT_EXPIRY || "1h";
+type JwtExpiry = SignOptions["expiresIn"];
+type JwtStringExpiry = Extract<JwtExpiry, string>;
+
+const isJwtStringValue = (value: string): value is JwtStringExpiry =>
+  /^-?\d+(\.\d+)?(?:\s?(?:years?|yrs?|y|weeks?|w|days?|d|hours?|hrs?|h|minutes?|mins?|m|seconds?|secs?|s|milliseconds?|msecs?|ms))?$/i.test(value);
+
+const parseJwtExpiry = (value: string | undefined, fallback: JwtExpiry): JwtExpiry => {
+  if (!value) {
+    return fallback;
+  }
+
+  const trimmedValue = value.trim();
+  if (!trimmedValue) {
+    return fallback;
+  }
+
+  if (/^-?\d+(\.\d+)?$/.test(trimmedValue)) {
+    return Number(trimmedValue);
+  }
+
+  if (isJwtStringValue(trimmedValue)) {
+    return trimmedValue;
+  }
+
+  return fallback;
+};
+
+const jwtExpiry = parseJwtExpiry(process.env.JWT_EXPIRY, "1h");
 const jwtSecret: string = process.env.JWT_SECRET || "secret";
-const refreshTokenExpiry: string | number = process.env.REFRESH_TOKEN_EXPIRY || '7d';
 const refreshSecret: string = process.env.REFRESH_TOKEN_SECRET || 'refresh_secret';
 
 export const loginUser = async (email: string, password: string) => {
