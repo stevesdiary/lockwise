@@ -6,7 +6,7 @@ export class AccessCodeService {
     const accessLog = await AccessLog.create({
       ...data,
       access_code: data.code,
-      status: 'pending'
+      status: 'active'
     });
 
     // TODO: Uncomment when guest_phone is added to AccessLog model

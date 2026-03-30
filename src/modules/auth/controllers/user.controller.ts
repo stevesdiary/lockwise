@@ -13,7 +13,20 @@ export const registerUser = async (req: Request, res: Response) => {
 
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
-    const result = await userService.getAllUsers(req.query.estate_id as string);
+    const caller = (req as any).user;
+    const callerRole = (caller?.role as string)?.toLowerCase() || '';
+    const isAdmin = ['master', 'super_admin', 'admin'].includes(callerRole);
+
+    // Managers are always scoped to their own estate — ignore any query param
+    const estateId = isAdmin
+      ? (req.query.estate_id as string | undefined)
+      : caller?.estate_id;
+
+    if (!isAdmin && !estateId) {
+      return res.status(403).json({ error: 'No estate associated with your account' });
+    }
+
+    const result = await userService.getAllUsers(estateId);
     res.status(result.statusCode).json(result);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch users" });

@@ -52,7 +52,7 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
       email: decoded.email,
       role: decoded.role,
       sessionId: decoded.sessionId,
-      estate_id: decoded.estate_id
+      estate_id: session.estateId || decoded.estate_id
     };
 
     next();
