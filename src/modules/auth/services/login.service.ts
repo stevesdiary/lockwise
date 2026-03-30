@@ -63,15 +63,15 @@ export const loginUser = async (email: string, password: string) => {
     }
 
     const token = jwt.sign(
-      { 
-        userId: user.id, 
-        email: user.email, 
+      {
+        userId: user.id,
+        email: user.email,
         role: user.role?.role,
         estate_id: user.estate_id,
         sessionId: sessionData.sessionId
       },
       process.env.JWT_SECRET || jwtSecret,
-      { expiresIn: '15m' }
+      { expiresIn: jwtExpiry }
     );
 
     const resident = user.residentProfile;
@@ -81,6 +81,7 @@ export const loginUser = async (email: string, password: string) => {
       statusCode: 200,
       message: 'Login successful',
       data: {
+        refreshToken: sessionData.refreshToken,
         user: {
           id: user.id,
           email: user.email,
@@ -99,6 +100,45 @@ export const loginUser = async (email: string, password: string) => {
         },
         token
       }
+    };
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const refreshAccessToken = async (refreshToken: string) => {
+  try {
+    const result = await sessionService.refreshSession(refreshToken);
+    if (!result) {
+      return { statusCode: 401, message: 'Invalid or expired refresh token' };
+    }
+
+    const session = await sessionService.getSession(result.sessionId);
+    if (!session) {
+      return { statusCode: 401, message: 'Session not found' };
+    }
+
+    const user = await User.findByPk(session.userId, { attributes: ['id', 'email'] });
+    if (!user) {
+      return { statusCode: 401, message: 'User not found' };
+    }
+
+    const token = jwt.sign(
+      {
+        userId: session.userId,
+        email: user.email,
+        role: session.role,
+        estate_id: session.estateId,
+        sessionId: result.sessionId,
+      },
+      process.env.JWT_SECRET || jwtSecret,
+      { expiresIn: jwtExpiry }
+    );
+
+    return {
+      statusCode: 200,
+      message: 'Token refreshed',
+      data: { token, refreshToken: result.newRefreshToken },
     };
   } catch (error) {
     throw error;

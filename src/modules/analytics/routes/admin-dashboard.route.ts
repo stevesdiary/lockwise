@@ -41,4 +41,11 @@ router.get(
   adminDashboardController.getReferrerStats
 );
 
+// Super-admin analytics: estate count, total revenue, estates without active subscription
+router.get(
+  '/stats/super-admin',
+  rateLimiters.api,
+  adminDashboardController.getSuperAdminAnalytics
+);
+
 export default router;

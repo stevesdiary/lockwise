@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { login, logout } from "../controllers/login.controller";
+import { login, logout, refresh } from "../controllers/login.controller";
 import { authenticateToken } from "../middleware/auth.middleware";
 import { rateLimiters } from "../middleware/rate-limit.middleware";
 import { auditLogger } from "../middleware/audit.middleware";
@@ -13,6 +13,11 @@ loginRouter.post("/login",
   analyticsMiddleware('user_login') as any,
   (req: Request, res: Response) => { login(req, res);
 });
+
+loginRouter.post("/refresh",
+  rateLimiters.auth,
+  (req: Request, res: Response) => { refresh(req, res); }
+);
 
 loginRouter.post("/logout", 
   rateLimiters.api,

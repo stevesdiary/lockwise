@@ -18,7 +18,15 @@ export const uploadController = {
       }
 
       const result = await uploadService.uploadFile(req.file, tenantId, tenantName);
-      res.json(result);
+      res.json({
+        success: true,
+        data: {
+          file_url: result.url,
+          file_name: req.file.originalname,
+          file_type: req.file.mimetype,
+          file_size: result.size,
+        },
+      });
     } catch (error) {
       console.error('Upload error:', error);
       res.status(500).json({ 
