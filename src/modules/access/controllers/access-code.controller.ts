@@ -26,7 +26,10 @@ export const accessCodeController = {
 
       return res.status(200).json({
         success: true,
-        data: accessCodes
+        data: accessCodes.map(code => {
+          const json = code.toJSON() as any;
+          return { ...json, created_at: json.created_at ?? json.createdAt };
+        })
       });
     } catch (error: any) {
       logger.error('Get access codes error:', error);
@@ -88,11 +91,13 @@ export const accessCodeController = {
         destinationMapsUrl
       );
 
+      const codeJson = accessCode.toJSON() as any;
       return res.status(201).json({
         success: true,
         message: 'Access code generated',
         data: {
-          ...accessCode.toJSON(),
+          ...codeJson,
+          created_at: codeJson.created_at ?? codeJson.createdAt,
           fullAddress,
           destinationAddress: fullAddress || null,
           destinationMapsUrl: destinationMapsUrl || null,
