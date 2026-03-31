@@ -232,6 +232,45 @@ Best regards,
 The Lockwise Team`
   }),
 
+  subscriptionReceipt: (data: any) => ({
+    subject: `Subscription Receipt – ${data.plan_name || 'Lockwise Plan'} Activated`,
+    html: baseTemplate(`
+      <div class="content">
+        <h2>Subscription Receipt 🎉</h2>
+        <p>Hello ${data.manager_name || 'there'},</p>
+        <p>Great news! Your subscription for <strong>${data.estate_name || 'your estate'}</strong> has been activated successfully.</p>
+        <div class="code-box">
+          <p style="margin: 0 0 8px 0;"><strong>Plan:</strong> ${data.plan_name || 'N/A'}</p>
+          <p style="margin: 0 0 8px 0;"><strong>Billing Cycle:</strong> ${data.billing_cycle || 'N/A'}</p>
+          <p style="margin: 0 0 8px 0;"><strong>Start Date:</strong> ${data.start_date}</p>
+          <p style="margin: 0 0 8px 0;"><strong>Expiry Date:</strong> ${data.end_date}</p>
+          <p style="margin: 0 0 8px 0;"><strong>Amount Paid:</strong> ${data.currency || 'NGN'} ${data.amount}</p>
+          <p style="margin: 0;"><strong>Reference:</strong> ${data.reference}</p>
+        </div>
+        <p>Your estate is now fully active and all features are unlocked for the subscription period.</p>
+        <p>Please keep this email as your payment receipt.</p>
+        <p>Best regards,<br>The Lockwise Team</p>
+      </div>
+    `),
+    text: `Subscription Receipt – ${data.plan_name || 'Lockwise Plan'} Activated
+
+Hello ${data.manager_name || 'there'},
+
+Your subscription for ${data.estate_name || 'your estate'} has been activated.
+
+Plan: ${data.plan_name || 'N/A'}
+Billing Cycle: ${data.billing_cycle || 'N/A'}
+Start Date: ${data.start_date}
+Expiry Date: ${data.end_date}
+Amount Paid: ${data.currency || 'NGN'} ${data.amount}
+Reference: ${data.reference}
+
+Your estate is now fully active for the subscription period.
+
+Best regards,
+The Lockwise Team`
+  }),
+
   estateSubmitted: (data: any) => ({
     subject: `New estate "${data.estate_name || 'Unknown'}" submitted for approval`,
     html: baseTemplate(`
