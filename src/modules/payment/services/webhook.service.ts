@@ -3,6 +3,9 @@ import { Transaction } from 'sequelize';
 import sequelize from '../../../shared/core/database';
 import { Payment } from '../../payment/models/payment.model';
 import { Subscription } from '../../payment/models/subscription.model';
+import { Plan } from '../../payment/models/plan.model';
+import { Estate } from '../../estate/models/estate.model';
+import { User } from '../../auth/models/user.model';
 
 interface WebhookResult {
   success: boolean;
@@ -64,6 +67,11 @@ export const webhookService = {
           }
         );
 
+        // Send receipt email after transaction commits (external I/O must not run inside DB transaction)
+        this.sendSubscriptionReceiptEmail(data.reference).catch((err: Error) => {
+          console.error('Subscription receipt email failed:', err);
+        });
+
         return { success: true, message: 'Webhook processed successfully', statusCode: 200 };
       }
 
@@ -76,14 +84,76 @@ export const webhookService = {
     }
   },
 
+  async sendSubscriptionReceiptEmail(reference: string): Promise<void> {
+    const payment = await Payment.findOne({ where: { reference } });
+    if (!payment || !payment.estate_id) return;
+
+    const [subscription, estate] = await Promise.all([
+      Subscription.findOne({
+        where: { estate_id: payment.estate_id, status: 'active' },
+        include: [Plan],
+        order: [['created_at', 'DESC']],
+      }),
+      Estate.findByPk(payment.estate_id),
+    ]);
+
+    if (!subscription || !estate) return;
+
+    // Find the estate manager (creator or any manager-role user for this estate)
+    const manager = await User.findOne({
+      where: { estate_id: payment.estate_id, id: payment.user_id } as any,
+    }) ?? await User.findOne({ where: { estate_id: payment.estate_id } as any });
+
+    if (!manager?.email) return;
+
+    const plan: any = subscription.plan;
+    const formatDate = (d: Date) => new Date(d).toLocaleDateString('en-GB', {
+      day: '2-digit', month: 'long', year: 'numeric',
+    });
+    const formatAmount = (kobo: number) => (kobo / 100).toLocaleString('en-NG', { minimumFractionDigits: 2 });
+
+    const emailService = (await import('../../communication/services/email.service')).default;
+    await emailService.sendSubscriptionReceiptEmail(manager.email, {
+      manager_name: `${manager.first_name} ${manager.last_name}`.trim(),
+      estate_name: estate.name,
+      plan_name: plan?.name || 'Lockwise Plan',
+      billing_cycle: plan?.billing_cycle || 'N/A',
+      start_date: formatDate(subscription.start_date),
+      end_date: formatDate(subscription.end_date),
+      amount: formatAmount(payment.amount),
+      currency: plan?.currency || 'NGN',
+      reference: payment.reference,
+    });
+  },
+
   async createOrExtendSubscription(payment: any, t?: Transaction): Promise<void> {
+    const subscription = await Subscription.findOne({
+      where: { estate_id: payment.estate_id },
+      include: [Plan],
+      order: [['created_at', 'DESC']],
+      transaction: t,
+    });
+
+    const startDate = new Date();
+    const endDate = new Date(startDate);
+    const billingCycle = subscription?.plan?.billing_cycle;
+
+    switch (billingCycle) {
+      case 'monthly':    endDate.setMonth(endDate.getMonth() + 1);       break;
+      case 'quarterly':  endDate.setMonth(endDate.getMonth() + 3);       break;
+      case 'biannually': endDate.setMonth(endDate.getMonth() + 6);       break;
+      case 'annually':   endDate.setFullYear(endDate.getFullYear() + 1); break;
+      default:           endDate.setMonth(endDate.getMonth() + 1);       break; // fallback: monthly
+    }
+
     await Subscription.upsert(
       {
-        user_id: payment.user_id,
+        ...(subscription?.id ? { id: subscription.id } : {}),
         estate_id: payment.estate_id,
         status: 'active',
-        start_date: new Date(),
-        end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        start_date: startDate,
+        end_date: endDate,
+        paid_on: startDate,
       },
       { transaction: t },
     );

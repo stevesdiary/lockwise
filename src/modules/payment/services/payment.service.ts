@@ -189,17 +189,26 @@ class PaymentService {
     );
   }
 
-  async handlePaymentFailure(reference: string, reason: string): Promise<void> {
+  async handlePaymentFailure(reference: string, _reason: string): Promise<void> {
     try {
-      const payment = await Payment.findOne({ where: { reference } });
-      if (payment) {
-        await payment.update({
-          payment_status: 'failed',
-        });
-        
-        // Send failure notification
-        // await NotificationService.sendPaymentFailureNotification(payment);
-      }
+      await sequelize.transaction(
+        { isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE },
+        async (t) => {
+          const payment = await Payment.findOne({ where: { reference }, transaction: t });
+          if (!payment) return;
+
+          await payment.update({ payment_status: 'failed' }, { transaction: t });
+
+          // Keep linked subscription inactive; only update if it hasn't been
+          // activated by a concurrent webhook (status guard prevents overwrite)
+          if (payment.subscription_id) {
+            await Subscription.update(
+              { status: 'inactive' },
+              { where: { id: payment.subscription_id, status: 'inactive' }, transaction: t },
+            );
+          }
+        },
+      );
     } catch (error) {
       console.error('Payment failure handling error:', error);
     }

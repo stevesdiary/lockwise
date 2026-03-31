@@ -281,6 +281,27 @@ class EmailService {
       data,
     });
   }
+
+  async sendSubscriptionReceiptEmail(
+    to: string,
+    data: {
+      manager_name: string;
+      estate_name: string;
+      plan_name: string;
+      billing_cycle: string;
+      start_date: string;
+      end_date: string;
+      amount: string;
+      currency: string;
+      reference: string;
+    }
+  ): Promise<boolean> {
+    return this.sendEmail({
+      to,
+      template: 'subscriptionReceipt',
+      data,
+    });
+  }
 }
 
 export default new EmailService();
