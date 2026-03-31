@@ -1,8 +1,11 @@
+import { Transaction, Op } from 'sequelize';
+import sequelize from '../../../shared/core/database';
 import { Subscription } from '../../payment/models/subscription.model';
 import { Plan } from '../../payment/models/plan.model';
 import { Estate } from '../../estate/models/estate.model';
-import { paymentService } from '../../payment/services/payment.service';
-import { Op } from 'sequelize';
+import { Payment } from '../../payment/models/payment.model';
+import PaystackService from './paystack.service';
+import { nanoid } from 'nanoid';
 
 interface SubscriptionData {
   estate_id: string;
@@ -16,56 +19,78 @@ interface SubscriptionData {
 class SubscriptionService {
   async createSubscription(data: SubscriptionData) {
     try {
-      const plan = await Plan.findByPk(data.plan_id);
-      const estate = await Estate.findByPk(data.estate_id);
+      // 1. Pre-flight validation (outside transaction — no locks held yet)
+      const [plan, estate] = await Promise.all([
+        Plan.findByPk(data.plan_id),
+        Estate.findByPk(data.estate_id),
+      ]);
 
       if (!plan || !estate) {
         throw new Error('Plan or estate not found');
       }
 
-      // Check for existing active subscription
       const existingSubscription = await Subscription.findOne({
-        where: {
-          estate_id: data.estate_id,
-          status: 'active'
-        }
+        where: { estate_id: data.estate_id, status: 'active' },
       });
 
       if (existingSubscription) {
         throw new Error('Estate already has an active subscription');
       }
 
-      // Create pending subscription (paid_on set when payment completes)
-      const subscription = await Subscription.create({
-        estate_id: data.estate_id,
-        plan_id: data.plan_id,
-        status: 'inactive',
-        start_date: new Date(),
-        end_date: new Date(),
-      });
-
-      // Initiate payment for subscription
-      const paymentResult = await paymentService.initiatePayment({
+      // 2. Call Paystack BEFORE opening a DB transaction (external I/O must not hold DB locks)
+      const reference = `LW_${nanoid(10)}_${Date.now()}`;
+      const providerResponse = await PaystackService.initializeTransaction({
         amount: parseFloat(plan.price.toString()),
         email: data.user_email,
         currency: plan.currency || 'NGN',
-        payment_provider: data.payment_provider || 'paystack',
-        payment_method: data.payment_method || 'card',
-        user_id: data.user_id,
-        estate_id: data.estate_id,
-        subscription_id: subscription.id,
+        reference,
+        callback_url: `${process.env.BASE_URL}/api/v1/payment/callback`,
+        metadata: {
+          user_id: data.user_id,
+          estate_id: data.estate_id,
+        },
       });
 
-      if (paymentResult.statusCode !== 200) {
-        await subscription.destroy();
-        throw new Error('Payment initialization failed');
-      }
+      // 3. Atomically persist subscription + payment record
+      await sequelize.transaction(async (t: Transaction) => {
+        const subscription = await Subscription.create(
+          {
+            estate_id: data.estate_id,
+            plan_id: data.plan_id,
+            status: 'inactive',
+            start_date: new Date(),
+            end_date: new Date(),
+          },
+          { transaction: t },
+        );
+
+        await Payment.create(
+          {
+            user_id: data.user_id,
+            estate_id: data.estate_id,
+            subscription_id: subscription.id,
+            amount: parseFloat(plan.price.toString()),
+            payment_date: new Date(),
+            payment_status: 'pending',
+            reference,
+            payment_provider: 'paystack',
+            payment_method: 'paystack',
+            email: data.user_email,
+            payment_data: providerResponse,
+          },
+          { transaction: t },
+        );
+      });
 
       return {
         statusCode: 200,
         status: 'success',
         message: 'Subscription payment initiated',
-        data: paymentResult.data,
+        data: {
+          reference,
+          authorization_url: providerResponse.data.authorization_url,
+          access_code: providerResponse.data.access_code,
+        },
       };
     } catch (error: any) {
       return {
@@ -111,7 +136,7 @@ class SubscriptionService {
   async renewSubscription(subscriptionId: string, userId: string, userEmail: string) {
     try {
       const subscription = await Subscription.findByPk(subscriptionId, {
-        include: [Plan, Estate]
+        include: [Plan, Estate],
       });
 
       if (!subscription) {
@@ -119,24 +144,48 @@ class SubscriptionService {
       }
 
       const plan = subscription.plan;
-      const estate = subscription.estate;
+      const estateId = subscription.estate?.estate_id || (subscription.estate as any)?.id;
 
-      // Initiate renewal payment
-      const paymentResult = await paymentService.initiatePayment({
+      // Call Paystack BEFORE opening a DB transaction
+      const reference = `LW_${nanoid(10)}_${Date.now()}`;
+      const providerResponse = await PaystackService.initializeTransaction({
         amount: parseFloat(plan.price.toString()),
         email: userEmail,
         currency: plan.currency || 'NGN',
-        user_id: userId,
-        payment_method: 'card',
-        estate_id: estate?.estate_id || (estate as any)?.id,
-        subscription_id: subscription.id,
+        reference,
+        callback_url: `${process.env.BASE_URL}/api/v1/payment/callback`,
+        metadata: { user_id: userId, estate_id: estateId, subscription_id: subscription.id },
+      });
+
+      // Atomically persist renewal payment record
+      await sequelize.transaction(async (t: Transaction) => {
+        await Payment.create(
+          {
+            user_id: userId,
+            estate_id: estateId,
+            subscription_id: subscription.id,
+            amount: parseFloat(plan.price.toString()),
+            payment_date: new Date(),
+            payment_status: 'pending',
+            reference,
+            payment_provider: 'paystack',
+            payment_method: 'paystack',
+            email: userEmail,
+            payment_data: providerResponse,
+          },
+          { transaction: t },
+        );
       });
 
       return {
         statusCode: 200,
         status: 'success',
         message: 'Subscription renewal initiated',
-        data: paymentResult.data,
+        data: {
+          reference,
+          authorization_url: providerResponse.data.authorization_url,
+          access_code: providerResponse.data.access_code,
+        },
       };
     } catch (error: any) {
       return {
