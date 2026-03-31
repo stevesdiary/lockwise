@@ -14,11 +14,11 @@ class SessionService {
   private readonly REFRESH_TOKEN_TIMEOUT = 30 * 24 * 60 * 60; // 30 days
   private readonly SESSION_TIMEOUT = 30 * 24 * 60 * 60; // 30 days
   private readonly MAX_CONCURRENT_SESSIONS = {
-    resident: 3,
-    manager: 2,
-    admin: 5,
-    security: 5,
-    super_admin: 3
+    resident: parseInt(process.env.MAX_SESSIONS_RESIDENT || '3', 10),
+    manager: parseInt(process.env.MAX_SESSIONS_MANAGER || '2', 10),
+    admin: parseInt(process.env.MAX_SESSIONS_ADMIN || '5', 10),
+    security: parseInt(process.env.MAX_SESSIONS_SECURITY || '5', 10),
+    super_admin: parseInt(process.env.MAX_SESSIONS_SUPER_ADMIN || '3', 10),
   };
 
   async createSession(userId: string, sessionData: Omit<SessionData, 'loginTime' | 'lastActivity' | 'refreshToken'>): Promise<{ sessionId: string; refreshToken: string }> {

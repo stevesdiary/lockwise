@@ -7,6 +7,17 @@ import { Payment } from '../../payment/models/payment.model';
 import PaystackService from './paystack.service';
 import { nanoid } from 'nanoid';
 
+function applySubscriptionDiscount(amount: number, billingCycle: string): number {
+  let discountPercent = 0;
+  if (billingCycle === 'biannually') {
+    discountPercent = parseFloat(process.env.BIANNUAL_DISCOUNT_PERCENT || '0');
+  } else if (billingCycle === 'annually') {
+    discountPercent = parseFloat(process.env.ANNUAL_DISCOUNT_PERCENT || '0');
+  }
+  if (discountPercent <= 0) return amount;
+  return parseFloat((amount * (1 - discountPercent / 100)).toFixed(2));
+}
+
 interface SubscriptionData {
   estate_id: string;
   plan_id: string;
@@ -38,9 +49,12 @@ class SubscriptionService {
       }
 
       // 2. Call Paystack BEFORE opening a DB transaction (external I/O must not hold DB locks)
+      const baseAmount = parseFloat(plan.price.toString());
+      const finalAmount = applySubscriptionDiscount(baseAmount, plan.billing_cycle);
+
       const reference = `LW_${nanoid(10)}_${Date.now()}`;
       const providerResponse = await PaystackService.initializeTransaction({
-        amount: parseFloat(plan.price.toString()),
+        amount: finalAmount,
         email: data.user_email,
         currency: plan.currency || 'NGN',
         reference,
@@ -69,7 +83,7 @@ class SubscriptionService {
             user_id: data.user_id,
             estate_id: data.estate_id,
             subscription_id: subscription.id,
-            amount: parseFloat(plan.price.toString()),
+            amount: finalAmount,
             payment_date: new Date(),
             payment_status: 'pending',
             reference,
@@ -147,9 +161,12 @@ class SubscriptionService {
       const estateId = subscription.estate?.estate_id || (subscription.estate as any)?.id;
 
       // Call Paystack BEFORE opening a DB transaction
+      const baseAmount = parseFloat(plan.price.toString());
+      const finalAmount = applySubscriptionDiscount(baseAmount, plan.billing_cycle);
+
       const reference = `LW_${nanoid(10)}_${Date.now()}`;
       const providerResponse = await PaystackService.initializeTransaction({
-        amount: parseFloat(plan.price.toString()),
+        amount: finalAmount,
         email: userEmail,
         currency: plan.currency || 'NGN',
         reference,
@@ -164,7 +181,7 @@ class SubscriptionService {
             user_id: userId,
             estate_id: estateId,
             subscription_id: subscription.id,
-            amount: parseFloat(plan.price.toString()),
+            amount: finalAmount,
             payment_date: new Date(),
             payment_status: 'pending',
             reference,

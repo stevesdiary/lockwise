@@ -127,13 +127,33 @@ export const webhookService = {
   },
 
   async createOrExtendSubscription(payment: any, t?: Transaction): Promise<void> {
+    const subscription = await Subscription.findOne({
+      where: { estate_id: payment.estate_id },
+      include: [Plan],
+      order: [['created_at', 'DESC']],
+      transaction: t,
+    });
+
+    const startDate = new Date();
+    const endDate = new Date(startDate);
+    const billingCycle = subscription?.plan?.billing_cycle;
+
+    switch (billingCycle) {
+      case 'monthly':    endDate.setMonth(endDate.getMonth() + 1);       break;
+      case 'quarterly':  endDate.setMonth(endDate.getMonth() + 3);       break;
+      case 'biannually': endDate.setMonth(endDate.getMonth() + 6);       break;
+      case 'annually':   endDate.setFullYear(endDate.getFullYear() + 1); break;
+      default:           endDate.setMonth(endDate.getMonth() + 1);       break; // fallback: monthly
+    }
+
     await Subscription.upsert(
       {
-        user_id: payment.user_id,
+        ...(subscription?.id ? { id: subscription.id } : {}),
         estate_id: payment.estate_id,
         status: 'active',
-        start_date: new Date(),
-        end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        start_date: startDate,
+        end_date: endDate,
+        paid_on: startDate,
       },
       { transaction: t },
     );
