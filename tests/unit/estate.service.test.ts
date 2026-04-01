@@ -98,6 +98,9 @@ describe('getOneEstate', () => {
 describe('createEstate (draft)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Re-apply transaction mock — resetMocks:true clears it between tests
+    const sequelize = require('../../src/shared/core/database').default;
+    (sequelize.transaction as jest.Mock).mockImplementation((cb: (t: any) => Promise<any>) => cb({}));
   });
 
   it('should create estate as draft with initialized setup_checklist', async () => {

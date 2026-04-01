@@ -43,7 +43,7 @@ export const registerUser = async (userData: {
       return { statusCode: 400, message: 'User already exists' };
     }
 
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
+    const hashedPassword = await bcrypt.hash(userData.password, 12);
     
     // Auto-assign role based on user_type if not provided
     const roleMapping = await getRoleMapping();

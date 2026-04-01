@@ -27,7 +27,7 @@ describe('Encryption Service', () => {
       
       expect(key1.key).not.toBe(key2.key);
       expect(key1.hash).not.toBe(key2.hash);
-      expect(key1.key).toHaveLength(64);
+      expect(key1.key).toHaveLength(96); // randomBytes(48).toString('hex') = 96 chars
     });
   });
 });
