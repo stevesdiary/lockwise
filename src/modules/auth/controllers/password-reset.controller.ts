@@ -54,7 +54,7 @@ export const passwordResetController = {
         return res.status(400).json({ success: false, error: 'Current password is incorrect' });
       }
 
-      const hashed = await bcrypt.hash(new_password, 10);
+      const hashed = await bcrypt.hash(new_password, 12);
       await user.update({ password: hashed });
 
       return res.json({ success: true, message: 'Password changed successfully' });

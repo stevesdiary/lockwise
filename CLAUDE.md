@@ -90,10 +90,13 @@ if (!isAdmin) {
 
 **Payment (Paystack):**
 - Webhook at `POST /api/v1/webhooks/paystack` — HMAC-SHA512 via `x-paystack-signature`; exempt from CSRF
-- `charge.success` processed atomically in SERIALIZABLE transaction
+- `charge.success` processed atomically in SERIALIZABLE transaction; subscription receipt email sent **after** transaction commits (fire-and-forget `.catch()`)
 - Reference format: `LW_${nanoid(10)}_${Date.now()}`
+- Payment client: `paystack.service.ts` (no Flutterwave service)
 
 **Estate status flow:** `draft → pending → approved / declined → pending (resubmit)`
+
+**Estate code:** `estate_code` auto-generated in `estate.controller.ts` as `EST-${customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 8)()}` — never supplied by the mobile client.
 
 **Email:** Uses Brevo (formerly Sendinblue) via `emailService`. Templates in `shared/templates/email.templates.ts`.
 
