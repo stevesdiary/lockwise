@@ -71,9 +71,9 @@ export class Subscription extends Model {
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: true
   })
-  declare paid_on: Date;
+  declare paid_on: Date | null;
 
   @Column({
     type: DataType.DATE,
