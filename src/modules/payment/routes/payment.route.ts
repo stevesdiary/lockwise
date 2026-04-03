@@ -34,6 +34,15 @@ paymentRouter.get(
   }
 );
 
+paymentRouter.get(
+  "/subscription/status",
+  authenticateToken,
+  requireManager,
+  async (req: ExpressRequest, res: Response) => {
+    await paymentController.getSubscriptionStatus(req, res);
+  }
+);
+
 paymentRouter.get("/callback", async (req: ExpressRequest, res: Response) => {
   await paymentController.paymentCallback(req, res);
 });

@@ -336,6 +336,70 @@ const paymentController = {
     }
   },
 
+  getSubscriptionStatus: async (req: ExpressRequest, res: Response) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ status: 'error', message: 'Authentication required' });
+      }
+
+      if (!req.user.estate_id) {
+        return res.status(400).json({ status: 'error', message: 'User is not linked to an estate' });
+      }
+
+      const result = await subscriptionService.getCurrentSubscriptionForEstate(req.user.estate_id);
+      if (result.statusCode !== 200 || !result.data) {
+        return res.status(result.statusCode).json(result);
+      }
+
+      const sub = result.data as any;
+      const now = new Date();
+      const paymentUrl = `${process.env.WEB_PORTAL_URL}/subscribe`;
+
+      let showBanner = false;
+      let bannerType: 'warning' | 'urgent' | 'critical' | null = null;
+      let bannerMessage = '';
+      let daysRemaining: number | null = null;
+
+      if (sub.status === 'active' && sub.end_date) {
+        const days = Math.ceil((new Date(sub.end_date).getTime() - now.getTime()) / 86400000);
+        if (days <= 7) {
+          showBanner = true;
+          bannerType = 'warning';
+          daysRemaining = days;
+          bannerMessage = `Your subscription expires in ${days} day${days !== 1 ? 's' : ''}. Renew to avoid interruption.`;
+        }
+      } else if (sub.status === 'grace_period' && sub.grace_period_end_date) {
+        const days = Math.ceil((new Date(sub.grace_period_end_date).getTime() - now.getTime()) / 86400000);
+        showBanner = true;
+        bannerType = 'urgent';
+        daysRemaining = Math.max(0, days);
+        bannerMessage = `Grace period active — ${daysRemaining} day${daysRemaining !== 1 ? 's' : ''} left. Renew now to avoid service interruption.`;
+      } else if (sub.status === 'expired') {
+        showBanner = true;
+        bannerType = 'critical';
+        bannerMessage = 'Your subscription has expired. Renew now to continue using Lockwise.';
+      }
+
+      return res.status(200).json({
+        status: 'success',
+        data: {
+          subscription: sub,
+          show_banner: showBanner,
+          banner_type: bannerType,
+          banner_message: bannerMessage,
+          days_remaining: daysRemaining,
+          payment_url: paymentUrl,
+        },
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: 'error',
+        message: 'Internal server error',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  },
+
   cancelSubscription: async (req: ExpressRequest, res: Response) => {
     try {
       if (!req.user) {

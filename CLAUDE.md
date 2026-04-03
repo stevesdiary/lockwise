@@ -1,3 +1,4 @@
+Project: architecture pointers, NOT full content
 # lockwise-server
 
 Express 5 / TypeScript 5.8 REST + WebSocket API for the Lockwise estate access management platform.
@@ -61,10 +62,12 @@ NODE_ENV=test npx jest --config tests/setup/jest.config.ts --no-coverage
 ## Key Conventions
 
 **Migrations** (`migrations/`):
-- Naming: `YYYYMMDDHHMMSS-<action>-<entity>.js`; active baseline uses `20260319XXXXXX` timestamps (53 migrations, 001–053)
+- Naming: `YYYYMMDDHHMMSS-<action>-<entity>.js`; active baseline uses `20260319XXXXXX` timestamps (55 migrations, 001–055)
 - No `{ ifNotExists: true }` guards in main branch migrations (only in `.worktrees/modularize/`)
 - Deferred FK pattern for circular deps (e.g., `estates.created_by → users.id` added in migration 051)
 - Security profile seed in migration 053 (`20260330000053`): inserts one `security` user per estate; email `security@<estate_code>.lockwise.local`; default password `Security@1234` (bcrypt, salt 10); uses `ON CONFLICT DO NOTHING`
+- Grace period migration 054 (`20260403000054`): adds `grace_period_end_date` DATE nullable and `last_notification_sent` DATE nullable to `subscriptions`; adds `'grace_period'` to `enum_subscriptions_status` ENUM
+- Plans seed in migration 055 (`20260403000055`): inserts Starter (free, 20 residents, basic category) and Standard (₦15,000/month, 200 residents, standard category); uses `ON CONFLICT (name) DO NOTHING`
 
 **Middleware** (`shared/middleware/`):
 - `authenticateToken` — verifies JWT, attaches `req.user`
@@ -90,7 +93,7 @@ if (!isAdmin) {
 
 **Payment (Paystack):**
 - Webhook at `POST /api/v1/webhooks/paystack` — HMAC-SHA512 via `x-paystack-signature`; exempt from CSRF
-- `charge.success` processed atomically in SERIALIZABLE transaction; subscription receipt email sent **after** transaction commits (fire-and-forget `.catch()`)
+- `charge.success` processed atomically in SERIALIZABLE transaction; subscription receipt email sent **after** transaction commits (fire-and-forget `.catch()`); subscription status lifecycle: `inactive` → `active` → `grace_period` → `cancelled` / `expired`
 - Reference format: `LW_${nanoid(10)}_${Date.now()}`
 - Payment client: `paystack.service.ts` (no Flutterwave service)
 

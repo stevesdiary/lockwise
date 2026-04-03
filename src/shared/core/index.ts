@@ -24,6 +24,9 @@ realTimeNotificationService.setWebSocketService(webSocketService);
 
 const port = process.env.LOCAL_PORT || 3002;
 
+// Trust the first hop proxy (Render, Heroku, nginx) so req.ip reflects the real client IP
+server.set('trust proxy', 1);
+
 // Security headers
 server.use(helmet());
 
@@ -61,8 +64,19 @@ const limiter = rateLimit({
   max: 200,
   standardHeaders: true,
   legacyHeaders: false,
-  message: 'Too many requests from this IP, try again after 10 minutes'
-})
+  message: 'Too many requests from this IP, try again after 10 minutes',
+  // Paystack webhook is exempt — Paystack retries on non-200 and could exhaust the limit
+  skip: (req) => req.path.includes('/webhooks/paystack'),
+});
+
+// Strict limiter for auth endpoints — brute-force protection for login/registration/OTP
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'Too many authentication attempts, try again after 15 minutes'
+});
 
 // Health check — exempt from rate limiting, used by load balancers
 server.get('/health', async (_req, res) => {
@@ -80,6 +94,9 @@ server.get("/home", (req, res) => {
 
 server.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 server.use(limiter);
+// Stricter rate limit on auth routes — brute-force protection for login, registration, OTP
+server.use('/api/v1/auth', authLimiter);
+server.use('/api/v1/log', authLimiter);
 server.use('/api/v1', router);
 
 // Error handling middleware
