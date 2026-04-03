@@ -4,6 +4,7 @@ import sequelize from '../../../shared/core/database';
 import { Payment } from '../../payment/models/payment.model';
 import { Subscription } from '../../payment/models/subscription.model';
 import { Plan } from '../../payment/models/plan.model';
+import { Estate } from '../../estate/models/estate.model';
 import PaystackService from './paystack.service';
 import { referralService } from './referral.service';
 
@@ -229,6 +230,10 @@ class PaymentService {
       
       const payments = await Payment.findAndCountAll({
         where: whereClause,
+        include: [
+          { model: Estate, attributes: ['estate_id', 'name'] },
+          { model: Subscription, include: [{ model: Plan, attributes: ['id', 'name', 'billing_cycle'] }] },
+        ],
         limit: options.limit,
         offset: options.offset,
         order: [['created_at', 'DESC']],
