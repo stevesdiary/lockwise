@@ -47,7 +47,7 @@ export class Subscription extends Model {
   declare end_date: Date;
 
   @Column({
-    type: DataType.ENUM('active', 'inactive', 'cancelled', 'expired'),
+    type: DataType.ENUM('active', 'inactive', 'cancelled', 'expired', 'grace_period'),
     allowNull: false
   })
   declare status: string;
@@ -63,9 +63,9 @@ export class Subscription extends Model {
   @BelongsTo(() => Estate)
   declare estate: Estate;
 
-  @Column({ 
-    type: DataType.BOOLEAN, 
-    defaultValue: true 
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: true
   })
   declare auto_renew: boolean;
 
@@ -74,4 +74,16 @@ export class Subscription extends Model {
     allowNull: false
   })
   declare paid_on: Date;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true
+  })
+  declare grace_period_end_date: Date | null;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true
+  })
+  declare last_notification_sent: Date | null;
 }
