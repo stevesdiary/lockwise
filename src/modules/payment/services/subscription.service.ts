@@ -237,15 +237,20 @@ class SubscriptionService {
 
   async getCurrentSubscriptionForEstate(estateId: string) {
     try {
+      // Prefer active/grace_period over inactive; most recently created wins within same status
       const subscription = await Subscription.findOne({
         where: {
           estate_id: estateId,
           status: {
-            [Op.in]: ['active', 'inactive']
+            [Op.in]: ['active', 'grace_period', 'inactive']
           }
         },
         include: [Plan],
-        order: [['end_date', 'DESC']]
+        order: [
+          // active > grace_period > inactive
+          [sequelize.literal(`CASE status WHEN 'active' THEN 0 WHEN 'grace_period' THEN 1 ELSE 2 END`), 'ASC'],
+          ['created_at', 'DESC'],
+        ],
       });
 
       if (subscription) {
