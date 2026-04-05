@@ -82,7 +82,7 @@ const authLimiter = rateLimit({
 server.get('/health', async (_req, res) => {
   try {
     await sequelize.authenticate();
-    res.status(200).json({ status: 'ok', db: 'connected' });
+    res.status(200).json({ status: 'ok', db: 'connected', timestamp: new Date().toISOString() });
   } catch {
     res.status(503).json({ status: 'error', db: 'disconnected' });
   }
