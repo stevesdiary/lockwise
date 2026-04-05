@@ -17,6 +17,9 @@ class AccessLog extends Model {
   declare exit_time?: Date;
   declare scanned_by?: string;
   declare remark?: string;
+  declare is_multi_entry: boolean;
+  declare max_entries?: number | null;
+  declare used_entries: number;
   declare created_at?: Date;
   declare updated_at?: Date;
   declare user?: User;
@@ -78,6 +81,21 @@ AccessLog.init({
   guest_name: {
     type: DataTypes.STRING,
     allowNull: true
+  },
+  is_multi_entry: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
+  },
+  max_entries: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    defaultValue: null
+  },
+  used_entries: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 0
   }
 }, {
   sequelize,
