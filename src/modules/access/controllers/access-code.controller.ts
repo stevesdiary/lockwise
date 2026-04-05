@@ -41,7 +41,7 @@ export const accessCodeController = {
     try {
       const userId = req.user?.id;
       const estateId = req.user?.estate_id;
-      const { visitor_name, valid_until, valid_from, visitor_phone, access_type } = req.body;
+      const { visitor_name, valid_until, valid_from, visitor_phone, access_type, is_multi_entry, max_entries } = req.body;
 
       if (!userId) {
         return res.status(401).json({ message: 'Unauthorized' });
@@ -70,6 +70,9 @@ export const accessCodeController = {
       const fullAddress = await getResidentFullAddress(userId);
       const destinationMapsUrl = buildGoogleMapsSearchUrl(fullAddress);
       
+      const unlimitedTypes = ['domestic_staff', 'service', 'maintenance'];
+      const shouldAllowUnlimited = unlimitedTypes.includes(access_type);
+
       const accessCode = await accessCodeService.generateCode({
         user_id: userId,
         estate_id: estateId,
@@ -79,6 +82,8 @@ export const accessCodeController = {
         access_type,
         valid_from: validFromDate,
         valid_until: validUntilDate,
+        is_multi_entry: shouldAllowUnlimited ? true : (is_multi_entry || false),
+        max_entries: shouldAllowUnlimited ? null : (max_entries ?? (is_multi_entry ? null : undefined)),
       });
 
       // Format share message
