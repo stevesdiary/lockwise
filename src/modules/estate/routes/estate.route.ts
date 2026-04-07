@@ -202,4 +202,21 @@ estateRouter.get('/:estateId/gates',
   }
 );
 
+// Resident management within an estate
+estateRouter.get('/:estateId/residents',
+  authenticateToken,
+  requireManager,
+  async (req: ExpressRequest, res: Response) => {
+    await estateController.getEstateResidents(req, res);
+  }
+);
+
+estateRouter.delete('/:estateId/residents/:residentId',
+  authenticateToken,
+  requireManager,
+  async (req: ExpressRequest, res: Response) => {
+    await estateController.removeResidentFromEstate(req, res);
+  }
+);
+
 export default estateRouter;

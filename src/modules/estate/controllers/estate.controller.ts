@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import { Op } from 'sequelize';
 import { AuthRequest } from '../../auth/middleware/auth.middleware';
 import { createEstateSchema } from '../../../shared/utils/validator';
 import estateService from '../../estate/services/estate.service';
@@ -9,6 +10,9 @@ import { idSchema } from '../../../shared/schemas/validation.schema';
 import { customAlphabet } from 'nanoid';
 import { asString } from '../../../shared/utils/param.util';
 import { User } from '../../auth/models/user.model';
+import { Resident } from '../models/resident.model';
+import { Unit } from '../models/unit.model';
+import { Street } from '../models/street.model';
 
 class EstateController {
   async createEstate(req: AuthRequest, res: Response) {
@@ -368,6 +372,89 @@ class EstateController {
       }
       const result = await gateService.getGates(estateId);
       return res.status(200).json(result);
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  }
+
+  async getEstateResidents(req: AuthRequest, res: Response): Promise<Response> {
+    try {
+      const estateId = asString(req.params.estateId);
+      const { search, street } = req.query as { search?: string; street?: string };
+
+      if (!estateId) {
+        return res.status(400).json({ success: false, message: 'estateId is required' });
+      }
+
+      const userWhere: any = {};
+      if (search?.trim()) {
+        userWhere[Op.or] = [
+          { first_name: { [Op.iLike]: `%${search.trim()}%` } },
+          { last_name: { [Op.iLike]: `%${search.trim()}%` } },
+        ];
+      }
+
+      const streetWhere: any = {};
+      if (street?.trim()) {
+        streetWhere.name = { [Op.iLike]: `%${street.trim()}%` };
+      }
+
+      const residents = await Resident.findAll({
+        where: { estate_id: estateId },
+        include: [
+          {
+            model: User,
+            as: 'user',
+            attributes: ['id', 'first_name', 'last_name', 'email', 'phone'],
+            where: Object.keys(userWhere).length ? userWhere : undefined,
+            required: true,
+          },
+          {
+            model: Unit,
+            as: 'unit',
+            attributes: ['id', 'unit_identifier', 'unit_type'],
+            required: false,
+            include: [
+              {
+                model: Street,
+                as: 'street',
+                attributes: ['id', 'name'],
+                where: Object.keys(streetWhere).length ? streetWhere : undefined,
+                required: Object.keys(streetWhere).length > 0,
+              },
+            ],
+          },
+        ],
+        order: [[{ model: User, as: 'user' }, 'first_name', 'ASC']],
+      });
+
+      return res.json({ success: true, data: residents });
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  }
+
+  async removeResidentFromEstate(req: AuthRequest, res: Response): Promise<Response> {
+    try {
+      const estateId = asString(req.params.estateId);
+      const residentId = asString(req.params.residentId);
+
+      if (!estateId || !residentId) {
+        return res.status(400).json({ success: false, message: 'estateId and residentId are required' });
+      }
+
+      const resident = await Resident.findOne({ where: { resident_id: residentId, estate_id: estateId } });
+      if (!resident) {
+        return res.status(404).json({ success: false, message: 'Resident not found in this estate' });
+      }
+
+      // Detach resident from estate and unit
+      await resident.update({ estate_id: null, unit_id: null });
+
+      // Also clear the user's estate linkage
+      await User.update({ estate_id: null as any }, { where: { id: resident.user_id } });
+
+      return res.json({ success: true, message: 'Resident removed from estate' });
     } catch (error) {
       return handleControllerError(error, res);
     }
