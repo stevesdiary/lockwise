@@ -62,13 +62,15 @@ NODE_ENV=test npx jest --config tests/setup/jest.config.ts --no-coverage
 ## Key Conventions
 
 **Migrations** (`migrations/`):
-- Naming: `YYYYMMDDHHMMSS-<action>-<entity>.js`; active baseline uses `20260319XXXXXX` timestamps (56 migrations, 001–056)
+- Naming: `YYYYMMDDHHMMSS-<action>-<entity>.js`; active baseline uses `20260319XXXXXX` timestamps (58 migrations, 001–058)
 - No `{ ifNotExists: true }` guards in main branch migrations (only in `.worktrees/modularize/`)
 - Deferred FK pattern for circular deps (e.g., `estates.created_by → users.id` added in migration 051)
 - Security profile seed in migration 053 (`20260330000053`): inserts one `security` user per estate; email `security@<estate_code>.lockwise.local`; default password `Security@1234` (bcrypt, salt 10); uses `ON CONFLICT DO NOTHING`
 - Grace period migration 054 (`20260403000054`): adds `grace_period_end_date` DATE nullable and `last_notification_sent` DATE nullable to `subscriptions`; adds `'grace_period'` to `enum_subscriptions_status` ENUM
 - Plans seed in migration 055 (`20260403000055`): inserts Starter (free, 20 residents, basic category) and Standard (₦15,000/month, 200 residents, standard category); uses `ON CONFLICT (name) DO NOTHING`
 - Migration 056 (`20260403000056`): makes `subscriptions.paid_on` DATE nullable (was NOT NULL)
+- Migration 057 (`20260405000057`): adds `is_multi_entry` BOOLEAN default false, `max_entries` INTEGER nullable, `used_entries` INTEGER default 0 to `access_logs`
+- FAQ seed in migration 058 (`20260405000058`): inserts 12 FAQs across 5 categories (access_codes/general/security/technical/payments); uses `randomUUID()`, queries for admin/manager user as `created_by`, skips existing questions
 
 **Middleware** (`shared/middleware/`):
 - `authenticateToken` — verifies JWT, attaches `req.user`
