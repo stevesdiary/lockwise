@@ -271,6 +271,45 @@ Best regards,
 The Lockwise Team`
   }),
 
+  referrerWelcome: (data: any) => ({
+    subject: 'Welcome to the Lockwise Referral Programme',
+    html: baseTemplate(`
+      <div class="content">
+        <h2>Welcome to the Lockwise Referral Programme 🎉</h2>
+        <p>Hello ${data.name || 'there'},</p>
+        <p>Your referrer account is set up and ready to go. Here are your referral details:</p>
+        <div class="code-box">
+          <p style="margin: 0 0 8px 0; color: #666; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Your referral code</p>
+          <div class="code">${data.referral_code}</div>
+        </div>
+        <p>Share your unique referral link with estate managers and earn a <strong>10% bonus</strong> on every qualifying payment from estates you refer:</p>
+        <div class="code-box">
+          <p style="margin: 0; word-break: break-all; font-size: 14px;">${data.referral_link}</p>
+        </div>
+        <p style="text-align: center;">
+          <a href="${data.portal_link}" class="button">Open your referral dashboard</a>
+        </p>
+        <p>Sign in any time with your email and referral code to track your referrals and earnings.</p>
+        <p>Best regards,<br>The Lockwise Team</p>
+      </div>
+    `),
+    text: `Welcome to the Lockwise Referral Programme
+
+Hello ${data.name || 'there'},
+
+Your referrer account is set up. Here are your referral details:
+
+Referral code: ${data.referral_code}
+Referral link: ${data.referral_link}
+
+Share your link with estate managers and earn a 10% bonus on every qualifying payment.
+
+Sign in to your dashboard: ${data.portal_link}
+
+Best regards,
+The Lockwise Team`
+  }),
+
   estateSubmitted: (data: any) => ({
     subject: `New estate "${data.estate_name || 'Unknown'}" submitted for approval`,
     html: baseTemplate(`
