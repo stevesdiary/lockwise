@@ -62,7 +62,7 @@ NODE_ENV=test npx jest --config tests/setup/jest.config.ts --no-coverage
 ## Key Conventions
 
 **Migrations** (`migrations/`):
-- Naming: `YYYYMMDDHHMMSS-<action>-<entity>.js`; active baseline uses `20260319XXXXXX` timestamps (58 migrations, 001–058)
+- Naming: `YYYYMMDDHHMMSS-<action>-<entity>.js`; active baseline uses `20260319XXXXXX` timestamps (59 migrations, 001–059)
 - No `{ ifNotExists: true }` guards in main branch migrations
 - Deferred FK pattern for circular deps (e.g., `estates.created_by → users.id` added in migration 051)
 - Security profile seed in migration 053 (`20260330000053`): inserts one `security` user per estate; email `security@<estate_code>.lockwise.local`; default password `Security@1234` (bcrypt, salt 10); uses `ON CONFLICT DO NOTHING`
@@ -71,6 +71,7 @@ NODE_ENV=test npx jest --config tests/setup/jest.config.ts --no-coverage
 - Migration 056 (`20260403000056`): makes `subscriptions.paid_on` DATE nullable (was NOT NULL)
 - Migration 057 (`20260405000057`): adds `is_multi_entry` BOOLEAN default false, `max_entries` INTEGER nullable, `used_entries` INTEGER default 0 to `access_logs`
 - FAQ seed in migration 058 (`20260405000058`): inserts 12 FAQs across 5 categories (access_codes/general/security/technical/payments); uses `randomUUID()`, queries for admin/manager user as `created_by`, skips existing questions
+- Migration 059 (`20260405000059`): adds `consent_given` BOOLEAN NOT NULL default false and `consent_timestamp` DATE nullable to `users`
 
 **Middleware** (`shared/middleware/`):
 - `authenticateToken` — verifies JWT, attaches `req.user`
