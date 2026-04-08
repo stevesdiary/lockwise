@@ -302,6 +302,17 @@ class EmailService {
       data,
     });
   }
+
+  async sendReferrerWelcomeEmail(
+    to: string,
+    data: { name: string; referral_code: string; referral_link: string; portal_link: string }
+  ): Promise<boolean> {
+    return this.sendEmail({
+      to,
+      template: 'referrerWelcome',
+      data,
+    });
+  }
 }
 
 export default new EmailService();

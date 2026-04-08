@@ -25,7 +25,7 @@ export const ReferralController = {
         abortEarly: false,
         stripUnknown: true,
       });
-      const referrer = await referralService.registerReferrer(validatedData);
+      const referrer = await referralService.registerReferrer(validatedData, getReferralPortalBaseUrl(req));
 
       return res.status(201).json({
         message: 'Application successful. Your referral code is ready.',
@@ -57,7 +57,7 @@ export const ReferralController = {
         abortEarly: false,
         stripUnknown: true
       });
-      const referrer = await referralService.registerReferrer(validatedData);
+      const referrer = await referralService.registerReferrer(validatedData, getReferralPortalBaseUrl(req));
 
       return res.status(201).json({
         message: 'Referrer registered successfully',

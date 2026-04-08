@@ -5,9 +5,10 @@ import { Referrer } from '../../payment/models/referrer.model';
 import { ReferralBonus } from '../models/referral.bonus.model';
 import { Estate } from '../../estate/models/estate.model';
 import notificationService from '../../communication/services/notification.service';
+import emailService from '../../communication/services/email.service';
 
-const REFERRAL_BONUS_PERCENTAGE = 0.10; // 10% bonus
-const generateReferralCode = customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 8);
+const REFERRAL_BONUS_PERCENTAGE = process.env.REFERRAL_BONUS_PERCENTAGE || 0.8 as any; // 8% bonus
+const generateReferralCode = customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 6);
 const REFERRER_PORTAL_TOKEN_TTL = '7d';
 const REFERRER_PORTAL_TOKEN_TYPE = 'referrer_portal';
 
@@ -79,9 +80,22 @@ const getReferrerPortalSummaryById = async (referrerId: string, baseUrl?: string
 };
 
 export const referralService = {
-  async registerReferrer(data: any) {
+  async registerReferrer(data: any, baseUrl?: string) {
     const referral_code = `REF-${generateReferralCode()}`;
-    return await Referrer.create({ ...data, referral_code });
+    const referrer = await Referrer.create({ ...data, referral_code });
+
+    const referral_link = buildReferralLink(referral_code, baseUrl);
+    const portal_link = `${resolvePortalBaseUrl(baseUrl)}/referral-programme`;
+
+    // Fire-and-forget — email failure must not roll back account creation
+    emailService.sendReferrerWelcomeEmail(referrer.email, {
+      name: referrer.name,
+      referral_code,
+      referral_link,
+      portal_link,
+    }).catch((err: Error) => console.error('Referrer welcome email failed:', err));
+
+    return referrer;
   },
 
   async loginReferrer(email: string, referralCode: string, baseUrl?: string) {
