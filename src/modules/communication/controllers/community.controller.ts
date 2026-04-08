@@ -3,7 +3,6 @@ import { CommunityMessage } from '../models/community-message.model';
 import { MessageReaction } from '../models/message-reaction.model';
 import { User } from '../../auth/models/user.model';
 import { uploadService } from '../../upload/services/upload.service';
-import sequelize from '../../../shared/core/database';
 
 export const communityController = {
   async getMessages(req: Request, res: Response) {
@@ -126,12 +125,16 @@ export const communityController = {
       }
 
       const existingReaction = await MessageReaction.findOne({
-        where: { message_id: messageId, user_id: user.id, emoji },
+        where: { message_id: messageId, user_id: user.id },
       });
 
       if (existingReaction) {
-        await existingReaction.destroy();
-        return res.json({ success: true, message: 'Reaction removed' });
+        if (existingReaction.emoji === emoji) {
+          await existingReaction.destroy();
+          return res.json({ success: true, message: 'Reaction removed' });
+        }
+        await existingReaction.update({ emoji });
+        return res.json({ success: true, message: 'Reaction updated' });
       }
 
       await MessageReaction.create({

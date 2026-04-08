@@ -105,6 +105,19 @@ export class User extends Model<User> {
   })
   declare profile_picture: string | null;
 
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  })
+  declare consent_given: boolean;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  declare consent_timestamp: Date | null;
+
   @ForeignKey(() => Role)
   @Column(DataType.UUID)
   declare role_id: string;

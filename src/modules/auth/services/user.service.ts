@@ -35,8 +35,13 @@ export const registerUser = async (userData: {
   estate_id?: string;
   estate_code?: string;
   role_id?: string;
+  consent_given?: boolean;
 }) => {
   try {
+    if (!userData.consent_given) {
+      return { statusCode: 400, message: 'You must agree to the Privacy Policy and Terms of Service to register' };
+    }
+
     const bcrypt = await getBcrypt();
     const existingUser = await userRepository.findUserByEmail(userData.email);
     if (existingUser) {
@@ -74,6 +79,8 @@ export const registerUser = async (userData: {
         oauth_enabled: false,
         estate_id: estateId,
         role_id: roleId,
+        consent_given: true,
+        consent_timestamp: new Date(),
       } as any, { transaction: t });
 
       if (userData.user_type === 'resident') {
