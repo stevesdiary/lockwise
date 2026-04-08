@@ -15,7 +15,7 @@ const getManagerEstateId = async (userId?: string): Promise<string | null> => {
 };
 
 // Health check endpoint
-estateRouter.get('/health', (req: ExpressRequest, res: Response) => {
+estateRouter.get('/health', (_req: ExpressRequest, res: Response) => {
   res.status(200).json({ message: "Healthy!" });
 });
 

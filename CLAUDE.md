@@ -63,7 +63,7 @@ NODE_ENV=test npx jest --config tests/setup/jest.config.ts --no-coverage
 
 **Migrations** (`migrations/`):
 - Naming: `YYYYMMDDHHMMSS-<action>-<entity>.js`; active baseline uses `20260319XXXXXX` timestamps (58 migrations, 001–058)
-- No `{ ifNotExists: true }` guards in main branch migrations (only in `.worktrees/modularize/`)
+- No `{ ifNotExists: true }` guards in main branch migrations
 - Deferred FK pattern for circular deps (e.g., `estates.created_by → users.id` added in migration 051)
 - Security profile seed in migration 053 (`20260330000053`): inserts one `security` user per estate; email `security@<estate_code>.lockwise.local`; default password `Security@1234` (bcrypt, salt 10); uses `ON CONFLICT DO NOTHING`
 - Grace period migration 054 (`20260403000054`): adds `grace_period_end_date` DATE nullable and `last_notification_sent` DATE nullable to `subscriptions`; adds `'grace_period'` to `enum_subscriptions_status` ENUM
