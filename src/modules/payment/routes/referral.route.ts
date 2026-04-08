@@ -8,6 +8,7 @@ import { rateLimiters } from '../../admin/middleware/rate-limit.middleware';
 const referralRouter = Router();
 
 // Public portal endpoints
+referralRouter.post('/apply', rateLimiters.auth, asyncHandler(ReferralController.applyAsReferrer));
 referralRouter.post('/login', rateLimiters.auth, asyncHandler(ReferralController.loginReferrer));
 referralRouter.get('/me', rateLimiters.api, authenticateReferrer as any, asyncHandler(ReferralController.getPortalSummary));
 

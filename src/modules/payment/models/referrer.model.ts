@@ -42,7 +42,8 @@ export class Referrer extends Model<ReferrerAttributes, ReferrerCreationAttribut
 
   @Column({
     type: DataType.STRING,
-    allowNull: false
+    allowNull: false,
+    unique: true,
   })
   declare email: string;
 

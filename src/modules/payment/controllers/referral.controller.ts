@@ -19,6 +19,38 @@ const getReferralPortalBaseUrl = (req: Request): string => {
 };
 
 export const ReferralController = {
+  async applyAsReferrer(req: Request, res: Response) {
+    try {
+      const validatedData = await referrerCreationSchema.validate(req.body, {
+        abortEarly: false,
+        stripUnknown: true,
+      });
+      const referrer = await referralService.registerReferrer(validatedData);
+
+      return res.status(201).json({
+        message: 'Application successful. Your referral code is ready.',
+        data: {
+          name: referrer.name,
+          email: referrer.email,
+          referral_code: referrer.referral_code,
+        },
+      });
+    } catch (error: any) {
+      console.error('Error in referrer application:', error);
+
+      if (error.name === 'ValidationError') {
+        return res.status(400).json({ message: 'Validation failed', errors: error.errors });
+      }
+
+      // Unique constraint on email — give a clear message
+      if (error.name === 'SequelizeUniqueConstraintError') {
+        return res.status(409).json({ message: 'An account with this email already exists.' });
+      }
+
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  },
+
   async registerReferrer(req: Request, res: Response) {
     try {
       const validatedData = await referrerCreationSchema.validate(req.body, {
@@ -112,7 +144,7 @@ export const ReferralController = {
     }
   },
 
-  async listReferrers(req: Request, res: Response) {
+  async listReferrers(_req: Request, res: Response) {
     try {
       const referrers = await referralService.getAllReferrers();
       return res.status(200).json({ data: referrers });
@@ -133,7 +165,7 @@ export const ReferralController = {
     }
   },
 
-  async getUnpaidBonuses(req: Request, res: Response) {
+  async getUnpaidBonuses(_req: Request, res: Response) {
     try {
       const bonuses = await referralService.getUnpaidBonuses();
       return res.status(200).json({ data: bonuses });

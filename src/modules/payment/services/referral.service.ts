@@ -114,7 +114,7 @@ export const referralService = {
   },
 
   async deleteReferrerById(id: string) {
-    const deleted = await Referrer.destroy({ where: { id } });
+    const deleted = await Referrer.destroy({ where: { id } as any });
     return {
       statusCode: deleted ? 200 : 404,
       message: deleted ? 'Referrer deleted' : 'Referrer not found'
