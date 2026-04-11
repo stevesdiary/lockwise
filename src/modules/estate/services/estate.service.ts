@@ -207,11 +207,13 @@ class EstateService {
           data: null
         };
       }
+      // Expose both `id` and `estate_id` so mobile clients can use either
+      const plain = estate.toJSON ? estate.toJSON() : estate;
       return {
         statusCode: 200,
         success: true,
         message: 'Estate retrieved successfully',
-        data: estate
+        data: { ...plain, id: plain.estate_id }
       };
     } catch (error) {
       throw error;

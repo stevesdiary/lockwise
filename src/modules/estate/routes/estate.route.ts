@@ -53,11 +53,16 @@ estateRouter.patch('/estates/:estateId/approve',
   }
 );
 
-estateRouter.get('/one/:estateId', async (req: ExpressRequest, res: Response) => {
+estateRouter.get('/one/:estateId', 
+  authenticateToken,
+  // requireManager,
+  async (req: ExpressRequest, res: Response) => {
   await estateController.getEstateById(req, res);
 });
 
-estateRouter.get('/code/:estate_code', async (req: ExpressRequest, res: Response) => {
+estateRouter.get('/code/:estate_code', 
+  authenticateToken,
+  async (req: ExpressRequest, res: Response) => {
   await estateController.getEstateByCode(req, res);
 });
 
