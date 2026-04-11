@@ -88,6 +88,10 @@ server.get('/health', async (_req, res) => {
   }
 });
 
+server.get('/', (_req, res) => {
+  res.json({ name: 'Lockwise API', status: 'ok' });
+});
+
 server.get("/home", (req, res) => {
   res.json({ message: "Hello, World of intelligent property management system." });
 });
