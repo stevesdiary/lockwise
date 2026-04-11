@@ -100,6 +100,7 @@ export const registerUser = async (userData: {
 
     return {
       statusCode: 201,
+      success: true,
       message: 'User registered successfully. Verification code sent to email.',
       user: {
         id: user.id,
