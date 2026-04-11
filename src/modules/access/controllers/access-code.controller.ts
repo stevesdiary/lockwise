@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { Op } from 'sequelize';
 import { AuthRequest } from '../../auth/middleware/auth.middleware';
+import sequelize from '../../../shared/core/database';
 import accessCodeService from '../services/access-code.service';
 import AccessLog from '../models/access-log.model';
 import { User } from '../../auth/models/user.model';
@@ -136,10 +137,18 @@ export const accessCodeController = {
         return res.status(400).json({ success: false, message: 'Access code expired' });
       }
 
+      const maxEntries = (accessLog as any).max_entries as number | null;
+      const usedEntries = (accessLog as any).used_entries as number ?? 0;
+      const isMultiEntry = Boolean((accessLog as any).is_multi_entry);
+      const remainingEntries = isMultiEntry && maxEntries !== null ? Math.max(0, maxEntries - usedEntries) : null;
+
       return res.status(200).json({
         success: true,
         message: 'Access code validated',
-        data: accessLog
+        data: {
+          ...((accessLog as any).toJSON?.() ?? accessLog),
+          remaining_entries: remainingEntries,
+        },
       });
     } catch (error: any) {
       logger.error('Validate access code error:', error);
@@ -165,11 +174,35 @@ export const accessCodeController = {
         return res.status(404).json({ success: false, message: 'Access code not found' });
       }
 
-      await accessLog.update({
-        status: 'approved',
-        entry_time: new Date(),
-        scanned_by: securityId
-      });
+      if ((accessLog as any).is_multi_entry) {
+        // Multi-entry: atomically increment used_entries; only mark 'used' when all entries are exhausted
+        await sequelize.transaction(async (t) => {
+          await accessLog.increment('used_entries', { transaction: t });
+          await accessLog.reload({ transaction: t });
+
+          const maxEntries = (accessLog as any).max_entries as number | null;
+          const usedEntries = (accessLog as any).used_entries as number;
+
+          if (maxEntries !== null && maxEntries !== undefined && usedEntries > maxEntries) {
+            await accessLog.decrement('used_entries', { transaction: t });
+            throw new Error('Maximum entries reached for this access code');
+          }
+
+          const isExhausted = maxEntries !== null && maxEntries !== undefined && usedEntries >= maxEntries;
+
+          await accessLog.update({
+            status: isExhausted ? 'used' : 'active',
+            entry_time: new Date(),
+            scanned_by: securityId,
+          }, { transaction: t });
+        });
+      } else {
+        await accessLog.update({
+          status: 'approved',
+          entry_time: new Date(),
+          scanned_by: securityId,
+        });
+      }
 
       if (accessLog.user_id) {
         pushNotificationService.sendToUser(
@@ -193,6 +226,9 @@ export const accessCodeController = {
         data: accessLog
       });
     } catch (error: any) {
+      if (error.message === 'Maximum entries reached for this access code') {
+        return res.status(400).json({ success: false, message: error.message });
+      }
       logger.error('Approve access error:', error);
       return res.status(500).json({ success: false, message: 'Failed to approve access' });
     }
