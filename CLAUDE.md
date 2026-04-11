@@ -40,7 +40,7 @@ src/
     ├── amenities/     # amenities, reservations
     ├── parking/       # parking slots, EV charging
     ├── support/       # support tickets, messages
-    ├── communication/ # notifications, chat, emergency alerts, email service
+    ├── communication/ # notifications, chat, emergency alerts, email service, web push
     ├── community/     # community posts, comments, messages
     ├── analytics/     # analytics events, dashboard, monitoring
     ├── upload/        # file uploads, bulk CSV upload
@@ -107,6 +107,17 @@ if (!isAdmin) {
 
 **Email:** Uses Brevo (formerly Sendinblue) via `emailService`. Templates in `shared/templates/email.templates.ts`.
 
+**Web Push** (`communication/services/web-push.service.ts`, routes at `/push`):
+- VAPID-based browser push via `web-push` package; subscriptions stored in Redis key `push_sub:<userId>` with 90-day TTL
+- `GET /push/vapid-public-key` — no auth; returns public key for service worker registration
+- `POST /push/subscribe` — `authenticateToken` required; saves `PushSubscription` object from request body
+- `DELETE /push/unsubscribe` — `authenticateToken` required; removes subscription from Redis
+- `webPushService.sendToUser(userId, payload)` — reads Redis, sends push; auto-deletes subscription on 410 Gone
+- `webPushService.sendToUsers(userIds[], payload)` — broadcasts via `Promise.allSettled`
+- `notificationService.queueWebPush(userIds, payload)` — enqueues via QStash to `POST /workers/web-push` (retries: 3)
+- QStash worker: `POST /workers/web-push`; body: `{ userIds: string[], title, body, url?, tag? }`; same QStash signature verification as email/SMS workers
+- Called automatically: estate submission notifies all admins; bulk upload completion sends summary push to admin
+
 ## Required Env Vars (key ones)
 
 ```
@@ -114,6 +125,17 @@ DATABASE_URL or DB_HOST/DB_NAME/DB_USER/DB_PASSWORD/DB_DIALECT
 JWT_SECRET / REFRESH_TOKEN_SECRET
 FIREBASE_PROJECT_ID / FIREBASE_CLIENT_EMAIL / FIREBASE_PRIVATE_KEY   # push notifications
 PAYSTACK_SECRET_KEY                                                    # payments
+REFERRAL_BONUS_PERCENTAGE                                             # referral bonus % (e.g. 10)
+BIANNUAL_DISCOUNT_PERCENT / ANNUAL_DISCOUNT_PERCENT                   # subscription billing discounts (e.g. 5 / 15)
 BREVO_API_KEY                                                         # email
 TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN / TWILIO_PHONE_NUMBER         # SMS
+VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY / VAPID_SUBJECT                 # web push (VAPID_SUBJECT defaults to mailto:admin@lockwise.app)
+QSTASH_TOKEN / QSTASH_CURRENT_SIGNING_KEY / QSTASH_NEXT_SIGNING_KEY # async job queue (QStash)
+WORKER_BASE_URL                                                       # base URL for QStash worker callbacks (default: http://localhost:3002/api/v1)
+WORKER_SECRET                                                         # local dev bypass secret (used instead of QStash signature when NODE_ENV != production)
+UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN                    # Redis (Upstash) for web push subscriptions and session data
+STORAGE_PROVIDER                                                      # file storage backend: 'b2' (default) or 'aws'
+B2_APPLICATION_KEY_ID / B2_APPLICATION_KEY / B2_BUCKET_NAME / B2_BUCKET_ID  # Backblaze B2 (when STORAGE_PROVIDER=b2)
+GOOGLE_MAPS_API_KEY                                                   # maps / location features
+MAX_SESSIONS_RESIDENT / MAX_SESSIONS_MANAGER / MAX_SESSIONS_ADMIN / MAX_SESSIONS_SECURITY / MAX_SESSIONS_SUPER_ADMIN  # concurrent login session limits per role
 ```

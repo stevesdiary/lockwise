@@ -37,6 +37,7 @@ import adminSupportRouter from "./modules/support/routes/admin.support.route";
 // Communication Module
 import notificationRouter from "./modules/communication/routes/notification.route";
 import chatRouter from "./modules/communication/routes/chat.route";
+import webPushRouter from "./modules/communication/routes/web-push.route";
 import emergencyRouter from "./modules/communication/routes/emergency.route";
 import communityRouter from "./modules/communication/routes/community.route";
 
@@ -110,6 +111,7 @@ router.use('/admin/support', adminSupportRouter);
 
 // Communication Routes
 router.use('/notifications', notificationRouter);
+router.use('/push', webPushRouter);
 router.use('/chat', chatRouter);
 router.use('/emergency', emergencyRouter);
 router.use('/community', communityRouter);

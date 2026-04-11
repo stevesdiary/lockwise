@@ -53,6 +53,7 @@
     "@types/socket.io": "^3.0.1",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
+    "@types/web-push": "^3.6.4",
     "@types/xlsx": "^0.0.35",
     "@types/yup": "^0.29.14",
     "@upstash/qstash": "^2.10.1",
@@ -92,6 +93,7 @@
     "twilio": "^5.11.1",
     "umzug": "^3.8.2",
     "uuid": "^13.0.0",
+    "web-push": "^3.6.7",
     "winston": "^3.19.0",
     "xlsx": "^0.18.5",
     "yup": "^1.6.1"

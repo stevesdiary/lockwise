@@ -85,6 +85,15 @@ class NotificationService {
     );
   }
 
+  /** Queue a web push to one or more admin users via QStash (retried on failure) */
+  async queueWebPush(userIds: string[], payload: { title: string; body: string; url?: string; tag?: string }): Promise<void> {
+    await this.qstash.publishJSON({
+      url: `${this.workerBaseUrl}/workers/web-push`,
+      body: { userIds, ...payload },
+      retries: 3,
+    });
+  }
+
   async getQueueStats() {
     try {
       const res = await fetch('https://qstash.upstash.io/v2/queues', {

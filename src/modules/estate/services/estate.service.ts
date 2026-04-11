@@ -326,6 +326,8 @@ class EstateService {
         where: { role_id: { [Op.in]: adminRoleIds } },
       });
 
+      const adminIds = admins.map((a: any) => a.id);
+
       for (const admin of admins) {
         try {
           await emailService.sendEstateSubmittedEmail(admin.email, {
@@ -344,6 +346,16 @@ class EstateService {
           // Non-fatal — one admin failing to notify must not block the rest
           logger.error('Failed to notify admin on estate submit', { email: admin.email, error: err });
         }
+      }
+
+      // Web push to all admins with a browser session open on the admin dashboard
+      if (adminIds.length > 0) {
+        notificationService.queueWebPush(adminIds, {
+          title: 'New Estate Submitted',
+          body: `${estate.name} is awaiting your approval.`,
+          tag: 'estate-submitted',
+          url: `/admin/estates/${estate.estate_id}`,
+        }).catch(() => undefined);
       }
     } catch (err) {
       // Non-fatal — log and continue

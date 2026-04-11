@@ -58,7 +58,7 @@ const bulkUploadController = {
       });
     }
 
-    const result = await bulkUploadService.uploadResidents(req.file.buffer, req.file.originalname);
+    const result = await bulkUploadService.uploadResidents(req.file.buffer, req.file.originalname, req.user?.id);
 
     return res.status(200).json({
       status: 'success',
