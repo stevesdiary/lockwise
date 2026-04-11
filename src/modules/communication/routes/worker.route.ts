@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { Receiver } from '@upstash/qstash';
 import NotificationService from '../../communication/services/notification.service';
+import webPushService from '../../communication/services/web-push.service';
 
 const workerRouter = Router();
 
@@ -47,6 +48,22 @@ workerRouter.post('/sms-notifications', async (req: Request, res: Response) => {
     res.json({ success: true });
   } catch (error: any) {
     console.error('SMS worker error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// { userIds: string[], title: string, body: string, url?: string, tag?: string }
+workerRouter.post('/web-push', async (req: Request, res: Response) => {
+  if (!await verifyQStash(req, res)) return;
+  try {
+    const { userIds, ...payload } = req.body;
+    if (!Array.isArray(userIds) || userIds.length === 0) {
+      return res.status(400).json({ error: 'userIds required' });
+    }
+    await webPushService.sendToUsers(userIds, payload);
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error('Web push worker error:', error.message);
     res.status(500).json({ error: error.message });
   }
 });

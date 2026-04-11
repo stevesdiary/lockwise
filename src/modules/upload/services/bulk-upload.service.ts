@@ -2,6 +2,7 @@ import * as XLSX from 'xlsx';
 import { Buffer } from 'buffer';
 import sequelize from '../../../shared/core/database';
 import { cloudStorage } from './unified-storage.service';
+import NotificationService from '../../communication/services/notification.service';
 
 interface BulkUploadResult<T> {
   created: T[];
@@ -113,6 +114,17 @@ class BulkUploadService {
       }, transaction);
 
       await transaction.commit();
+
+      // Queue web push to admin who triggered the upload (fire-and-forget after commit)
+      if (result.successCount > 0) {
+        NotificationService.queueWebPush([userId], {
+          title: 'Bulk Estate Upload Complete',
+          body: `${result.successCount} estate(s) created, ${result.errors.length} error(s).`,
+          tag: 'bulk-upload-estates',
+          url: '/admin/bulk-uploads',
+        }).catch(() => undefined);
+      }
+
       return result;
 
     } catch (error) {
@@ -123,7 +135,7 @@ class BulkUploadService {
     }
   }
 
-  async uploadResidents(buffer: Buffer, filename: string): Promise<BulkUploadResult<any>> {
+  async uploadResidents(buffer: Buffer, filename: string, adminUserId?: string): Promise<BulkUploadResult<any>> {
     const rows = this.parseFile(buffer, filename);
     const result: BulkUploadResult<any> = {
       created: [],
@@ -154,21 +166,44 @@ class BulkUploadService {
           const resident = await this.createResident(residentData, transaction);
           if (resident.isNew) {
             result.created.push(resident);
+
+            // Queue welcome email for each new resident (fire-and-forget, after commit)
+            // resident.email and resident.name will be populated once stubs use real models
+            if (resident.email && resident.name) {
+              NotificationService.sendNotification({
+                type: 'email',
+                to: resident.email,
+                template: 'welcome',
+                data: { name: resident.name },
+                priority: 'normal',
+              }).catch(() => undefined);
+            }
           } else {
             result.skipped.push(resident);
           }
           result.successCount++;
 
         } catch (error) {
-          result.errors.push({ 
-            row: i + 1, 
-            data: row, 
-            reason: error instanceof Error ? error.message : 'Unknown error' 
+          result.errors.push({
+            row: i + 1,
+            data: row,
+            reason: error instanceof Error ? error.message : 'Unknown error'
           });
         }
       }
 
       await transaction.commit();
+
+      // Notify the uploading admin via web push
+      if (adminUserId && result.successCount > 0) {
+        NotificationService.queueWebPush([adminUserId], {
+          title: 'Bulk Resident Upload Complete',
+          body: `${result.successCount} resident(s) onboarded, ${result.errors.length} error(s).`,
+          tag: 'bulk-upload-residents',
+          url: '/admin/bulk-uploads',
+        }).catch(() => undefined);
+      }
+
       return result;
 
     } catch (error) {
