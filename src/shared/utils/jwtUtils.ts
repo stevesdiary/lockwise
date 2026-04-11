@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-const jwtSecret = process.env.JWT_SECRET || 'secret';
+const jwtSecret = process.env.JWT_SECRET;
 
 export const decodeToken = (token: string) => {
 	try {
