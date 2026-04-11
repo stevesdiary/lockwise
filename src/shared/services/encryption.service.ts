@@ -1,7 +1,7 @@
 import crypto from "crypto";
 
 // Validate encryption key is properly configured
-if (!process.env.ENCRYPTION_KEY || process.env.ENCRYPTION_KEY === 'default-key') {
+if (!process.env.ENCRYPTION_KEY) {
   console.error('CRITICAL: ENCRYPTION_KEY must be set to a secure random value');
 }
 

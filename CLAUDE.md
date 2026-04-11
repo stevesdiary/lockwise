@@ -105,6 +105,8 @@ if (!isAdmin) {
 
 **Estate code:** `estate_code` auto-generated in `estate.controller.ts` as `EST-${customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 8)()}` — never supplied by the mobile client.
 
+**Estate service — Sequelize plain objects:** `getEstateByCode` calls `.toJSON()` before returning, then spreads `id: plain.estate_id` into the response data. Always do this for any service that returns a single Sequelize instance to mobile — raw instances expose `estate_id` but not `id`, causing undefined reads on the client.
+
 **Email:** Uses Brevo (formerly Sendinblue) via `emailService`. Templates in `shared/templates/email.templates.ts`.
 
 **Web Push** (`communication/services/web-push.service.ts`, routes at `/push`):
