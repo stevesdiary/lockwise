@@ -10,6 +10,10 @@ router.patch('/mark-all-read', authenticateToken, notificationController.markAll
 router.delete('/clear-all', authenticateToken, notificationController.clearAll);
 router.patch('/:id', authenticateToken, notificationController.markAsRead);
 
+// Notification preferences
+router.get('/preferences', authenticateToken, notificationController.getPreferences);
+router.put('/preferences', authenticateToken, notificationController.updatePreferences);
+
 // Test endpoints
 router.post('/test/sms', authenticateToken, notificationController.sendTestSMS);
 

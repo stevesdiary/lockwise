@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import * as yup from 'yup';
+import logger from '../utils/logger';
 
 export interface ApiError extends Error {
   statusCode?: number;
@@ -53,7 +54,11 @@ export const errorHandler = (
     message = 'Resource already exists';
   }
 
-  console.error('Error:', error);
+  if (statusCode >= 500) {
+    logger.error('Server error', { message: error.message, stack: error.stack, url: req.url });
+  } else {
+    logger.warn('Client error', { message, statusCode, url: req.url });
+  }
 
   return res.status(statusCode).json({
     status: 'error',
@@ -79,9 +84,11 @@ export const notFound = (req: Request, res: Response) => {
 export const handleControllerError = (error: any, res: Response) => {
   const statusCode = error.statusCode || 500;
   const message = error.message || 'Internal server error';
-  
-  console.error('Controller Error:', error);
-  
+
+  if (statusCode >= 500) {
+    logger.error('Controller error', { message: error.message, stack: error.stack });
+  }
+
   return res.status(statusCode).json({
     status: 'error',
     message,
