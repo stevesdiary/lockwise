@@ -19,6 +19,7 @@ Import `Lockwise-API-Complete.postman_collection.json` into Postman
 - **Entry Statistics API**: Monitor entry counts and remaining allowances
 - **Smart Code Scanning**: Automatic entry limit validation with clear error messages
 - **Expiration-based Access Control**: All access codes respect validity periods regardless of entry type
+- **Access Direction**: Access codes now support `access_direction` (`entry`, `exit`, `both`) to control gate direction
 
 ### Access Type Behaviors
 - **Regular Types** (`guest`, `delivery`, `visitor`): Traditional entry counting with limits
@@ -33,6 +34,17 @@ Import `Lockwise-API-Complete.postman_collection.json` into Postman
 - **Resend Invitation**: `POST /api/v1/estate/residents/resend-invite` - Resend invitation to specific resident
 
 > ⚠️ **Authentication Required**: All invitation endpoints require manager role and estate association
+
+### 🆕 Notification Preferences & Mobile Push (Latest)
+
+#### Notification Preferences
+- **Get Preferences**: `GET /api/v1/notifications/preferences` - Retrieve user notification preference flags
+- **Update Preferences**: `PUT /api/v1/notifications/preferences` - Toggle individual notification channels
+- Preference flags: `push_notifications`, `email_notifications`, `sms_notifications`, `guest_entrance`, `emergency_alerts`, `system_updates`, `payment_reminders`
+
+#### Updated Mobile Device Registration
+- **Register Device**: `POST /api/v1/mobile/device/register` - Now accepts `fcmToken`, `deviceId`, `platform`, `appVersion`
+- **Test Push**: `POST /api/v1/mobile/push/test` - Now sends real FCM push with optional `title`, `body`, `data`
 
 ### 1. Authentication
 - Login (auto-saves token)
@@ -87,6 +99,8 @@ Import `Lockwise-API-Complete.postman_collection.json` into Postman
 
 ### 12. Notifications
 - Get/Mark as Read
+- **Get Notification Preferences** (NEW)
+- **Update Notification Preferences** (NEW)
 
 ### 13. FAQs
 - Get/Create FAQs

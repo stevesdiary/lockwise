@@ -7,41 +7,140 @@
     "version": "2.0.0"
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:3002/api/v1" },
-    { "key": "accessToken", "value": "" },
-    { "key": "estateId", "value": "" },
-    { "key": "estateCode", "value": "" },
-    { "key": "userId", "value": "" },
-    { "key": "accessId", "value": "" },
-    { "key": "accessCode", "value": "" },
-    { "key": "gateId", "value": "" },
-    { "key": "paymentId", "value": "" },
-    { "key": "reference", "value": "" },
-    { "key": "planId", "value": "" },
-    { "key": "referralCode", "value": "" },
-    { "key": "referrerId", "value": "" },
-    { "key": "bonusId", "value": "" },
-    { "key": "amenityId", "value": "" },
-    { "key": "reservationId", "value": "" },
-    { "key": "slotId", "value": "" },
-    { "key": "sessionId", "value": "" },
-    { "key": "guestParkingId", "value": "" },
-    { "key": "ticketId", "value": "" },
-    { "key": "chatId", "value": "" },
-    { "key": "alertId", "value": "" },
-    { "key": "messageId", "value": "" },
-    { "key": "postId", "value": "" },
-    { "key": "faqId", "value": "" },
-    { "key": "roleId", "value": "" },
-    { "key": "permissionId", "value": "" },
-    { "key": "keyId", "value": "" },
-    { "key": "streetId", "value": "" },
-    { "key": "unitId", "value": "" },
-    { "key": "addressId", "value": "" }
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3002/api/v1"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "estateId",
+      "value": ""
+    },
+    {
+      "key": "estateCode",
+      "value": ""
+    },
+    {
+      "key": "userId",
+      "value": ""
+    },
+    {
+      "key": "accessId",
+      "value": ""
+    },
+    {
+      "key": "accessCode",
+      "value": ""
+    },
+    {
+      "key": "gateId",
+      "value": ""
+    },
+    {
+      "key": "paymentId",
+      "value": ""
+    },
+    {
+      "key": "reference",
+      "value": ""
+    },
+    {
+      "key": "planId",
+      "value": ""
+    },
+    {
+      "key": "referralCode",
+      "value": ""
+    },
+    {
+      "key": "referrerId",
+      "value": ""
+    },
+    {
+      "key": "bonusId",
+      "value": ""
+    },
+    {
+      "key": "amenityId",
+      "value": ""
+    },
+    {
+      "key": "reservationId",
+      "value": ""
+    },
+    {
+      "key": "slotId",
+      "value": ""
+    },
+    {
+      "key": "sessionId",
+      "value": ""
+    },
+    {
+      "key": "guestParkingId",
+      "value": ""
+    },
+    {
+      "key": "ticketId",
+      "value": ""
+    },
+    {
+      "key": "chatId",
+      "value": ""
+    },
+    {
+      "key": "alertId",
+      "value": ""
+    },
+    {
+      "key": "messageId",
+      "value": ""
+    },
+    {
+      "key": "postId",
+      "value": ""
+    },
+    {
+      "key": "faqId",
+      "value": ""
+    },
+    {
+      "key": "roleId",
+      "value": ""
+    },
+    {
+      "key": "permissionId",
+      "value": ""
+    },
+    {
+      "key": "keyId",
+      "value": ""
+    },
+    {
+      "key": "streetId",
+      "value": ""
+    },
+    {
+      "key": "unitId",
+      "value": ""
+    },
+    {
+      "key": "addressId",
+      "value": ""
+    }
   ],
   "auth": {
     "type": "bearer",
-    "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
   },
   "item": [
     {
@@ -53,15 +152,35 @@
             {
               "name": "Register",
               "request": {
-                "auth": { "type": "noauth" },
+                "auth": {
+                  "type": "noauth"
+                },
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"first_name\": \"Steve\",\n  \"last_name\": \"Oyeyemi\",\n  \"email\": \"steve@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"phone\": \"08065876770\",\n  \"user_type\": \"resident\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/user/register", "host": ["{{baseUrl}}"], "path": ["user", "register"] }
+                "url": {
+                  "raw": "{{baseUrl}}/user/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "user",
+                    "register"
+                  ]
+                }
               }
             },
             {
@@ -69,7 +188,16 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/user/all", "host": ["{{baseUrl}}"], "path": ["user", "all"] }
+                "url": {
+                  "raw": "{{baseUrl}}/user/all",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "user",
+                    "all"
+                  ]
+                }
               }
             },
             {
@@ -77,7 +205,17 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/user/one/{{userId}}", "host": ["{{baseUrl}}"], "path": ["user", "one", "{{userId}}"] }
+                "url": {
+                  "raw": "{{baseUrl}}/user/one/{{userId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "user",
+                    "one",
+                    "{{userId}}"
+                  ]
+                }
               }
             },
             {
@@ -85,20 +223,48 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/user/delete/{{userId}}", "host": ["{{baseUrl}}"], "path": ["user", "delete", "{{userId}}"] }
+                "url": {
+                  "raw": "{{baseUrl}}/user/delete/{{userId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "user",
+                    "delete",
+                    "{{userId}}"
+                  ]
+                }
               }
             },
             {
               "name": "Link User to Estate",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"estate_code\": \"{{estateCode}}\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/user/link-estate", "host": ["{{baseUrl}}"], "path": ["user", "link-estate"] }
+                "url": {
+                  "raw": "{{baseUrl}}/user/link-estate",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "user",
+                    "link-estate"
+                  ]
+                }
               }
             },
             {
@@ -106,7 +272,16 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/user/estate", "host": ["{{baseUrl}}"], "path": ["user", "estate"] }
+                "url": {
+                  "raw": "{{baseUrl}}/user/estate",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "user",
+                    "estate"
+                  ]
+                }
               }
             },
             {
@@ -116,22 +291,55 @@
                 "header": [],
                 "body": {
                   "mode": "formdata",
-                  "formdata": [{ "key": "avatar", "type": "file", "src": "" }]
+                  "formdata": [
+                    {
+                      "key": "avatar",
+                      "type": "file",
+                      "src": ""
+                    }
+                  ]
                 },
-                "url": { "raw": "{{baseUrl}}/user/avatar", "host": ["{{baseUrl}}"], "path": ["user", "avatar"] }
+                "url": {
+                  "raw": "{{baseUrl}}/user/avatar",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "user",
+                    "avatar"
+                  ]
+                }
               }
             },
             {
               "name": "Update Profile",
               "request": {
                 "method": "PUT",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"first_name\": \"Steve\",\n  \"last_name\": \"Oyeyemi\",\n  \"phone\": \"08065876770\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/user/profile", "host": ["{{baseUrl}}"], "path": ["user", "profile"] }
+                "url": {
+                  "raw": "{{baseUrl}}/user/profile",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "user",
+                    "profile"
+                  ]
+                }
               }
             }
           ]
@@ -142,15 +350,35 @@
             {
               "name": "Login",
               "request": {
-                "auth": { "type": "noauth" },
+                "auth": {
+                  "type": "noauth"
+                },
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"email\": \"steve@example.com\",\n  \"password\": \"SecurePass123!\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                }
               }
             },
             {
@@ -158,7 +386,16 @@
               "request": {
                 "method": "POST",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/auth/logout", "host": ["{{baseUrl}}"], "path": ["auth", "logout"] }
+                "url": {
+                  "raw": "{{baseUrl}}/auth/logout",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "logout"
+                  ]
+                }
               }
             }
           ]
@@ -169,42 +406,103 @@
             {
               "name": "Request Password Reset",
               "request": {
-                "auth": { "type": "noauth" },
+                "auth": {
+                  "type": "noauth"
+                },
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"email\": \"steve@example.com\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/auth/password/request", "host": ["{{baseUrl}}"], "path": ["auth", "password", "request"] }
+                "url": {
+                  "raw": "{{baseUrl}}/auth/password/request",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "password",
+                    "request"
+                  ]
+                }
               }
             },
             {
               "name": "Reset Password",
               "request": {
-                "auth": { "type": "noauth" },
+                "auth": {
+                  "type": "noauth"
+                },
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"token\": \"\",\n  \"password\": \"NewSecurePass123!\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/auth/password/reset", "host": ["{{baseUrl}}"], "path": ["auth", "password", "reset"] }
+                "url": {
+                  "raw": "{{baseUrl}}/auth/password/reset",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "password",
+                    "reset"
+                  ]
+                }
               }
             },
             {
               "name": "Change Password",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"current_password\": \"OldPass123!\",\n  \"new_password\": \"NewSecurePass123!\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/auth/password/change", "host": ["{{baseUrl}}"], "path": ["auth", "password", "change"] }
+                "url": {
+                  "raw": "{{baseUrl}}/auth/password/change",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "password",
+                    "change"
+                  ]
+                }
               }
             }
           ]
@@ -215,29 +513,71 @@
             {
               "name": "Send OTP",
               "request": {
-                "auth": { "type": "noauth" },
+                "auth": {
+                  "type": "noauth"
+                },
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"phone\": \"08065876770\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/auth/phone/send-otp", "host": ["{{baseUrl}}"], "path": ["auth", "phone", "send-otp"] }
+                "url": {
+                  "raw": "{{baseUrl}}/auth/phone/send-otp",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "phone",
+                    "send-otp"
+                  ]
+                }
               }
             },
             {
               "name": "Verify OTP",
               "request": {
-                "auth": { "type": "noauth" },
+                "auth": {
+                  "type": "noauth"
+                },
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"phone\": \"08065876770\",\n  \"otp\": \"123456\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/auth/phone/verify-otp", "host": ["{{baseUrl}}"], "path": ["auth", "phone", "verify-otp"] }
+                "url": {
+                  "raw": "{{baseUrl}}/auth/phone/verify-otp",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "phone",
+                    "verify-otp"
+                  ]
+                }
               }
             }
           ]
@@ -248,29 +588,71 @@
             {
               "name": "Send Verification Code",
               "request": {
-                "auth": { "type": "noauth" },
+                "auth": {
+                  "type": "noauth"
+                },
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"email\": \"steve@example.com\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/auth/email/send-code", "host": ["{{baseUrl}}"], "path": ["auth", "email", "send-code"] }
+                "url": {
+                  "raw": "{{baseUrl}}/auth/email/send-code",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "email",
+                    "send-code"
+                  ]
+                }
               }
             },
             {
               "name": "Verify Email Code",
               "request": {
-                "auth": { "type": "noauth" },
+                "auth": {
+                  "type": "noauth"
+                },
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"email\": \"steve@example.com\",\n  \"code\": \"123456\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/auth/email/verify-code", "host": ["{{baseUrl}}"], "path": ["auth", "email", "verify-code"] }
+                "url": {
+                  "raw": "{{baseUrl}}/auth/email/verify-code",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "email",
+                    "verify-code"
+                  ]
+                }
               }
             }
           ]
@@ -281,25 +663,53 @@
             {
               "name": "Get Google OAuth URL",
               "request": {
-                "auth": { "type": "noauth" },
+                "auth": {
+                  "type": "noauth"
+                },
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/auth/google/google/url", "host": ["{{baseUrl}}"], "path": ["auth", "google", "google", "url"] }
+                "url": {
+                  "raw": "{{baseUrl}}/auth/google/google/url",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "google",
+                    "google",
+                    "url"
+                  ]
+                }
               }
             },
             {
               "name": "Google OAuth Callback",
               "request": {
-                "auth": { "type": "noauth" },
+                "auth": {
+                  "type": "noauth"
+                },
                 "method": "GET",
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/auth/google/google/callback?code=&state=",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "google", "google", "callback"],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "google",
+                    "google",
+                    "callback"
+                  ],
                   "query": [
-                    { "key": "code", "value": "" },
-                    { "key": "state", "value": "" }
+                    {
+                      "key": "code",
+                      "value": ""
+                    },
+                    {
+                      "key": "state",
+                      "value": ""
+                    }
                   ]
                 }
               }
@@ -308,13 +718,33 @@
               "name": "Link Google Account",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"google_code\": \"\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/auth/google/google/link", "host": ["{{baseUrl}}"], "path": ["auth", "google", "google", "link"] }
+                "url": {
+                  "raw": "{{baseUrl}}/auth/google/google/link",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "google",
+                    "google",
+                    "link"
+                  ]
+                }
               }
             },
             {
@@ -322,7 +752,18 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/auth/google/google/unlink", "host": ["{{baseUrl}}"], "path": ["auth", "google", "google", "unlink"] }
+                "url": {
+                  "raw": "{{baseUrl}}/auth/google/google/unlink",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "google",
+                    "google",
+                    "unlink"
+                  ]
+                }
               }
             }
           ]
@@ -336,22 +777,51 @@
           "name": "Create Estate",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Green Valley Estate\",\n  \"type\": \"residential\",\n  \"country_code\": \"NG\",\n  \"timezone\": \"Africa/Lagos\",\n  \"currency_code\": \"NGN\",\n  \"state\": \"Lagos\",\n  \"address\": {\n    \"number\": \"12B\",\n    \"street\": \"Palm Avenue\",\n    \"city\": \"Lekki\",\n    \"country\": \"Nigeria\"\n  },\n  \"contact_phone\": \"08012345678\",\n  \"contact_email\": \"manager@example.com\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/estate/register", "host": ["{{baseUrl}}"], "path": ["estate", "register"] }
+            "url": {
+              "raw": "{{baseUrl}}/estate/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estate",
+                "register"
+              ]
+            }
           }
         },
         {
           "name": "Get All Estates",
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{baseUrl}}/estate/estates", "host": ["{{baseUrl}}"], "path": ["estate", "estates"] }
+            "url": {
+              "raw": "{{baseUrl}}/estate/estates",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estate",
+                "estates"
+              ]
+            }
           }
         },
         {
@@ -359,7 +829,17 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{baseUrl}}/estate/estates/pending", "host": ["{{baseUrl}}"], "path": ["estate", "estates", "pending"] }
+            "url": {
+              "raw": "{{baseUrl}}/estate/estates/pending",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estate",
+                "estates",
+                "pending"
+              ]
+            }
           }
         },
         {
@@ -367,47 +847,113 @@
           "request": {
             "method": "PATCH",
             "header": [],
-            "url": { "raw": "{{baseUrl}}/estate/estates/{{estateId}}/approve", "host": ["{{baseUrl}}"], "path": ["estate", "estates", "{{estateId}}", "approve"] }
+            "url": {
+              "raw": "{{baseUrl}}/estate/estates/{{estateId}}/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estate",
+                "estates",
+                "{{estateId}}",
+                "approve"
+              ]
+            }
           }
         },
         {
           "name": "Get Estate by ID",
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{baseUrl}}/estate/one/{{estateId}}", "host": ["{{baseUrl}}"], "path": ["estate", "one", "{{estateId}}"] }
+            "url": {
+              "raw": "{{baseUrl}}/estate/one/{{estateId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estate",
+                "one",
+                "{{estateId}}"
+              ]
+            }
           }
         },
         {
           "name": "Get Estate by Code",
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{baseUrl}}/estate/code/{{estateCode}}", "host": ["{{baseUrl}}"], "path": ["estate", "code", "{{estateCode}}"] }
+            "url": {
+              "raw": "{{baseUrl}}/estate/code/{{estateCode}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estate",
+                "code",
+                "{{estateCode}}"
+              ]
+            }
           }
         },
         {
           "name": "Search Estate by Code",
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{baseUrl}}/estate/search/{{estateCode}}", "host": ["{{baseUrl}}"], "path": ["estate", "search", "{{estateCode}}"] }
+            "url": {
+              "raw": "{{baseUrl}}/estate/search/{{estateCode}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estate",
+                "search",
+                "{{estateCode}}"
+              ]
+            }
           }
         },
         {
           "name": "Update Estate",
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Updated Estate Name\",\n  \"timezone\": \"Africa/Lagos\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/estate/update/{{estateId}}", "host": ["{{baseUrl}}"], "path": ["estate", "update", "{{estateId}}"] }
+            "url": {
+              "raw": "{{baseUrl}}/estate/update/{{estateId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estate",
+                "update",
+                "{{estateId}}"
+              ]
+            }
           }
         },
         {
@@ -415,7 +961,17 @@
           "request": {
             "method": "DELETE",
             "header": [],
-            "url": { "raw": "{{baseUrl}}/estate/delete/{{estateId}}", "host": ["{{baseUrl}}"], "path": ["estate", "delete", "{{estateId}}"] }
+            "url": {
+              "raw": "{{baseUrl}}/estate/delete/{{estateId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estate",
+                "delete",
+                "{{estateId}}"
+              ]
+            }
           }
         },
         {
@@ -423,47 +979,115 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": { "raw": "{{baseUrl}}/estate/invite/{{estateId}}", "host": ["{{baseUrl}}"], "path": ["estate", "invite", "{{estateId}}"] }
+            "url": {
+              "raw": "{{baseUrl}}/estate/invite/{{estateId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estate",
+                "invite",
+                "{{estateId}}"
+              ]
+            }
           }
         },
         {
           "name": "Validate Invitation Token",
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"token\": \"\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/estate/validate-invite", "host": ["{{baseUrl}}"], "path": ["estate", "validate-invite"] }
+            "url": {
+              "raw": "{{baseUrl}}/estate/validate-invite",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estate",
+                "validate-invite"
+              ]
+            }
           }
         },
         {
           "name": "Bulk Invite Residents",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"emails\": [\"resident1@example.com\", \"resident2@example.com\"]\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/estate/residents/bulk-invite", "host": ["{{baseUrl}}"], "path": ["estate", "residents", "bulk-invite"] }
+            "url": {
+              "raw": "{{baseUrl}}/estate/residents/bulk-invite",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estate",
+                "residents",
+                "bulk-invite"
+              ]
+            }
           }
         },
         {
           "name": "Resend Resident Invite",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"resident@example.com\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/estate/residents/resend-invite", "host": ["{{baseUrl}}"], "path": ["estate", "residents", "resend-invite"] }
+            "url": {
+              "raw": "{{baseUrl}}/estate/residents/resend-invite",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estate",
+                "residents",
+                "resend-invite"
+              ]
+            }
           }
         }
       ]
@@ -477,28 +1101,66 @@
             {
               "name": "Scan Code (Gate Entry)",
               "request": {
-                "auth": { "type": "noauth" },
+                "auth": {
+                  "type": "noauth"
+                },
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"code\": \"\",\n  \"gate_id\": \"{{gateId}}\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/access/scan", "host": ["{{baseUrl}}"], "path": ["access", "scan"] }
+                "url": {
+                  "raw": "{{baseUrl}}/access/scan",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "access",
+                    "scan"
+                  ]
+                }
               }
             },
             {
               "name": "Create Access Record",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"resident_id\": \"\",\n  \"guest_name\": \"John Guest\",\n  \"valid_from\": \"2026-03-20T08:00:00Z\",\n  \"valid_until\": \"2026-03-20T20:00:00Z\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/access/", "host": ["{{baseUrl}}"], "path": ["access", ""] }
+                "url": {
+                  "raw": "{{baseUrl}}/access/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "access",
+                    ""
+                  ]
+                }
               }
             },
             {
@@ -506,7 +1168,16 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/access/", "host": ["{{baseUrl}}"], "path": ["access", ""] }
+                "url": {
+                  "raw": "{{baseUrl}}/access/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "access",
+                    ""
+                  ]
+                }
               }
             },
             {
@@ -514,7 +1185,16 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/access/active", "host": ["{{baseUrl}}"], "path": ["access", "active"] }
+                "url": {
+                  "raw": "{{baseUrl}}/access/active",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "access",
+                    "active"
+                  ]
+                }
               }
             },
             {
@@ -522,7 +1202,17 @@
               "request": {
                 "method": "PATCH",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/access/{{accessId}}/approve", "host": ["{{baseUrl}}"], "path": ["access", "{{accessId}}", "approve"] }
+                "url": {
+                  "raw": "{{baseUrl}}/access/{{accessId}}/approve",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "access",
+                    "{{accessId}}",
+                    "approve"
+                  ]
+                }
               }
             },
             {
@@ -530,7 +1220,17 @@
               "request": {
                 "method": "PATCH",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/access/{{accessId}}/revoke", "host": ["{{baseUrl}}"], "path": ["access", "{{accessId}}", "revoke"] }
+                "url": {
+                  "raw": "{{baseUrl}}/access/{{accessId}}/revoke",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "access",
+                    "{{accessId}}",
+                    "revoke"
+                  ]
+                }
               }
             }
           ]
@@ -542,13 +1242,31 @@
               "name": "Generate Access Code",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"guest_name\": \"John Guest\",\n  \"valid_from\": \"2026-03-20T08:00:00Z\",\n  \"valid_until\": \"2026-03-20T20:00:00Z\",\n  \"gate_id\": \"{{gateId}}\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "raw": "{\n  \"guest_name\": \"John Guest\",\n  \"valid_from\": \"2026-03-20T08:00:00Z\",\n  \"valid_until\": \"2026-03-20T20:00:00Z\",\n  \"gate_id\": \"{{gateId}}\",\n  \"access_direction\": \"entry\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/access-codes/generate", "host": ["{{baseUrl}}"], "path": ["access-codes", "generate"] }
+                "url": {
+                  "raw": "{{baseUrl}}/access-codes/generate",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "access-codes",
+                    "generate"
+                  ]
+                }
               }
             },
             {
@@ -556,46 +1274,109 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/access-codes/", "host": ["{{baseUrl}}"], "path": ["access-codes", ""] }
+                "url": {
+                  "raw": "{{baseUrl}}/access-codes/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "access-codes",
+                    ""
+                  ]
+                }
               }
             },
             {
               "name": "Validate Access Code",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"code\": \"{{accessCode}}\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/access-codes/validate", "host": ["{{baseUrl}}"], "path": ["access-codes", "validate"] }
+                "url": {
+                  "raw": "{{baseUrl}}/access-codes/validate",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "access-codes",
+                    "validate"
+                  ]
+                }
               }
             },
             {
               "name": "Approve Access Code",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"code_id\": \"\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/access-codes/approve", "host": ["{{baseUrl}}"], "path": ["access-codes", "approve"] }
+                "url": {
+                  "raw": "{{baseUrl}}/access-codes/approve",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "access-codes",
+                    "approve"
+                  ]
+                }
               }
             },
             {
               "name": "Reject Access Code",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"code_id\": \"\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/access-codes/reject", "host": ["{{baseUrl}}"], "path": ["access-codes", "reject"] }
+                "url": {
+                  "raw": "{{baseUrl}}/access-codes/reject",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "access-codes",
+                    "reject"
+                  ]
+                }
               }
             },
             {
@@ -603,7 +1384,17 @@
               "request": {
                 "method": "POST",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/access-codes/{{accessCode}}/confirm", "host": ["{{baseUrl}}"], "path": ["access-codes", "{{accessCode}}", "confirm"] }
+                "url": {
+                  "raw": "{{baseUrl}}/access-codes/{{accessCode}}/confirm",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "access-codes",
+                    "{{accessCode}}",
+                    "confirm"
+                  ]
+                }
               }
             },
             {
@@ -611,7 +1402,17 @@
               "request": {
                 "method": "POST",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/access-codes/{{accessCode}}/revoke", "host": ["{{baseUrl}}"], "path": ["access-codes", "{{accessCode}}", "revoke"] }
+                "url": {
+                  "raw": "{{baseUrl}}/access-codes/{{accessCode}}/revoke",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "access-codes",
+                    "{{accessCode}}",
+                    "revoke"
+                  ]
+                }
               }
             }
           ]
@@ -622,15 +1423,35 @@
             {
               "name": "Validate NFC Card",
               "request": {
-                "auth": { "type": "noauth" },
+                "auth": {
+                  "type": "noauth"
+                },
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"card_id\": \"\",\n  \"gate_id\": \"{{gateId}}\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/nfc/validate", "host": ["{{baseUrl}}"], "path": ["nfc", "validate"] }
+                "url": {
+                  "raw": "{{baseUrl}}/nfc/validate",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "nfc",
+                    "validate"
+                  ]
+                }
               }
             },
             {
@@ -638,7 +1459,16 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/nfc/my-card", "host": ["{{baseUrl}}"], "path": ["nfc", "my-card"] }
+                "url": {
+                  "raw": "{{baseUrl}}/nfc/my-card",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "nfc",
+                    "my-card"
+                  ]
+                }
               }
             },
             {
@@ -646,20 +1476,47 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/nfc/my-history", "host": ["{{baseUrl}}"], "path": ["nfc", "my-history"] }
+                "url": {
+                  "raw": "{{baseUrl}}/nfc/my-history",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "nfc",
+                    "my-history"
+                  ]
+                }
               }
             },
             {
               "name": "Report NFC Card Lost",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"card_id\": \"\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/nfc/report-lost", "host": ["{{baseUrl}}"], "path": ["nfc", "report-lost"] }
+                "url": {
+                  "raw": "{{baseUrl}}/nfc/report-lost",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "nfc",
+                    "report-lost"
+                  ]
+                }
               }
             }
           ]
@@ -676,26 +1533,62 @@
               "name": "Initiate Payment",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"amount\": 50000,\n  \"paymentMethod\": \"card\",\n  \"currency\": \"NGN\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/payment/initiate", "host": ["{{baseUrl}}"], "path": ["payment", "initiate"] }
+                "url": {
+                  "raw": "{{baseUrl}}/payment/initiate",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "payment",
+                    "initiate"
+                  ]
+                }
               }
             },
             {
               "name": "Initiate Subscription",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"plan_id\": \"{{planId}}\",\n  \"paymentMethod\": \"card\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/payment/subscription", "host": ["{{baseUrl}}"], "path": ["payment", "subscription"] }
+                "url": {
+                  "raw": "{{baseUrl}}/payment/subscription",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "payment",
+                    "subscription"
+                  ]
+                }
               }
             },
             {
@@ -703,22 +1596,44 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/payment/subscription", "host": ["{{baseUrl}}"], "path": ["payment", "subscription"] }
+                "url": {
+                  "raw": "{{baseUrl}}/payment/subscription",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "payment",
+                    "subscription"
+                  ]
+                }
               }
             },
             {
               "name": "Payment Callback",
               "request": {
-                "auth": { "type": "noauth" },
+                "auth": {
+                  "type": "noauth"
+                },
                 "method": "GET",
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/payment/callback?reference={{reference}}&status=",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["payment", "callback"],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "payment",
+                    "callback"
+                  ],
                   "query": [
-                    { "key": "reference", "value": "{{reference}}" },
-                    { "key": "status", "value": "" }
+                    {
+                      "key": "reference",
+                      "value": "{{reference}}"
+                    },
+                    {
+                      "key": "status",
+                      "value": ""
+                    }
                   ]
                 }
               }
@@ -728,7 +1643,17 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/payment/verify/{{reference}}", "host": ["{{baseUrl}}"], "path": ["payment", "verify", "{{reference}}"] }
+                "url": {
+                  "raw": "{{baseUrl}}/payment/verify/{{reference}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "payment",
+                    "verify",
+                    "{{reference}}"
+                  ]
+                }
               }
             },
             {
@@ -736,7 +1661,16 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/payment/all", "host": ["{{baseUrl}}"], "path": ["payment", "all"] }
+                "url": {
+                  "raw": "{{baseUrl}}/payment/all",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "payment",
+                    "all"
+                  ]
+                }
               }
             },
             {
@@ -744,7 +1678,17 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/payment/id/{{paymentId}}", "host": ["{{baseUrl}}"], "path": ["payment", "id", "{{paymentId}}"] }
+                "url": {
+                  "raw": "{{baseUrl}}/payment/id/{{paymentId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "payment",
+                    "id",
+                    "{{paymentId}}"
+                  ]
+                }
               }
             },
             {
@@ -752,7 +1696,17 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/payment/ref/{{reference}}", "host": ["{{baseUrl}}"], "path": ["payment", "ref", "{{reference}}"] }
+                "url": {
+                  "raw": "{{baseUrl}}/payment/ref/{{reference}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "payment",
+                    "ref",
+                    "{{reference}}"
+                  ]
+                }
               }
             }
           ]
@@ -763,45 +1717,103 @@
             {
               "name": "Get All Plans",
               "request": {
-                "auth": { "type": "noauth" },
+                "auth": {
+                  "type": "noauth"
+                },
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/plan/", "host": ["{{baseUrl}}"], "path": ["plan", ""] }
+                "url": {
+                  "raw": "{{baseUrl}}/plan/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "plan",
+                    ""
+                  ]
+                }
               }
             },
             {
               "name": "Get Plan by ID",
               "request": {
-                "auth": { "type": "noauth" },
+                "auth": {
+                  "type": "noauth"
+                },
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/plan/{{planId}}", "host": ["{{baseUrl}}"], "path": ["plan", "{{planId}}"] }
+                "url": {
+                  "raw": "{{baseUrl}}/plan/{{planId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "plan",
+                    "{{planId}}"
+                  ]
+                }
               }
             },
             {
               "name": "Create Plan",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"name\": \"Basic Plan\",\n  \"category\": \"basic\",\n  \"billing_cycle\": \"monthly\",\n  \"price\": 5000,\n  \"currency\": \"NGN\",\n  \"features\": {\"max_residents\": 100}\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/plan/", "host": ["{{baseUrl}}"], "path": ["plan", ""] }
+                "url": {
+                  "raw": "{{baseUrl}}/plan/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "plan",
+                    ""
+                  ]
+                }
               }
             },
             {
               "name": "Update Plan",
               "request": {
                 "method": "PUT",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"name\": \"Updated Plan\",\n  \"price\": 6000\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/plan/{{planId}}", "host": ["{{baseUrl}}"], "path": ["plan", "{{planId}}"] }
+                "url": {
+                  "raw": "{{baseUrl}}/plan/{{planId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "plan",
+                    "{{planId}}"
+                  ]
+                }
               }
             },
             {
@@ -809,7 +1821,16 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/plan/{{planId}}", "host": ["{{baseUrl}}"], "path": ["plan", "{{planId}}"] }
+                "url": {
+                  "raw": "{{baseUrl}}/plan/{{planId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "plan",
+                    "{{planId}}"
+                  ]
+                }
               }
             }
           ]
@@ -820,15 +1841,35 @@
             {
               "name": "Register Referrer",
               "request": {
-                "auth": { "type": "noauth" },
+                "auth": {
+                  "type": "noauth"
+                },
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"name\": \"Referrer Example\",\n  \"email\": \"referrer@example.com\",\n  \"phone\": \"08012345678\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/referral/register", "host": ["{{baseUrl}}"], "path": ["referral", "register"] }
+                "url": {
+                  "raw": "{{baseUrl}}/referral/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "referral",
+                    "register"
+                  ]
+                }
               }
             },
             {
@@ -836,7 +1877,16 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/referral/", "host": ["{{baseUrl}}"], "path": ["referral", ""] }
+                "url": {
+                  "raw": "{{baseUrl}}/referral/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "referral",
+                    ""
+                  ]
+                }
               }
             },
             {
@@ -844,7 +1894,16 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/referral/{{referralCode}}", "host": ["{{baseUrl}}"], "path": ["referral", "{{referralCode}}"] }
+                "url": {
+                  "raw": "{{baseUrl}}/referral/{{referralCode}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "referral",
+                    "{{referralCode}}"
+                  ]
+                }
               }
             },
             {
@@ -852,7 +1911,17 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/referral/delete/{{referrerId}}", "host": ["{{baseUrl}}"], "path": ["referral", "delete", "{{referrerId}}"] }
+                "url": {
+                  "raw": "{{baseUrl}}/referral/delete/{{referrerId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "referral",
+                    "delete",
+                    "{{referrerId}}"
+                  ]
+                }
               }
             },
             {
@@ -860,7 +1929,17 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/referral/bonuses/unpaid", "host": ["{{baseUrl}}"], "path": ["referral", "bonuses", "unpaid"] }
+                "url": {
+                  "raw": "{{baseUrl}}/referral/bonuses/unpaid",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "referral",
+                    "bonuses",
+                    "unpaid"
+                  ]
+                }
               }
             },
             {
@@ -868,7 +1947,18 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/referral/referrer/{{referrerId}}/bonuses", "host": ["{{baseUrl}}"], "path": ["referral", "referrer", "{{referrerId}}", "bonuses"] }
+                "url": {
+                  "raw": "{{baseUrl}}/referral/referrer/{{referrerId}}/bonuses",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "referral",
+                    "referrer",
+                    "{{referrerId}}",
+                    "bonuses"
+                  ]
+                }
               }
             },
             {
@@ -876,7 +1966,18 @@
               "request": {
                 "method": "POST",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/referral/bonuses/{{bonusId}}/pay", "host": ["{{baseUrl}}"], "path": ["referral", "bonuses", "{{bonusId}}", "pay"] }
+                "url": {
+                  "raw": "{{baseUrl}}/referral/bonuses/{{bonusId}}/pay",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "referral",
+                    "bonuses",
+                    "{{bonusId}}",
+                    "pay"
+                  ]
+                }
               }
             }
           ]
@@ -887,18 +1988,39 @@
             {
               "name": "Paystack Webhook",
               "request": {
-                "auth": { "type": "noauth" },
+                "auth": {
+                  "type": "noauth"
+                },
                 "method": "POST",
                 "header": [
-                  { "key": "Content-Type", "value": "application/json" },
-                  { "key": "x-paystack-signature", "value": "" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "x-paystack-signature",
+                    "value": ""
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"event\": \"charge.success\",\n  \"data\": {\n    \"reference\": \"\",\n    \"amount\": 50000,\n    \"status\": \"success\"\n  }\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/webhooks/paystack", "host": ["{{baseUrl}}"], "path": ["webhooks", "paystack"] }
+                "url": {
+                  "raw": "{{baseUrl}}/webhooks/paystack",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "webhooks",
+                    "paystack"
+                  ]
+                }
               }
             }
           ]
@@ -913,33 +2035,80 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{baseUrl}}/amenities/estate/{{estateId}}", "host": ["{{baseUrl}}"], "path": ["amenities", "estate", "{{estateId}}"] }
+            "url": {
+              "raw": "{{baseUrl}}/amenities/estate/{{estateId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "amenities",
+                "estate",
+                "{{estateId}}"
+              ]
+            }
           }
         },
         {
           "name": "Create Amenity",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"amenity_name\": \"Swimming Pool\",\n  \"amenity_type\": \"recreation\",\n  \"description\": \"Olympic-sized swimming pool\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/amenities/estate/{{estateId}}", "host": ["{{baseUrl}}"], "path": ["amenities", "estate", "{{estateId}}"] }
+            "url": {
+              "raw": "{{baseUrl}}/amenities/estate/{{estateId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "amenities",
+                "estate",
+                "{{estateId}}"
+              ]
+            }
           }
         },
         {
           "name": "Update Amenity",
           "request": {
             "method": "PATCH",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"amenity_name\": \"Updated Pool\",\n  \"description\": \"Updated description\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/amenities/{{amenityId}}", "host": ["{{baseUrl}}"], "path": ["amenities", "{{amenityId}}"] }
+            "url": {
+              "raw": "{{baseUrl}}/amenities/{{amenityId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "amenities",
+                "{{amenityId}}"
+              ]
+            }
           }
         },
         {
@@ -947,20 +2116,47 @@
           "request": {
             "method": "DELETE",
             "header": [],
-            "url": { "raw": "{{baseUrl}}/amenities/{{amenityId}}", "host": ["{{baseUrl}}"], "path": ["amenities", "{{amenityId}}"] }
+            "url": {
+              "raw": "{{baseUrl}}/amenities/{{amenityId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "amenities",
+                "{{amenityId}}"
+              ]
+            }
           }
         },
         {
           "name": "Create Reservation",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"amenity_id\": \"{{amenityId}}\",\n  \"start_time\": \"2026-03-20T10:00:00Z\",\n  \"end_time\": \"2026-03-20T12:00:00Z\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/reservations/", "host": ["{{baseUrl}}"], "path": ["reservations", ""] }
+            "url": {
+              "raw": "{{baseUrl}}/reservations/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservations",
+                ""
+              ]
+            }
           }
         },
         {
@@ -968,7 +2164,16 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{baseUrl}}/reservations/my", "host": ["{{baseUrl}}"], "path": ["reservations", "my"] }
+            "url": {
+              "raw": "{{baseUrl}}/reservations/my",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservations",
+                "my"
+              ]
+            }
           }
         },
         {
@@ -976,7 +2181,17 @@
           "request": {
             "method": "PATCH",
             "header": [],
-            "url": { "raw": "{{baseUrl}}/reservations/{{reservationId}}/cancel", "host": ["{{baseUrl}}"], "path": ["reservations", "{{reservationId}}", "cancel"] }
+            "url": {
+              "raw": "{{baseUrl}}/reservations/{{reservationId}}/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservations",
+                "{{reservationId}}",
+                "cancel"
+              ]
+            }
           }
         },
         {
@@ -986,11 +2201,24 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/reservations/amenities/{{amenityId}}/available?date=2026-03-20&duration=120",
-              "host": ["{{baseUrl}}"],
-              "path": ["reservations", "amenities", "{{amenityId}}", "available"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservations",
+                "amenities",
+                "{{amenityId}}",
+                "available"
+              ],
               "query": [
-                { "key": "date", "value": "2026-03-20" },
-                { "key": "duration", "value": "120" }
+                {
+                  "key": "date",
+                  "value": "2026-03-20"
+                },
+                {
+                  "key": "duration",
+                  "value": "120"
+                }
               ]
             }
           }
@@ -1000,7 +2228,17 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{baseUrl}}/reservations/estate/{{estateId}}", "host": ["{{baseUrl}}"], "path": ["reservations", "estate", "{{estateId}}"] }
+            "url": {
+              "raw": "{{baseUrl}}/reservations/estate/{{estateId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservations",
+                "estate",
+                "{{estateId}}"
+              ]
+            }
           }
         }
       ]
@@ -1016,20 +2254,47 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/parking/my-slot", "host": ["{{baseUrl}}"], "path": ["parking", "my-slot"] }
+                "url": {
+                  "raw": "{{baseUrl}}/parking/my-slot",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "parking",
+                    "my-slot"
+                  ]
+                }
               }
             },
             {
               "name": "Release Slot to Guest",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"guest_name\": \"John Guest\",\n  \"release_date\": \"2026-03-20\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/parking/guest-release", "host": ["{{baseUrl}}"], "path": ["parking", "guest-release"] }
+                "url": {
+                  "raw": "{{baseUrl}}/parking/guest-release",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "parking",
+                    "guest-release"
+                  ]
+                }
               }
             },
             {
@@ -1037,7 +2302,16 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/parking/guest-parkings", "host": ["{{baseUrl}}"], "path": ["parking", "guest-parkings"] }
+                "url": {
+                  "raw": "{{baseUrl}}/parking/guest-parkings",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "parking",
+                    "guest-parkings"
+                  ]
+                }
               }
             },
             {
@@ -1045,7 +2319,18 @@
               "request": {
                 "method": "PATCH",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/parking/guest-parkings/{{guestParkingId}}/cancel", "host": ["{{baseUrl}}"], "path": ["parking", "guest-parkings", "{{guestParkingId}}", "cancel"] }
+                "url": {
+                  "raw": "{{baseUrl}}/parking/guest-parkings/{{guestParkingId}}/cancel",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "parking",
+                    "guest-parkings",
+                    "{{guestParkingId}}",
+                    "cancel"
+                  ]
+                }
               }
             },
             {
@@ -1053,7 +2338,18 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/parking/estate/{{estateId}}/slots", "host": ["{{baseUrl}}"], "path": ["parking", "estate", "{{estateId}}", "slots"] }
+                "url": {
+                  "raw": "{{baseUrl}}/parking/estate/{{estateId}}/slots",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "parking",
+                    "estate",
+                    "{{estateId}}",
+                    "slots"
+                  ]
+                }
               }
             }
           ]
@@ -1066,20 +2362,50 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/ev-charging/estate/{{estateId}}/slots", "host": ["{{baseUrl}}"], "path": ["ev-charging", "estate", "{{estateId}}", "slots"] }
+                "url": {
+                  "raw": "{{baseUrl}}/ev-charging/estate/{{estateId}}/slots",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "ev-charging",
+                    "estate",
+                    "{{estateId}}",
+                    "slots"
+                  ]
+                }
               }
             },
             {
               "name": "Start Charging Session",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"slot_id\": \"{{slotId}}\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/ev-charging/sessions/start", "host": ["{{baseUrl}}"], "path": ["ev-charging", "sessions", "start"] }
+                "url": {
+                  "raw": "{{baseUrl}}/ev-charging/sessions/start",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "ev-charging",
+                    "sessions",
+                    "start"
+                  ]
+                }
               }
             },
             {
@@ -1087,7 +2413,18 @@
               "request": {
                 "method": "POST",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/ev-charging/sessions/{{sessionId}}/stop", "host": ["{{baseUrl}}"], "path": ["ev-charging", "sessions", "{{sessionId}}", "stop"] }
+                "url": {
+                  "raw": "{{baseUrl}}/ev-charging/sessions/{{sessionId}}/stop",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "ev-charging",
+                    "sessions",
+                    "{{sessionId}}",
+                    "stop"
+                  ]
+                }
               }
             },
             {
@@ -1095,7 +2432,17 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/ev-charging/sessions/my", "host": ["{{baseUrl}}"], "path": ["ev-charging", "sessions", "my"] }
+                "url": {
+                  "raw": "{{baseUrl}}/ev-charging/sessions/my",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "ev-charging",
+                    "sessions",
+                    "my"
+                  ]
+                }
               }
             },
             {
@@ -1103,7 +2450,17 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/ev-charging/sessions/active", "host": ["{{baseUrl}}"], "path": ["ev-charging", "sessions", "active"] }
+                "url": {
+                  "raw": "{{baseUrl}}/ev-charging/sessions/active",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "ev-charging",
+                    "sessions",
+                    "active"
+                  ]
+                }
               }
             }
           ]
@@ -1121,20 +2478,47 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/support/info", "host": ["{{baseUrl}}"], "path": ["support", "info"] }
+                "url": {
+                  "raw": "{{baseUrl}}/support/info",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "support",
+                    "info"
+                  ]
+                }
               }
             },
             {
               "name": "Create Support Ticket",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"subject\": \"Access code not working\",\n  \"description\": \"My access code expired before the valid_until date.\",\n  \"priority\": \"high\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/support/tickets", "host": ["{{baseUrl}}"], "path": ["support", "tickets"] }
+                "url": {
+                  "raw": "{{baseUrl}}/support/tickets",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "support",
+                    "tickets"
+                  ]
+                }
               }
             },
             {
@@ -1142,7 +2526,17 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/support/tickets/my", "host": ["{{baseUrl}}"], "path": ["support", "tickets", "my"] }
+                "url": {
+                  "raw": "{{baseUrl}}/support/tickets/my",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "support",
+                    "tickets",
+                    "my"
+                  ]
+                }
               }
             },
             {
@@ -1150,20 +2544,51 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/support/tickets/{{ticketId}}/messages", "host": ["{{baseUrl}}"], "path": ["support", "tickets", "{{ticketId}}", "messages"] }
+                "url": {
+                  "raw": "{{baseUrl}}/support/tickets/{{ticketId}}/messages",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "support",
+                    "tickets",
+                    "{{ticketId}}",
+                    "messages"
+                  ]
+                }
               }
             },
             {
               "name": "Send Ticket Message",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"message\": \"I still need help with this issue.\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/support/tickets/{{ticketId}}/messages", "host": ["{{baseUrl}}"], "path": ["support", "tickets", "{{ticketId}}", "messages"] }
+                "url": {
+                  "raw": "{{baseUrl}}/support/tickets/{{ticketId}}/messages",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "support",
+                    "tickets",
+                    "{{ticketId}}",
+                    "messages"
+                  ]
+                }
               }
             },
             {
@@ -1171,7 +2596,17 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/support/tickets/open", "host": ["{{baseUrl}}"], "path": ["support", "tickets", "open"] }
+                "url": {
+                  "raw": "{{baseUrl}}/support/tickets/open",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "support",
+                    "tickets",
+                    "open"
+                  ]
+                }
               }
             },
             {
@@ -1179,33 +2614,83 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/support/tickets/assigned", "host": ["{{baseUrl}}"], "path": ["support", "tickets", "assigned"] }
+                "url": {
+                  "raw": "{{baseUrl}}/support/tickets/assigned",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "support",
+                    "tickets",
+                    "assigned"
+                  ]
+                }
               }
             },
             {
               "name": "Assign Ticket",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"assigned_to\": \"{{userId}}\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/support/tickets/{{ticketId}}/assign", "host": ["{{baseUrl}}"], "path": ["support", "tickets", "{{ticketId}}", "assign"] }
+                "url": {
+                  "raw": "{{baseUrl}}/support/tickets/{{ticketId}}/assign",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "support",
+                    "tickets",
+                    "{{ticketId}}",
+                    "assign"
+                  ]
+                }
               }
             },
             {
               "name": "Update Ticket Status",
               "request": {
                 "method": "PATCH",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"status\": \"resolved\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/support/tickets/{{ticketId}}/status", "host": ["{{baseUrl}}"], "path": ["support", "tickets", "{{ticketId}}", "status"] }
+                "url": {
+                  "raw": "{{baseUrl}}/support/tickets/{{ticketId}}/status",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "support",
+                    "tickets",
+                    "{{ticketId}}",
+                    "status"
+                  ]
+                }
               }
             }
           ]
@@ -1218,46 +2703,119 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/admin/support/tickets", "host": ["{{baseUrl}}"], "path": ["admin", "support", "tickets"] }
+                "url": {
+                  "raw": "{{baseUrl}}/admin/support/tickets",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "support",
+                    "tickets"
+                  ]
+                }
               }
             },
             {
               "name": "Assign Ticket (Admin)",
               "request": {
                 "method": "PUT",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"assigned_to\": \"{{userId}}\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/admin/support/tickets/{{ticketId}}/assign", "host": ["{{baseUrl}}"], "path": ["admin", "support", "tickets", "{{ticketId}}", "assign"] }
+                "url": {
+                  "raw": "{{baseUrl}}/admin/support/tickets/{{ticketId}}/assign",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "support",
+                    "tickets",
+                    "{{ticketId}}",
+                    "assign"
+                  ]
+                }
               }
             },
             {
               "name": "Update Ticket Status (Admin)",
               "request": {
                 "method": "PUT",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"status\": \"closed\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/admin/support/tickets/{{ticketId}}/status", "host": ["{{baseUrl}}"], "path": ["admin", "support", "tickets", "{{ticketId}}", "status"] }
+                "url": {
+                  "raw": "{{baseUrl}}/admin/support/tickets/{{ticketId}}/status",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "support",
+                    "tickets",
+                    "{{ticketId}}",
+                    "status"
+                  ]
+                }
               }
             },
             {
               "name": "Add Admin Message",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"message\": \"We are looking into this issue.\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/admin/support/tickets/{{ticketId}}/messages", "host": ["{{baseUrl}}"], "path": ["admin", "support", "tickets", "{{ticketId}}", "messages"] }
+                "url": {
+                  "raw": "{{baseUrl}}/admin/support/tickets/{{ticketId}}/messages",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "support",
+                    "tickets",
+                    "{{ticketId}}",
+                    "messages"
+                  ]
+                }
               }
             },
             {
@@ -1265,7 +2823,17 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/admin/support/stats", "host": ["{{baseUrl}}"], "path": ["admin", "support", "stats"] }
+                "url": {
+                  "raw": "{{baseUrl}}/admin/support/stats",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "support",
+                    "stats"
+                  ]
+                }
               }
             },
             {
@@ -1275,9 +2843,20 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/admin/support/search?q=access",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["admin", "support", "search"],
-                  "query": [{ "key": "q", "value": "access" }]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "support",
+                    "search"
+                  ],
+                  "query": [
+                    {
+                      "key": "q",
+                      "value": "access"
+                    }
+                  ]
                 }
               }
             }
@@ -1296,7 +2875,16 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/notifications/", "host": ["{{baseUrl}}"], "path": ["notifications", ""] }
+                "url": {
+                  "raw": "{{baseUrl}}/notifications/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "notifications",
+                    ""
+                  ]
+                }
               }
             },
             {
@@ -1304,7 +2892,22 @@
               "request": {
                 "method": "PATCH",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/notifications/:id", "host": ["{{baseUrl}}"], "path": ["notifications", ":id"], "variable": [{ "key": "id", "value": "" }] }
+                "url": {
+                  "raw": "{{baseUrl}}/notifications/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "notifications",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": ""
+                    }
+                  ]
+                }
               }
             },
             {
@@ -1312,7 +2915,16 @@
               "request": {
                 "method": "PATCH",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/notifications/mark-all-read", "host": ["{{baseUrl}}"], "path": ["notifications", "mark-all-read"] }
+                "url": {
+                  "raw": "{{baseUrl}}/notifications/mark-all-read",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "notifications",
+                    "mark-all-read"
+                  ]
+                }
               }
             },
             {
@@ -1320,20 +2932,48 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/notifications/clear-all", "host": ["{{baseUrl}}"], "path": ["notifications", "clear-all"] }
+                "url": {
+                  "raw": "{{baseUrl}}/notifications/clear-all",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "notifications",
+                    "clear-all"
+                  ]
+                }
               }
             },
             {
               "name": "Send Test SMS",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"phone_number\": \"08065876770\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/notifications/test/sms", "host": ["{{baseUrl}}"], "path": ["notifications", "test", "sms"] }
+                "url": {
+                  "raw": "{{baseUrl}}/notifications/test/sms",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "notifications",
+                    "test",
+                    "sms"
+                  ]
+                }
               }
             },
             {
@@ -1341,20 +2981,96 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/notifications/queue/stats", "host": ["{{baseUrl}}"], "path": ["notifications", "queue", "stats"] }
+                "url": {
+                  "raw": "{{baseUrl}}/notifications/queue/stats",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "notifications",
+                    "queue",
+                    "stats"
+                  ]
+                }
               }
             },
             {
               "name": "Send Bulk Notification",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"recipients\": [\"{{userId}}\"],\n  \"message\": \"Estate maintenance scheduled for tomorrow.\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/notifications/bulk", "host": ["{{baseUrl}}"], "path": ["notifications", "bulk"] }
+                "url": {
+                  "raw": "{{baseUrl}}/notifications/bulk",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "notifications",
+                    "bulk"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get Notification Preferences",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/notifications/preferences",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "notifications",
+                    "preferences"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Update Notification Preferences",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"push_notifications\": true,\n  \"email_notifications\": true,\n  \"sms_notifications\": false,\n  \"guest_entrance\": true,\n  \"emergency_alerts\": true,\n  \"system_updates\": true,\n  \"payment_reminders\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/notifications/preferences",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "notifications",
+                    "preferences"
+                  ]
+                }
               }
             }
           ]
@@ -1366,13 +3082,31 @@
               "name": "Create Support Chat",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"subject\": \"Need help with gate access\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/chat/create", "host": ["{{baseUrl}}"], "path": ["chat", "create"] }
+                "url": {
+                  "raw": "{{baseUrl}}/chat/create",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "chat",
+                    "create"
+                  ]
+                }
               }
             },
             {
@@ -1383,12 +3117,34 @@
                 "body": {
                   "mode": "formdata",
                   "formdata": [
-                    { "key": "chat_id", "value": "{{chatId}}", "type": "text" },
-                    { "key": "message", "value": "Hello, I need help.", "type": "text" },
-                    { "key": "attachments", "type": "file", "src": "", "disabled": true }
+                    {
+                      "key": "chat_id",
+                      "value": "{{chatId}}",
+                      "type": "text"
+                    },
+                    {
+                      "key": "message",
+                      "value": "Hello, I need help.",
+                      "type": "text"
+                    },
+                    {
+                      "key": "attachments",
+                      "type": "file",
+                      "src": "",
+                      "disabled": true
+                    }
                   ]
                 },
-                "url": { "raw": "{{baseUrl}}/chat/send", "host": ["{{baseUrl}}"], "path": ["chat", "send"] }
+                "url": {
+                  "raw": "{{baseUrl}}/chat/send",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "chat",
+                    "send"
+                  ]
+                }
               }
             },
             {
@@ -1396,7 +3152,17 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/chat/history/{{chatId}}", "host": ["{{baseUrl}}"], "path": ["chat", "history", "{{chatId}}"] }
+                "url": {
+                  "raw": "{{baseUrl}}/chat/history/{{chatId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "chat",
+                    "history",
+                    "{{chatId}}"
+                  ]
+                }
               }
             }
           ]
@@ -1408,13 +3174,31 @@
               "name": "Create Emergency Alert",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"alert_type\": \"fire\",\n  \"description\": \"Fire detected in Block A\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/emergency/alerts", "host": ["{{baseUrl}}"], "path": ["emergency", "alerts"] }
+                "url": {
+                  "raw": "{{baseUrl}}/emergency/alerts",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "emergency",
+                    "alerts"
+                  ]
+                }
               }
             },
             {
@@ -1422,7 +3206,16 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/emergency/alerts", "host": ["{{baseUrl}}"], "path": ["emergency", "alerts"] }
+                "url": {
+                  "raw": "{{baseUrl}}/emergency/alerts",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "emergency",
+                    "alerts"
+                  ]
+                }
               }
             },
             {
@@ -1430,7 +3223,18 @@
               "request": {
                 "method": "PUT",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/emergency/alerts/{{alertId}}/resolve", "host": ["{{baseUrl}}"], "path": ["emergency", "alerts", "{{alertId}}", "resolve"] }
+                "url": {
+                  "raw": "{{baseUrl}}/emergency/alerts/{{alertId}}/resolve",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "emergency",
+                    "alerts",
+                    "{{alertId}}",
+                    "resolve"
+                  ]
+                }
               }
             },
             {
@@ -1438,20 +3242,47 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/emergency/contacts", "host": ["{{baseUrl}}"], "path": ["emergency", "contacts"] }
+                "url": {
+                  "raw": "{{baseUrl}}/emergency/contacts",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "emergency",
+                    "contacts"
+                  ]
+                }
               }
             },
             {
               "name": "Create Emergency Contact",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"contact_name\": \"Jane Doe\",\n  \"phone_number\": \"08012345678\",\n  \"relationship\": \"spouse\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/emergency/contacts", "host": ["{{baseUrl}}"], "path": ["emergency", "contacts"] }
+                "url": {
+                  "raw": "{{baseUrl}}/emergency/contacts",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "emergency",
+                    "contacts"
+                  ]
+                }
               }
             },
             {
@@ -1459,7 +3290,17 @@
               "request": {
                 "method": "POST",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/emergency/contacts/setup-defaults", "host": ["{{baseUrl}}"], "path": ["emergency", "contacts", "setup-defaults"] }
+                "url": {
+                  "raw": "{{baseUrl}}/emergency/contacts/setup-defaults",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "emergency",
+                    "contacts",
+                    "setup-defaults"
+                  ]
+                }
               }
             }
           ]
@@ -1472,20 +3313,47 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/community/messages", "host": ["{{baseUrl}}"], "path": ["community", "messages"] }
+                "url": {
+                  "raw": "{{baseUrl}}/community/messages",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "community",
+                    "messages"
+                  ]
+                }
               }
             },
             {
               "name": "Send Community Message",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"message\": \"Reminder: estate meeting this Saturday at 10am.\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/community/messages", "host": ["{{baseUrl}}"], "path": ["community", "messages"] }
+                "url": {
+                  "raw": "{{baseUrl}}/community/messages",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "community",
+                    "messages"
+                  ]
+                }
               }
             },
             {
@@ -1496,24 +3364,62 @@
                 "body": {
                   "mode": "formdata",
                   "formdata": [
-                    { "key": "message", "value": "See attached document.", "type": "text" },
-                    { "key": "file", "type": "file", "src": "" }
+                    {
+                      "key": "message",
+                      "value": "See attached document.",
+                      "type": "text"
+                    },
+                    {
+                      "key": "file",
+                      "type": "file",
+                      "src": ""
+                    }
                   ]
                 },
-                "url": { "raw": "{{baseUrl}}/community/messages/file", "host": ["{{baseUrl}}"], "path": ["community", "messages", "file"] }
+                "url": {
+                  "raw": "{{baseUrl}}/community/messages/file",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "community",
+                    "messages",
+                    "file"
+                  ]
+                }
               }
             },
             {
               "name": "Add Message Reaction",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"emoji\": \"👍\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "raw": "{\n  \"emoji\": \"\ud83d\udc4d\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/community/messages/{{messageId}}/reactions", "host": ["{{baseUrl}}"], "path": ["community", "messages", "{{messageId}}", "reactions"] }
+                "url": {
+                  "raw": "{{baseUrl}}/community/messages/{{messageId}}/reactions",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "community",
+                    "messages",
+                    "{{messageId}}",
+                    "reactions"
+                  ]
+                }
               }
             },
             {
@@ -1521,20 +3427,56 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/community/messages/{{messageId}}/reactions/:emoji", "host": ["{{baseUrl}}"], "path": ["community", "messages", "{{messageId}}", "reactions", ":emoji"], "variable": [{ "key": "emoji", "value": "👍" }] }
+                "url": {
+                  "raw": "{{baseUrl}}/community/messages/{{messageId}}/reactions/:emoji",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "community",
+                    "messages",
+                    "{{messageId}}",
+                    "reactions",
+                    ":emoji"
+                  ],
+                  "variable": [
+                    {
+                      "key": "emoji",
+                      "value": "\ud83d\udc4d"
+                    }
+                  ]
+                }
               }
             },
             {
               "name": "Send Announcement",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"announcement_text\": \"Important: Water supply will be cut off on Saturday.\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/community/announcements", "host": ["{{baseUrl}}"], "path": ["community", "announcements"] }
+                "url": {
+                  "raw": "{{baseUrl}}/community/announcements",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "community",
+                    "announcements"
+                  ]
+                }
               }
             }
           ]
@@ -1549,46 +3491,111 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{baseUrl}}/community/posts", "host": ["{{baseUrl}}"], "path": ["community", "posts"] }
+            "url": {
+              "raw": "{{baseUrl}}/community/posts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "community",
+                "posts"
+              ]
+            }
           }
         },
         {
           "name": "Create Post",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"title\": \"Estate Meeting\",\n  \"content\": \"We will be having a general meeting this Saturday.\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/community/posts", "host": ["{{baseUrl}}"], "path": ["community", "posts"] }
+            "url": {
+              "raw": "{{baseUrl}}/community/posts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "community",
+                "posts"
+              ]
+            }
           }
         },
         {
           "name": "Add Comment to Post",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"comment_text\": \"I will be attending.\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/community/posts/{{postId}}/comments", "host": ["{{baseUrl}}"], "path": ["community", "posts", "{{postId}}", "comments"] }
+            "url": {
+              "raw": "{{baseUrl}}/community/posts/{{postId}}/comments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "community",
+                "posts",
+                "{{postId}}",
+                "comments"
+              ]
+            }
           }
         },
         {
           "name": "Create Meeting",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"meeting_title\": \"Monthly General Meeting\",\n  \"meeting_date\": \"2026-03-28\",\n  \"meeting_time\": \"10:00\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/community/meetings", "host": ["{{baseUrl}}"], "path": ["community", "meetings"] }
+            "url": {
+              "raw": "{{baseUrl}}/community/meetings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "community",
+                "meetings"
+              ]
+            }
           }
         },
         {
@@ -1597,10 +3604,21 @@
             {
               "name": "Get FAQs",
               "request": {
-                "auth": { "type": "noauth" },
+                "auth": {
+                  "type": "noauth"
+                },
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/faqs/", "host": ["{{baseUrl}}"], "path": ["faqs", ""] }
+                "url": {
+                  "raw": "{{baseUrl}}/faqs/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "faqs",
+                    ""
+                  ]
+                }
               }
             },
             {
@@ -1608,33 +3626,78 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/faqs/admin", "host": ["{{baseUrl}}"], "path": ["faqs", "admin"] }
+                "url": {
+                  "raw": "{{baseUrl}}/faqs/admin",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "faqs",
+                    "admin"
+                  ]
+                }
               }
             },
             {
               "name": "Create FAQ",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"question\": \"How do I generate an access code?\",\n  \"answer\": \"Go to the Access Codes section and tap Generate.\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/faqs/", "host": ["{{baseUrl}}"], "path": ["faqs", ""] }
+                "url": {
+                  "raw": "{{baseUrl}}/faqs/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "faqs",
+                    ""
+                  ]
+                }
               }
             },
             {
               "name": "Update FAQ",
               "request": {
                 "method": "PUT",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"question\": \"Updated question?\",\n  \"answer\": \"Updated answer.\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/faqs/{{faqId}}", "host": ["{{baseUrl}}"], "path": ["faqs", "{{faqId}}"] }
+                "url": {
+                  "raw": "{{baseUrl}}/faqs/{{faqId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "faqs",
+                    "{{faqId}}"
+                  ]
+                }
               }
             },
             {
@@ -1642,7 +3705,16 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/faqs/{{faqId}}", "host": ["{{baseUrl}}"], "path": ["faqs", "{{faqId}}"] }
+                "url": {
+                  "raw": "{{baseUrl}}/faqs/{{faqId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "faqs",
+                    "{{faqId}}"
+                  ]
+                }
               }
             }
           ]
@@ -1660,7 +3732,16 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/analytics/dashboard", "host": ["{{baseUrl}}"], "path": ["analytics", "dashboard"] }
+                "url": {
+                  "raw": "{{baseUrl}}/analytics/dashboard",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "analytics",
+                    "dashboard"
+                  ]
+                }
               }
             },
             {
@@ -1668,7 +3749,17 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/analytics/user/{{userId}}", "host": ["{{baseUrl}}"], "path": ["analytics", "user", "{{userId}}"] }
+                "url": {
+                  "raw": "{{baseUrl}}/analytics/user/{{userId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "analytics",
+                    "user",
+                    "{{userId}}"
+                  ]
+                }
               }
             },
             {
@@ -1676,7 +3767,16 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/analytics/performance", "host": ["{{baseUrl}}"], "path": ["analytics", "performance"] }
+                "url": {
+                  "raw": "{{baseUrl}}/analytics/performance",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "analytics",
+                    "performance"
+                  ]
+                }
               }
             },
             {
@@ -1684,20 +3784,47 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/analytics/system", "host": ["{{baseUrl}}"], "path": ["analytics", "system"] }
+                "url": {
+                  "raw": "{{baseUrl}}/analytics/system",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "analytics",
+                    "system"
+                  ]
+                }
               }
             },
             {
               "name": "Track Custom Event",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"event_name\": \"gate_opened\",\n  \"event_data\": {\"gate_id\": \"{{gateId}}\"}\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/analytics/track", "host": ["{{baseUrl}}"], "path": ["analytics", "track"] }
+                "url": {
+                  "raw": "{{baseUrl}}/analytics/track",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "analytics",
+                    "track"
+                  ]
+                }
               }
             }
           ]
@@ -1710,7 +3837,17 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/dashboard/admin/overview", "host": ["{{baseUrl}}"], "path": ["dashboard", "admin", "overview"] }
+                "url": {
+                  "raw": "{{baseUrl}}/dashboard/admin/overview",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "dashboard",
+                    "admin",
+                    "overview"
+                  ]
+                }
               }
             },
             {
@@ -1718,7 +3855,17 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/dashboard/admin/payments", "host": ["{{baseUrl}}"], "path": ["dashboard", "admin", "payments"] }
+                "url": {
+                  "raw": "{{baseUrl}}/dashboard/admin/payments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "dashboard",
+                    "admin",
+                    "payments"
+                  ]
+                }
               }
             },
             {
@@ -1726,7 +3873,17 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/dashboard/admin/users", "host": ["{{baseUrl}}"], "path": ["dashboard", "admin", "users"] }
+                "url": {
+                  "raw": "{{baseUrl}}/dashboard/admin/users",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "dashboard",
+                    "admin",
+                    "users"
+                  ]
+                }
               }
             },
             {
@@ -1734,7 +3891,17 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/dashboard/admin/access-logs", "host": ["{{baseUrl}}"], "path": ["dashboard", "admin", "access-logs"] }
+                "url": {
+                  "raw": "{{baseUrl}}/dashboard/admin/access-logs",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "dashboard",
+                    "admin",
+                    "access-logs"
+                  ]
+                }
               }
             },
             {
@@ -1742,7 +3909,17 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/dashboard/admin/analytics", "host": ["{{baseUrl}}"], "path": ["dashboard", "admin", "analytics"] }
+                "url": {
+                  "raw": "{{baseUrl}}/dashboard/admin/analytics",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "dashboard",
+                    "admin",
+                    "analytics"
+                  ]
+                }
               }
             },
             {
@@ -1750,7 +3927,18 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/dashboard/manager/{{estateId}}/overview", "host": ["{{baseUrl}}"], "path": ["dashboard", "manager", "{{estateId}}", "overview"] }
+                "url": {
+                  "raw": "{{baseUrl}}/dashboard/manager/{{estateId}}/overview",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "dashboard",
+                    "manager",
+                    "{{estateId}}",
+                    "overview"
+                  ]
+                }
               }
             },
             {
@@ -1758,7 +3946,18 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/dashboard/manager/{{estateId}}/residents", "host": ["{{baseUrl}}"], "path": ["dashboard", "manager", "{{estateId}}", "residents"] }
+                "url": {
+                  "raw": "{{baseUrl}}/dashboard/manager/{{estateId}}/residents",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "dashboard",
+                    "manager",
+                    "{{estateId}}",
+                    "residents"
+                  ]
+                }
               }
             },
             {
@@ -1766,7 +3965,19 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/dashboard/manager/{{estateId}}/residents/pending", "host": ["{{baseUrl}}"], "path": ["dashboard", "manager", "{{estateId}}", "residents", "pending"] }
+                "url": {
+                  "raw": "{{baseUrl}}/dashboard/manager/{{estateId}}/residents/pending",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "dashboard",
+                    "manager",
+                    "{{estateId}}",
+                    "residents",
+                    "pending"
+                  ]
+                }
               }
             },
             {
@@ -1774,7 +3985,18 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/dashboard/manager/{{estateId}}/access-logs", "host": ["{{baseUrl}}"], "path": ["dashboard", "manager", "{{estateId}}", "access-logs"] }
+                "url": {
+                  "raw": "{{baseUrl}}/dashboard/manager/{{estateId}}/access-logs",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "dashboard",
+                    "manager",
+                    "{{estateId}}",
+                    "access-logs"
+                  ]
+                }
               }
             },
             {
@@ -1782,7 +4004,18 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/dashboard/manager/{{estateId}}/payments", "host": ["{{baseUrl}}"], "path": ["dashboard", "manager", "{{estateId}}", "payments"] }
+                "url": {
+                  "raw": "{{baseUrl}}/dashboard/manager/{{estateId}}/payments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "dashboard",
+                    "manager",
+                    "{{estateId}}",
+                    "payments"
+                  ]
+                }
               }
             },
             {
@@ -1790,7 +4023,19 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/dashboard/manager/{{estateId}}/access/pending", "host": ["{{baseUrl}}"], "path": ["dashboard", "manager", "{{estateId}}", "access", "pending"] }
+                "url": {
+                  "raw": "{{baseUrl}}/dashboard/manager/{{estateId}}/access/pending",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "dashboard",
+                    "manager",
+                    "{{estateId}}",
+                    "access",
+                    "pending"
+                  ]
+                }
               }
             },
             {
@@ -1798,7 +4043,19 @@
               "request": {
                 "method": "POST",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/dashboard/manager/access/{{accessId}}/approve", "host": ["{{baseUrl}}"], "path": ["dashboard", "manager", "access", "{{accessId}}", "approve"] }
+                "url": {
+                  "raw": "{{baseUrl}}/dashboard/manager/access/{{accessId}}/approve",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "dashboard",
+                    "manager",
+                    "access",
+                    "{{accessId}}",
+                    "approve"
+                  ]
+                }
               }
             },
             {
@@ -1806,20 +4063,53 @@
               "request": {
                 "method": "POST",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/dashboard/manager/access/{{accessId}}/revoke", "host": ["{{baseUrl}}"], "path": ["dashboard", "manager", "access", "{{accessId}}", "revoke"] }
+                "url": {
+                  "raw": "{{baseUrl}}/dashboard/manager/access/{{accessId}}/revoke",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "dashboard",
+                    "manager",
+                    "access",
+                    "{{accessId}}",
+                    "revoke"
+                  ]
+                }
               }
             },
             {
               "name": "Update User Role (Manager)",
               "request": {
                 "method": "PUT",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"role_id\": \"{{roleId}}\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/dashboard/manager/users/{{userId}}/role", "host": ["{{baseUrl}}"], "path": ["dashboard", "manager", "users", "{{userId}}", "role"] }
+                "url": {
+                  "raw": "{{baseUrl}}/dashboard/manager/users/{{userId}}/role",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "dashboard",
+                    "manager",
+                    "users",
+                    "{{userId}}",
+                    "role"
+                  ]
+                }
               }
             },
             {
@@ -1827,7 +4117,19 @@
               "request": {
                 "method": "POST",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/dashboard/manager/residents/{{userId}}/approve", "host": ["{{baseUrl}}"], "path": ["dashboard", "manager", "residents", "{{userId}}", "approve"] }
+                "url": {
+                  "raw": "{{baseUrl}}/dashboard/manager/residents/{{userId}}/approve",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "dashboard",
+                    "manager",
+                    "residents",
+                    "{{userId}}",
+                    "approve"
+                  ]
+                }
               }
             },
             {
@@ -1835,7 +4137,19 @@
               "request": {
                 "method": "POST",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/dashboard/manager/residents/{{userId}}/inactive", "host": ["{{baseUrl}}"], "path": ["dashboard", "manager", "residents", "{{userId}}", "inactive"] }
+                "url": {
+                  "raw": "{{baseUrl}}/dashboard/manager/residents/{{userId}}/inactive",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "dashboard",
+                    "manager",
+                    "residents",
+                    "{{userId}}",
+                    "inactive"
+                  ]
+                }
               }
             },
             {
@@ -1843,7 +4157,19 @@
               "request": {
                 "method": "POST",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/dashboard/manager/residents/{{userId}}/reject", "host": ["{{baseUrl}}"], "path": ["dashboard", "manager", "residents", "{{userId}}", "reject"] }
+                "url": {
+                  "raw": "{{baseUrl}}/dashboard/manager/residents/{{userId}}/reject",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "dashboard",
+                    "manager",
+                    "residents",
+                    "{{userId}}",
+                    "reject"
+                  ]
+                }
               }
             }
           ]
@@ -1856,7 +4182,17 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/admin/dashboard/", "host": ["{{baseUrl}}"], "path": ["admin", "dashboard", ""] }
+                "url": {
+                  "raw": "{{baseUrl}}/admin/dashboard/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "dashboard",
+                    ""
+                  ]
+                }
               }
             },
             {
@@ -1864,7 +4200,17 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/admin/dashboard/estates", "host": ["{{baseUrl}}"], "path": ["admin", "dashboard", "estates"] }
+                "url": {
+                  "raw": "{{baseUrl}}/admin/dashboard/estates",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "dashboard",
+                    "estates"
+                  ]
+                }
               }
             },
             {
@@ -1872,7 +4218,18 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/admin/dashboard/stats/residents", "host": ["{{baseUrl}}"], "path": ["admin", "dashboard", "stats", "residents"] }
+                "url": {
+                  "raw": "{{baseUrl}}/admin/dashboard/stats/residents",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "dashboard",
+                    "stats",
+                    "residents"
+                  ]
+                }
               }
             },
             {
@@ -1880,7 +4237,18 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/admin/dashboard/stats/access-codes", "host": ["{{baseUrl}}"], "path": ["admin", "dashboard", "stats", "access-codes"] }
+                "url": {
+                  "raw": "{{baseUrl}}/admin/dashboard/stats/access-codes",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "dashboard",
+                    "stats",
+                    "access-codes"
+                  ]
+                }
               }
             },
             {
@@ -1888,7 +4256,18 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/admin/dashboard/stats/referrers", "host": ["{{baseUrl}}"], "path": ["admin", "dashboard", "stats", "referrers"] }
+                "url": {
+                  "raw": "{{baseUrl}}/admin/dashboard/stats/referrers",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "dashboard",
+                    "stats",
+                    "referrers"
+                  ]
+                }
               }
             }
           ]
@@ -1899,10 +4278,21 @@
             {
               "name": "Health Check",
               "request": {
-                "auth": { "type": "noauth" },
+                "auth": {
+                  "type": "noauth"
+                },
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/monitoring/health", "host": ["{{baseUrl}}"], "path": ["monitoring", "health"] }
+                "url": {
+                  "raw": "{{baseUrl}}/monitoring/health",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "monitoring",
+                    "health"
+                  ]
+                }
               }
             },
             {
@@ -1910,7 +4300,16 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/monitoring/metrics", "host": ["{{baseUrl}}"], "path": ["monitoring", "metrics"] }
+                "url": {
+                  "raw": "{{baseUrl}}/monitoring/metrics",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "monitoring",
+                    "metrics"
+                  ]
+                }
               }
             },
             {
@@ -1918,7 +4317,17 @@
               "request": {
                 "method": "POST",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/monitoring/metrics/reset", "host": ["{{baseUrl}}"], "path": ["monitoring", "metrics", "reset"] }
+                "url": {
+                  "raw": "{{baseUrl}}/monitoring/metrics/reset",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "monitoring",
+                    "metrics",
+                    "reset"
+                  ]
+                }
               }
             }
           ]
@@ -1935,22 +4344,54 @@
             "header": [],
             "body": {
               "mode": "formdata",
-              "formdata": [{ "key": "file", "type": "file", "src": "" }]
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
             },
-            "url": { "raw": "{{baseUrl}}/upload/upload", "host": ["{{baseUrl}}"], "path": ["upload", "upload"] }
+            "url": {
+              "raw": "{{baseUrl}}/upload/upload",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "upload",
+                "upload"
+              ]
+            }
           }
         },
         {
           "name": "Test Upload (No Auth)",
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [],
             "body": {
               "mode": "formdata",
-              "formdata": [{ "key": "file", "type": "file", "src": "" }]
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
             },
-            "url": { "raw": "{{baseUrl}}/upload/test-upload", "host": ["{{baseUrl}}"], "path": ["upload", "test-upload"] }
+            "url": {
+              "raw": "{{baseUrl}}/upload/test-upload",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "upload",
+                "test-upload"
+              ]
+            }
           }
         },
         {
@@ -1958,64 +4399,165 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{baseUrl}}/upload/files", "host": ["{{baseUrl}}"], "path": ["upload", "files"] }
+            "url": {
+              "raw": "{{baseUrl}}/upload/files",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "upload",
+                "files"
+              ]
+            }
           }
         },
         {
           "name": "Serve File",
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{baseUrl}}/upload/file/:folder/:filename", "host": ["{{baseUrl}}"], "path": ["upload", "file", ":folder", ":filename"], "variable": [{ "key": "folder", "value": "avatars" }, { "key": "filename", "value": "example.jpg" }] }
+            "url": {
+              "raw": "{{baseUrl}}/upload/file/:folder/:filename",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "upload",
+                "file",
+                ":folder",
+                ":filename"
+              ],
+              "variable": [
+                {
+                  "key": "folder",
+                  "value": "avatars"
+                },
+                {
+                  "key": "filename",
+                  "value": "example.jpg"
+                }
+              ]
+            }
           }
         },
         {
           "name": "Bulk Upload Estates",
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [],
             "body": {
               "mode": "formdata",
-              "formdata": [{ "key": "file", "type": "file", "src": "" }]
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
             },
-            "url": { "raw": "{{baseUrl}}/bulk-upload/estates", "host": ["{{baseUrl}}"], "path": ["bulk-upload", "estates"] }
+            "url": {
+              "raw": "{{baseUrl}}/bulk-upload/estates",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bulk-upload",
+                "estates"
+              ]
+            }
           }
         },
         {
           "name": "Bulk Upload Residents",
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [],
             "body": {
               "mode": "formdata",
-              "formdata": [{ "key": "file", "type": "file", "src": "" }]
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
             },
-            "url": { "raw": "{{baseUrl}}/bulk-upload/residents", "host": ["{{baseUrl}}"], "path": ["bulk-upload", "residents"] }
+            "url": {
+              "raw": "{{baseUrl}}/bulk-upload/residents",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bulk-upload",
+                "residents"
+              ]
+            }
           }
         },
         {
           "name": "Bulk Upload Addresses",
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [],
             "body": {
               "mode": "formdata",
-              "formdata": [{ "key": "file", "type": "file", "src": "" }]
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
             },
-            "url": { "raw": "{{baseUrl}}/bulk-upload/addresses", "host": ["{{baseUrl}}"], "path": ["bulk-upload", "addresses"] }
+            "url": {
+              "raw": "{{baseUrl}}/bulk-upload/addresses",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bulk-upload",
+                "addresses"
+              ]
+            }
           }
         },
         {
           "name": "Get Upload Template",
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{baseUrl}}/bulk-upload/template/:type", "host": ["{{baseUrl}}"], "path": ["bulk-upload", "template", ":type"], "variable": [{ "key": "type", "value": "estates" }] }
+            "url": {
+              "raw": "{{baseUrl}}/bulk-upload/template/:type",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bulk-upload",
+                "template",
+                ":type"
+              ],
+              "variable": [
+                {
+                  "key": "type",
+                  "value": "estates"
+                }
+              ]
+            }
           }
         }
       ]
@@ -2030,9 +4572,22 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/address/estates/{{estateId}}/streets?search=",
-              "host": ["{{baseUrl}}"],
-              "path": ["address", "estates", "{{estateId}}", "streets"],
-              "query": [{ "key": "search", "value": "", "disabled": true }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "address",
+                "estates",
+                "{{estateId}}",
+                "streets"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
             }
           }
         },
@@ -2040,13 +4595,33 @@
           "name": "Create Street",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"street_name\": \"Oak Avenue\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/address/estates/{{estateId}}/streets", "host": ["{{baseUrl}}"], "path": ["address", "estates", "{{estateId}}", "streets"] }
+            "url": {
+              "raw": "{{baseUrl}}/address/estates/{{estateId}}/streets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "address",
+                "estates",
+                "{{estateId}}",
+                "streets"
+              ]
+            }
           }
         },
         {
@@ -2054,20 +4629,51 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{baseUrl}}/address/streets/{{streetId}}/units", "host": ["{{baseUrl}}"], "path": ["address", "streets", "{{streetId}}", "units"] }
+            "url": {
+              "raw": "{{baseUrl}}/address/streets/{{streetId}}/units",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "address",
+                "streets",
+                "{{streetId}}",
+                "units"
+              ]
+            }
           }
         },
         {
           "name": "Create Unit",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"unit_number\": \"12A\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/address/streets/{{streetId}}/units", "host": ["{{baseUrl}}"], "path": ["address", "streets", "{{streetId}}", "units"] }
+            "url": {
+              "raw": "{{baseUrl}}/address/streets/{{streetId}}/units",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "address",
+                "streets",
+                "{{streetId}}",
+                "units"
+              ]
+            }
           }
         },
         {
@@ -2075,20 +4681,50 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{baseUrl}}/address/units/{{unitId}}/address", "host": ["{{baseUrl}}"], "path": ["address", "units", "{{unitId}}", "address"] }
+            "url": {
+              "raw": "{{baseUrl}}/address/units/{{unitId}}/address",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "address",
+                "units",
+                "{{unitId}}",
+                "address"
+              ]
+            }
           }
         },
         {
           "name": "Update Address Location",
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"latitude\": 6.5244,\n  \"longitude\": 3.3792\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/address/location/{{addressId}}", "host": ["{{baseUrl}}"], "path": ["address", "location", "{{addressId}}"] }
+            "url": {
+              "raw": "{{baseUrl}}/address/location/{{addressId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "address",
+                "location",
+                "{{addressId}}"
+              ]
+            }
           }
         },
         {
@@ -2096,7 +4732,17 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{baseUrl}}/address/location/{{addressId}}", "host": ["{{baseUrl}}"], "path": ["address", "location", "{{addressId}}"] }
+            "url": {
+              "raw": "{{baseUrl}}/address/location/{{addressId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "address",
+                "location",
+                "{{addressId}}"
+              ]
+            }
           }
         }
       ]
@@ -2108,13 +4754,32 @@
           "name": "Register Device",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"device_token\": \"\",\n  \"device_type\": \"ios\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "raw": "{\n  \"fcmToken\": \"\",\n  \"deviceId\": \"iPhone14,2\",\n  \"platform\": \"ios\",\n  \"appVersion\": \"1.2.0\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/mobile/device/register", "host": ["{{baseUrl}}"], "path": ["mobile", "device", "register"] }
+            "url": {
+              "raw": "{{baseUrl}}/mobile/device/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "mobile",
+                "device",
+                "register"
+              ]
+            }
           }
         },
         {
@@ -2122,16 +4787,49 @@
           "request": {
             "method": "DELETE",
             "header": [],
-            "url": { "raw": "{{baseUrl}}/mobile/device/register", "host": ["{{baseUrl}}"], "path": ["mobile", "device", "register"] }
+            "url": {
+              "raw": "{{baseUrl}}/mobile/device/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "mobile",
+                "device",
+                "register"
+              ]
+            }
           }
         },
         {
           "name": "Test Push Notification",
           "request": {
-            "auth": { "type": "noauth" },
             "method": "POST",
-            "header": [],
-            "url": { "raw": "{{baseUrl}}/mobile/push/test", "host": ["{{baseUrl}}"], "path": ["mobile", "push", "test"] }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/mobile/push/test",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "mobile",
+                "push",
+                "test"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Test Notification\",\n  \"body\": \"This is a test push notification from Lockwise\",\n  \"data\": {\n    \"key\": \"value\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         }
       ]
@@ -2142,41 +4840,100 @@
         {
           "name": "Register Admin",
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"admin@lockwise.app\",\n  \"password\": \"AdminPass123!\",\n  \"secret_key\": \"\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/admin/register", "host": ["{{baseUrl}}"], "path": ["admin", "register"] }
+            "url": {
+              "raw": "{{baseUrl}}/admin/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "register"
+              ]
+            }
           }
         },
         {
           "name": "Create Agent",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"agent@lockwise.app\",\n  \"password\": \"AgentPass123!\",\n  \"agent_name\": \"Support Agent 1\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/admin/agents/create", "host": ["{{baseUrl}}"], "path": ["admin", "agents", "create"] }
+            "url": {
+              "raw": "{{baseUrl}}/admin/agents/create",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "agents",
+                "create"
+              ]
+            }
           }
         },
         {
           "name": "Update User Role",
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"role_id\": \"{{roleId}}\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/admin/users/{{userId}}/role", "host": ["{{baseUrl}}"], "path": ["admin", "users", "{{userId}}", "role"] }
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{userId}}/role",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "{{userId}}",
+                "role"
+              ]
+            }
           }
         },
         {
@@ -2187,7 +4944,16 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/role/all", "host": ["{{baseUrl}}"], "path": ["role", "all"] }
+                "url": {
+                  "raw": "{{baseUrl}}/role/all",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "role",
+                    "all"
+                  ]
+                }
               }
             },
             {
@@ -2195,33 +4961,79 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/role/{{roleId}}", "host": ["{{baseUrl}}"], "path": ["role", "{{roleId}}"] }
+                "url": {
+                  "raw": "{{baseUrl}}/role/{{roleId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "role",
+                    "{{roleId}}"
+                  ]
+                }
               }
             },
             {
               "name": "Create Role",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"role_name\": \"security\",\n  \"permissions\": []\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/role/create", "host": ["{{baseUrl}}"], "path": ["role", "create"] }
+                "url": {
+                  "raw": "{{baseUrl}}/role/create",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "role",
+                    "create"
+                  ]
+                }
               }
             },
             {
               "name": "Update Role",
               "request": {
                 "method": "PUT",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"role_name\": \"updated_role\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/role/update/{{roleId}}", "host": ["{{baseUrl}}"], "path": ["role", "update", "{{roleId}}"] }
+                "url": {
+                  "raw": "{{baseUrl}}/role/update/{{roleId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "role",
+                    "update",
+                    "{{roleId}}"
+                  ]
+                }
               }
             },
             {
@@ -2229,20 +5041,49 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/role/delete/{{roleId}}", "host": ["{{baseUrl}}"], "path": ["role", "delete", "{{roleId}}"] }
+                "url": {
+                  "raw": "{{baseUrl}}/role/delete/{{roleId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "role",
+                    "delete",
+                    "{{roleId}}"
+                  ]
+                }
               }
             },
             {
               "name": "Assign Permissions to Role",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"permission_ids\": [\"{{permissionId}}\"]\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/role/assign-permissions/{{roleId}}", "host": ["{{baseUrl}}"], "path": ["role", "assign-permissions", "{{roleId}}"] }
+                "url": {
+                  "raw": "{{baseUrl}}/role/assign-permissions/{{roleId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "role",
+                    "assign-permissions",
+                    "{{roleId}}"
+                  ]
+                }
               }
             }
           ]
@@ -2255,7 +5096,16 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/permission/all", "host": ["{{baseUrl}}"], "path": ["permission", "all"] }
+                "url": {
+                  "raw": "{{baseUrl}}/permission/all",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "permission",
+                    "all"
+                  ]
+                }
               }
             },
             {
@@ -2263,33 +5113,78 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/permission/{{permissionId}}", "host": ["{{baseUrl}}"], "path": ["permission", "{{permissionId}}"] }
+                "url": {
+                  "raw": "{{baseUrl}}/permission/{{permissionId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "permission",
+                    "{{permissionId}}"
+                  ]
+                }
               }
             },
             {
               "name": "Create Permission",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"permission_name\": \"view_access_logs\",\n  \"resource\": \"access_logs\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/permission/create", "host": ["{{baseUrl}}"], "path": ["permission", "create"] }
+                "url": {
+                  "raw": "{{baseUrl}}/permission/create",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "permission",
+                    "create"
+                  ]
+                }
               }
             },
             {
               "name": "Update Permission",
               "request": {
                 "method": "PUT",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"permission_name\": \"updated_permission\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/permission/{{permissionId}}", "host": ["{{baseUrl}}"], "path": ["permission", "{{permissionId}}"] }
+                "url": {
+                  "raw": "{{baseUrl}}/permission/{{permissionId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "permission",
+                    "{{permissionId}}"
+                  ]
+                }
               }
             },
             {
@@ -2297,7 +5192,16 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/permission/{{permissionId}}", "host": ["{{baseUrl}}"], "path": ["permission", "{{permissionId}}"] }
+                "url": {
+                  "raw": "{{baseUrl}}/permission/{{permissionId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "permission",
+                    "{{permissionId}}"
+                  ]
+                }
               }
             }
           ]
@@ -2309,13 +5213,31 @@
               "name": "Generate API Key",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"key_name\": \"Mobile App Key\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/api-key/generate", "host": ["{{baseUrl}}"], "path": ["api-key", "generate"] }
+                "url": {
+                  "raw": "{{baseUrl}}/api-key/generate",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api-key",
+                    "generate"
+                  ]
+                }
               }
             },
             {
@@ -2323,7 +5245,16 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/api-key/list", "host": ["{{baseUrl}}"], "path": ["api-key", "list"] }
+                "url": {
+                  "raw": "{{baseUrl}}/api-key/list",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api-key",
+                    "list"
+                  ]
+                }
               }
             },
             {
@@ -2331,7 +5262,16 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/api-key/{{keyId}}", "host": ["{{baseUrl}}"], "path": ["api-key", "{{keyId}}"] }
+                "url": {
+                  "raw": "{{baseUrl}}/api-key/{{keyId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api-key",
+                    "{{keyId}}"
+                  ]
+                }
               }
             }
           ]
@@ -2344,7 +5284,16 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/config/map", "host": ["{{baseUrl}}"], "path": ["config", "map"] }
+                "url": {
+                  "raw": "{{baseUrl}}/config/map",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "config",
+                    "map"
+                  ]
+                }
               }
             }
           ]
@@ -2357,19 +5306,41 @@
         {
           "name": "Get Terms & Conditions",
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{baseUrl}}/legal/terms", "host": ["{{baseUrl}}"], "path": ["legal", "terms"] }
+            "url": {
+              "raw": "{{baseUrl}}/legal/terms",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "legal",
+                "terms"
+              ]
+            }
           }
         },
         {
           "name": "Get Privacy Policy",
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{baseUrl}}/legal/privacy", "host": ["{{baseUrl}}"], "path": ["legal", "privacy"] }
+            "url": {
+              "raw": "{{baseUrl}}/legal/privacy",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "legal",
+                "privacy"
+              ]
+            }
           }
         }
       ]
