@@ -4,7 +4,16 @@ const path = require('path');
 const env = process.env.NODE_ENV || 'development';
 dotenv.config({ path: path.resolve(process.cwd(), `.env.${env}`) });
 
-const url = process.env.DATABASE_URL?.split('?')[0];
+// Prefer DATABASE_URL; fall back to individual DB_* vars
+const url = process.env.DATABASE_URL?.split('?')[0] ?? (() => {
+  const { DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME } = process.env;
+  if (DB_HOST && DB_NAME) {
+    const auth = DB_USER ? `${DB_USER}${DB_PASSWORD ? `:${DB_PASSWORD}` : ''}@` : '';
+    const port = DB_PORT ? `:${DB_PORT}` : '';
+    return `postgres://${auth}${DB_HOST}${port}/${DB_NAME}`;
+  }
+  return undefined;
+})();
 
 const sslEnabled = process.env.DB_SSL === 'true';
 
