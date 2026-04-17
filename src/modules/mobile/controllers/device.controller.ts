@@ -10,9 +10,12 @@ export const deviceController = {
 
       await UserDevice.upsert({
         user_id: userId,
-        device_token: fcmToken,
-        platform: platform || 'mobile',
-        device_id: deviceId
+        fcm_token: fcmToken,
+        device_type: platform || 'mobile',
+        device_model: deviceId || null,
+        app_version: appVersion || null,
+        is_active: true,
+        last_used: new Date()
       });
 
       res.json({ status: 'success', message: 'Device registered successfully' });

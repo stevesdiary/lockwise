@@ -37,7 +37,8 @@ export class CommunityMessage extends Model {
 
   @Column({
     type: DataType.TEXT,
-    allowNull: true,
+    allowNull: false,
+    defaultValue: '',
   })
   declare message: string;
 

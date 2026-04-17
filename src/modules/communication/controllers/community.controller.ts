@@ -63,54 +63,29 @@ export const communityController = {
 
   async sendMessage(req: Request, res: Response) {
     try {
-      const user = (req as any).user;
-      const { message } = req.body;
-
-      if (!message || !message.trim()) {
-        return res.status(400).json({ success: false, error: 'Message is required' });
-      }
-
-      const newMessage = await CommunityMessage.create({
-        estate_id: user.estate_id,
-        user_id: user.id,
-        message: message.trim(),
-        is_announcement: false,
-      });
-
+      const newMessage = await createCommunityMessage(req);
       res.json({ success: true, data: newMessage });
     } catch (error) {
       console.error('Send message error:', error);
-      res.status(500).json({ success: false, error: 'Failed to send message' });
+      const statusCode = (error as any)?.statusCode || 500;
+      res.status(statusCode).json({
+        success: false,
+        error: statusCode === 400 ? (error as Error).message : 'Failed to send message',
+      });
     }
   },
 
   async sendMessageWithFile(req: Request, res: Response) {
     try {
-      const user = (req as any).user;
-      const { message } = req.body;
-      const file = req.file;
-
-      if (!file) {
-        return res.status(400).json({ success: false, error: 'File is required' });
-      }
-
-      const uploadResult = await uploadService.uploadFile(file, user.estate_id, 'community');
-
-      const newMessage = await CommunityMessage.create({
-        estate_id: user.estate_id,
-        user_id: user.id,
-        message: message?.trim() || '',
-        file_url: uploadResult.url,
-        file_name: file.originalname,
-        file_type: file.mimetype,
-        file_size: file.size,
-        is_announcement: false,
-      });
-
+      const newMessage = await createCommunityMessage(req);
       res.json({ success: true, data: newMessage });
     } catch (error) {
       console.error('Send message with file error:', error);
-      res.status(500).json({ success: false, error: 'Failed to send message' });
+      const statusCode = (error as any)?.statusCode || 500;
+      res.status(statusCode).json({
+        success: false,
+        error: statusCode === 400 ? (error as Error).message : 'Failed to send message',
+      });
     }
   },
 
@@ -194,3 +169,39 @@ export const communityController = {
     }
   },
 };
+
+async function createCommunityMessage(req: Request) {
+  const user = (req as any).user;
+  const file = req.file;
+  const message = typeof req.body?.message === 'string' ? req.body.message.trim() : '';
+
+  let fileUrl = req.body?.file_url || null;
+  let fileName = req.body?.file_name || null;
+  let fileType = req.body?.file_type || null;
+  let fileSize = req.body?.file_size || null;
+
+  if (file) {
+    const uploadResult = await uploadService.uploadFile(file, user.estate_id, 'community');
+    fileUrl = uploadResult.url;
+    fileName = file.originalname;
+    fileType = file.mimetype;
+    fileSize = file.size;
+  }
+
+  if (!message && !fileUrl) {
+    const error = new Error('Message or file attachment is required');
+    (error as any).statusCode = 400;
+    throw error;
+  }
+
+  return CommunityMessage.create({
+    estate_id: user.estate_id,
+    user_id: user.id,
+    message,
+    file_url: fileUrl,
+    file_name: fileName,
+    file_type: fileType,
+    file_size: fileSize,
+    is_announcement: false,
+  });
+}

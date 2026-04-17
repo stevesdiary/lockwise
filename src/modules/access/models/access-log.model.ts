@@ -20,6 +20,7 @@ class AccessLog extends Model {
   declare is_multi_entry: boolean;
   declare max_entries?: number | null;
   declare used_entries: number;
+  declare access_direction: 'entry' | 'exit' | 'both';
   declare created_at?: Date;
   declare updated_at?: Date;
   declare user?: User;
@@ -96,6 +97,11 @@ AccessLog.init({
     type: DataTypes.INTEGER,
     allowNull: false,
     defaultValue: 0
+  },
+  access_direction: {
+    type: DataTypes.ENUM('entry', 'exit', 'both'),
+    allowNull: false,
+    defaultValue: 'entry'
   }
 }, {
   sequelize,

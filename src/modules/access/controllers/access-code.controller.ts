@@ -42,7 +42,7 @@ export const accessCodeController = {
     try {
       const userId = req.user?.id;
       const estateId = req.user?.estate_id;
-      const { visitor_name, valid_until, valid_from, visitor_phone, access_type, is_multi_entry, max_entries } = req.body;
+      const { visitor_name, valid_until, valid_from, visitor_phone, access_type, is_multi_entry, max_entries, access_direction } = req.body;
 
       if (!userId) {
         return res.status(401).json({ message: 'Unauthorized' });
@@ -85,6 +85,7 @@ export const accessCodeController = {
         valid_until: validUntilDate,
         is_multi_entry: shouldAllowUnlimited ? true : (is_multi_entry || false),
         max_entries: shouldAllowUnlimited ? null : (max_entries ?? (is_multi_entry ? null : undefined)),
+        access_direction: access_direction ?? 'entry',
       });
 
       // Format share message
