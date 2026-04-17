@@ -57,6 +57,7 @@ import bulkUploadRouter from "./modules/upload/routes/bulk-upload.route";
 
 // Location Module
 import addressRouter from "./modules/location/routes/address.route";
+import estateAddressRouter from "./modules/estate/routes/address.route";
 
 // Mobile Module
 import mobileRouter from "./modules/mobile/routes/mobile.route";
@@ -132,6 +133,7 @@ router.use('/bulk-upload', bulkUploadRouter);
 
 // Location Routes
 router.use('/address', addressRouter);
+router.use('/address', estateAddressRouter);
 
 // Mobile Routes
 router.use('/mobile', mobileRouter);

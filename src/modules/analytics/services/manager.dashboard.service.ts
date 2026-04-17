@@ -94,7 +94,7 @@ export const managerDashboardService = {
   getPendingAccessRequests: async (estate_id: string) => {
     return await AccessLog.findAll({
       where: { estate_id, status: 'active' },
-      include: [{ model: User, attributes: ['first_name', 'last_name', 'email', 'phone'] }],
+      include: [{ model: User, as: 'user', attributes: ['first_name', 'last_name', 'email', 'phone'] }],
       order: [['createdAt', 'DESC']]
     });
   },

@@ -86,6 +86,18 @@ const RESIDENT_NAMES = [
 module.exports = {
   up: async (queryInterface) => {
     const now = new Date();
+    const oneYearLater = new Date(now);
+    oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
+
+    // ── 0. Idempotency guard ───────────────────────────────────────────────────
+    const existing = await queryInterface.sequelize.query(
+      `SELECT id FROM users WHERE email = 'manager1@greenviewestate.lockwise.dev' LIMIT 1`,
+      { type: queryInterface.sequelize.QueryTypes.SELECT },
+    );
+    if (existing.length) {
+      console.log('Demo seed already applied — skipping.');
+      return;
+    }
 
     // ── 1. Fetch role IDs ──────────────────────────────────────────────────────
     const roles = await queryInterface.sequelize.query(
@@ -102,11 +114,25 @@ module.exports = {
       );
     }
 
-    // ── 2. Hash passwords (once each, reuse for all of same type) ─────────────
+    // ── 2. Fetch Starter plan ID ───────────────────────────────────────────────
+    const plans = await queryInterface.sequelize.query(
+      `SELECT id FROM plans WHERE name = 'Starter' LIMIT 1`,
+      { type: queryInterface.sequelize.QueryTypes.SELECT },
+    );
+
+    const starterPlanId = plans[0]?.id;
+
+    if (!starterPlanId) {
+      throw new Error(
+        "Starter plan not found. Run plans seed (migration 20260403000055) first.",
+      );
+    }
+
+    // ── 3. Hash passwords (once each, reuse for all of same type) ─────────────
     const managerHash = await bcrypt.hash(MANAGER_PASSWORD, 10);
     const residentHash = await bcrypt.hash(RESIDENT_PASSWORD, 10);
 
-    // ── 3. Pre-generate UUIDs for all entities ────────────────────────────────
+    // ── 4. Pre-generate UUIDs for all entities ────────────────────────────────
     const estateIds = ESTATES.map(() => randomUUID());
     const managerIds = ESTATES.map(() => randomUUID());
     const residentUserIds = ESTATES.map(() => [
@@ -125,8 +151,10 @@ module.exports = {
       [randomUUID(), randomUUID(), randomUUID()],
       [randomUUID(), randomUUID(), randomUUID()],
     ]);
+    // 2 gates per estate (main + service)
+    const gateIds = ESTATES.map(() => [randomUUID(), randomUUID()]);
 
-    // ── 4. Insert manager users WITHOUT estate_id first ───────────────────────
+    // ── 5. Insert manager users WITHOUT estate_id first ───────────────────────
     const managerRows = ESTATES.map((estate, i) => {
       const slug = estate.name.toLowerCase().replace(/\s+/g, "");
       return {
@@ -142,6 +170,8 @@ module.exports = {
         user_type: "manager",
         verified: true,
         oauth_enabled: false,
+        consent_given: true,
+        consent_timestamp: now,
         created_at: now,
         updated_at: now,
       };
@@ -149,9 +179,9 @@ module.exports = {
 
     await queryInterface.bulkInsert("users", managerRows);
 
-    // ── 5. Insert estates referencing manager user IDs ────────────────────────
+    // ── 6. Insert estates referencing manager user IDs ────────────────────────
     const estateRows = ESTATES.map((estate, i) => ({
-      estate_id: randomUUID(), // overwritten below — we use estateIds[i]
+      estate_id: estateIds[i],
       name: estate.name,
       type: estate.type,
       city: estate.city,
@@ -165,23 +195,20 @@ module.exports = {
       status: "active",
       approval_status: "approved",
       approved_on: now,
+      plan_id: starterPlanId,
+      onboarding_step: 3,
       setup_checklist: JSON.stringify({
-        gates_configured: false,
-        residents_invited: false,
+        gates_configured: true,
+        residents_invited: true,
       }),
       created_by: managerIds[i],
       created_at: now,
       updated_at: now,
     }));
 
-    // Replace random estate_id with pre-generated ones
-    estateRows.forEach((row, i) => {
-      row.estate_id = estateIds[i];
-    });
-
     await queryInterface.bulkInsert("estates", estateRows);
 
-    // ── 6. Update manager users to set estate_id ──────────────────────────────
+    // ── 7. Update manager users to set estate_id ──────────────────────────────
     for (let i = 0; i < ESTATES.length; i++) {
       await queryInterface.sequelize.query(
         `UPDATE users SET estate_id = :estateId WHERE id = :userId`,
@@ -189,7 +216,7 @@ module.exports = {
       );
     }
 
-    // ── 7. Insert resident users ───────────────────────────────────────────────
+    // ── 8. Insert resident users ───────────────────────────────────────────────
     const residentUserRows = [];
     ESTATES.forEach((estate, estateIdx) => {
       const slug = estate.name.toLowerCase().replace(/\s+/g, "");
@@ -207,6 +234,8 @@ module.exports = {
           user_type: "resident",
           verified: true,
           oauth_enabled: false,
+          consent_given: true,
+          consent_timestamp: now,
           created_at: now,
           updated_at: now,
         });
@@ -214,23 +243,6 @@ module.exports = {
     });
 
     await queryInterface.bulkInsert("users", residentUserRows);
-
-    // ── 8. Insert residents table records ─────────────────────────────────────
-    const residentRecordRows = [];
-    ESTATES.forEach((estate, estateIdx) => {
-      RESIDENT_NAMES[estateIdx].forEach((_, resIdx) => {
-        residentRecordRows.push({
-          resident_id: residentRecordIds[estateIdx][resIdx],
-          user_id: residentUserIds[estateIdx][resIdx],
-          estate_id: estateIds[estateIdx],
-          subscribed: false,
-          created_at: now,
-          updated_at: now,
-        });
-      });
-    });
-
-    await queryInterface.bulkInsert("residents", residentRecordRows);
 
     // ── 9. Insert streets (2 per estate) ──────────────────────────────────────
     const streetRows = [];
@@ -268,29 +280,93 @@ module.exports = {
     });
     await queryInterface.bulkInsert("units", unitRows);
 
-    // ── 11. Assign first resident to first unit per estate ────────────────────
-    for (let i = 0; i < ESTATES.length; i++) {
-      await queryInterface.sequelize.query(
-        `UPDATE residents SET unit_id = :unitId WHERE user_id = :userId`,
-        {
-          replacements: {
-            unitId: unitIds[i][0][0],
-            userId: residentUserIds[i][0],
-          },
-        },
-      );
-    }
+    // ── 11. Insert residents table records, assigned to units ─────────────────
+    // Residents 0-2 → units A101, A201, A301 (first street, all 3 units)
+    const residentRecordRows = [];
+    ESTATES.forEach((_, estateIdx) => {
+      RESIDENT_NAMES[estateIdx].forEach((_, resIdx) => {
+        residentRecordRows.push({
+          resident_id: residentRecordIds[estateIdx][resIdx],
+          user_id: residentUserIds[estateIdx][resIdx],
+          estate_id: estateIds[estateIdx],
+          unit_id: unitIds[estateIdx][0][resIdx], // each resident gets a unit on Main Street
+          subscribed: false,
+          created_at: now,
+          updated_at: now,
+        });
+      });
+    });
+
+    await queryInterface.bulkInsert("residents", residentRecordRows);
+
+    // ── 12. Insert gates (main + service per estate) ───────────────────────────
+    const gateRows = [];
+    const gateConfigs = [
+      {
+        suffix: "MAIN",
+        gate_name: "Main Gate",
+        gate_type: "main",
+        access_control_type: "qr_code",
+      },
+      {
+        suffix: "SVC",
+        gate_name: "Service Gate",
+        gate_type: "service",
+        access_control_type: "manual",
+      },
+    ];
+
+    ESTATES.forEach((_, estateIdx) => {
+      gateConfigs.forEach((cfg, gIdx) => {
+        gateRows.push({
+          gate_id: gateIds[estateIdx][gIdx],
+          estate_id: estateIds[estateIdx],
+          gate_code: `GATE-EST${String(estateIdx + 1).padStart(3, "0")}-${cfg.suffix}`,
+          gate_name: cfg.gate_name,
+          gate_type: cfg.gate_type,
+          access_control_type: cfg.access_control_type,
+          is_active: true,
+          created_at: now,
+          updated_at: now,
+        });
+      });
+    });
+
+    await queryInterface.bulkInsert("gates", gateRows);
+
+    // ── 13. Insert active Starter subscriptions ────────────────────────────────
+    const subscriptionRows = ESTATES.map((_, i) => ({
+      id: randomUUID(),
+      estate_id: estateIds[i],
+      plan_id: starterPlanId,
+      start_date: now,
+      end_date: oneYearLater,
+      status: "active",
+      auto_renew: true,
+      paid_on: now,
+      created_at: now,
+      updated_at: now,
+    }));
+
+    await queryInterface.bulkInsert("subscriptions", subscriptionRows);
 
     console.log(
-      "✓ Seeded 5 estates, 5 managers, 15 residents, 10 streets, 30 units",
-    );
-    console.log(
-      "\nCredential summary written to: lockwise-server/docs/demo-credentials.xlsx",
+      "✓ Seeded 5 estates, 5 managers, 15 residents, 10 streets, 30 units, 10 gates, 5 subscriptions",
     );
   },
 
   down: async (queryInterface) => {
     // Remove in FK-safe order
+    await queryInterface.sequelize.query(
+      `DELETE FROM subscriptions WHERE estate_id IN (
+         SELECT estate_id FROM estates WHERE estate_code IN ('EST001','EST002','EST003','EST004','EST005')
+       )`,
+    );
+    await queryInterface.sequelize.query(
+      `DELETE FROM gates WHERE estate_id IN (
+         SELECT estate_id FROM estates WHERE estate_code IN ('EST001','EST002','EST003','EST004','EST005')
+       )`,
+    );
     await queryInterface.sequelize.query(
       `DELETE FROM units WHERE street_id IN (
         SELECT street_id FROM streets WHERE estate_id IN (
