@@ -145,24 +145,58 @@ export const updateProfile = async (req: Request, res: Response) => {
 export const linkUserToEstate = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user?.id || req.params.userId;
-    const { estate_code } = req.body;
+    const { estate_code, unit_id } = req.body;
 
     if (!estate_code) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Estate code is required" });
+      return res.status(400).json({ success: false, message: 'Estate code is required' });
     }
 
-    const result = await userService.linkUserToEstate(userId, estate_code);
+    const result = await userService.linkUserToEstate(userId, estate_code, unit_id);
     res.status(result.statusCode).json({
       success: result.statusCode === 200,
       message: result.message,
       data: result.data,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ success: false, message: "Failed to link user to estate" });
+    res.status(500).json({ success: false, message: 'Failed to link user to estate' });
+  }
+};
+
+export const getPendingResidents = async (req: Request, res: Response) => {
+  try {
+    const estateId = (req as any).user?.estate_id;
+    if (!estateId) {
+      return res.status(400).json({ success: false, message: 'No estate associated with your account' });
+    }
+    const result = await userService.getPendingResidents(estateId);
+    res.status(result.statusCode).json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to fetch pending residents' });
+  }
+};
+
+export const approveJoinRequest = async (req: Request, res: Response) => {
+  try {
+    const approverId = (req as any).user?.id;
+    const targetUserId = asString(req.params.userId);
+    if (!targetUserId) return res.status(400).json({ success: false, message: 'User ID required' });
+    const result = await userService.approveJoinRequest(targetUserId, approverId);
+    res.status(result.statusCode).json({ success: result.statusCode === 200, message: result.message });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to approve join request' });
+  }
+};
+
+export const rejectJoinRequest = async (req: Request, res: Response) => {
+  try {
+    const approverId = (req as any).user?.id;
+    const targetUserId = asString(req.params.userId);
+    const { reason } = req.body;
+    if (!targetUserId) return res.status(400).json({ success: false, message: 'User ID required' });
+    const result = await userService.rejectJoinRequest(targetUserId, approverId, reason);
+    res.status(result.statusCode).json({ success: result.statusCode === 200, message: result.message });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to reject join request' });
   }
 };
 
