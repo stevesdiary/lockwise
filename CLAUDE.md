@@ -43,7 +43,7 @@ src/
     ├── communication/ # notifications, chat, emergency alerts, email service, web push
     ├── community/     # community posts, comments, messages
     ├── analytics/     # analytics events, dashboard, monitoring
-    ├── upload/        # file uploads, bulk CSV upload
+    ├── upload/        # file uploads, bulk CSV/Excel upload (estates, residents, addresses, streets+units)
     ├── location/      # addresses
     ├── mobile/        # mobile-specific endpoints
     ├── admin/         # roles, permissions, API keys, config, user-roles
@@ -62,7 +62,7 @@ NODE_ENV=test npx jest --config tests/setup/jest.config.ts --no-coverage
 ## Key Conventions
 
 **Migrations** (`migrations/`):
-- Naming: `YYYYMMDDHHMMSS-<action>-<entity>.js`; active baseline uses `20260319XXXXXX` timestamps (60 migrations, 001–060)
+- Naming: `YYYYMMDDHHMMSS-<action>-<entity>.js`; active baseline uses `20260319XXXXXX` timestamps (60 migrations, 001–060); post-baseline additions: 061–062 (`20260418XXXXXX`)
 - No `{ ifNotExists: true }` guards in main branch migrations
 - Deferred FK pattern for circular deps (e.g., `estates.created_by → users.id` added in migration 051)
 - Security profile seed in migration 053 (`20260330000053`): inserts one `security` user per estate; email `security@<estate_code>.lockwise.local`; default password `Security@1234` (bcrypt, salt 10); uses `ON CONFLICT DO NOTHING`
@@ -73,6 +73,8 @@ NODE_ENV=test npx jest --config tests/setup/jest.config.ts --no-coverage
 - FAQ seed in migration 058 (`20260405000058`): inserts 12 FAQs across 5 categories (access_codes/general/security/technical/payments); uses `randomUUID()`, queries for admin/manager user as `created_by`, skips existing questions
 - Migration 059 (`20260405000059`): adds `consent_given` BOOLEAN NOT NULL default false and `consent_timestamp` DATE nullable to `users`
 - Migration 060 (`20260417000060`): adds `access_direction` ENUM('entry','exit','both') NOT NULL default 'entry' to `access_logs`
+- Migration 061 (`20260418000061`): adds `'streets_units'` to `enum_bulk_upload_jobs_upload_type` ENUM (uses `ADD VALUE IF NOT EXISTS`)
+- Migration 062 (`20260418000062`): drops global unique index on `units.unit_identifier`; adds composite unique index `units_unit_identifier_street_id_unique` on (`unit_identifier`, `street_id`) — uniqueness is scoped per street, not globally
 
 **Middleware** (`shared/middleware/`):
 - `authenticateToken` — verifies JWT, attaches `req.user`
@@ -107,6 +109,10 @@ if (!isAdmin) {
 **Estate code:** `estate_code` auto-generated in `estate.controller.ts` as `EST-${customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 8)()}` — never supplied by the mobile client.
 
 **Estate service — Sequelize plain objects:** `getEstateByCode` calls `.toJSON()` before returning, then spreads `id: plain.estate_id` into the response data. Always do this for any service that returns a single Sequelize instance to mobile — raw instances expose `estate_id` but not `id`, causing undefined reads on the client.
+
+**Bulk upload** (`src/modules/upload/`):
+- `POST /api/v1/bulk-upload/streets-units` — `requireManager`; `multipart/form-data` single file + `estateId` body param; parses CSV/Excel with `xlsx`; uses `Street.findOrCreate` + `Unit.findOrCreate` in a single transaction; `upload_type: 'streets_units'` in `bulk_upload_jobs`
+- `GET /api/v1/bulk-upload/template/:type` — download CSV template for a given upload type
 
 **Email:** Uses Brevo (formerly Sendinblue) via `emailService`. Templates in `shared/templates/email.templates.ts`.
 

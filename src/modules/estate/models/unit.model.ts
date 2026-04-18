@@ -48,8 +48,7 @@ export class Unit extends Model<UnitAttributes, UnitCreationAttributes> {
   @Column({
     type: DataType.STRING,
     allowNull: false,
-    unique: true
-  }) 
+  })
   declare unit_identifier: string;
 
   @Column({

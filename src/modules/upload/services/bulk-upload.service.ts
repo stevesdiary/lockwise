@@ -3,6 +3,8 @@ import { Buffer } from 'buffer';
 import sequelize from '../../../shared/core/database';
 import { cloudStorage } from './unified-storage.service';
 import NotificationService from '../../communication/services/notification.service';
+import { Street } from '../../estate/models/street.model';
+import { Unit } from '../../estate/models/unit.model';
 
 interface BulkUploadResult<T> {
   created: T[];
@@ -47,6 +49,14 @@ interface AddressData {
   country: string;
   zip_code?: string;
   available: boolean;
+}
+
+interface StreetsUnitsRow {
+  street_name: string;
+  unit_identifier: string;
+  unit_type?: string;
+  block?: string;
+  floor?: number | null;
 }
 
 class BulkUploadService {
@@ -263,6 +273,118 @@ class BulkUploadService {
     } catch (error) {
       await transaction.rollback();
       throw error;
+    }
+  }
+
+  async uploadStreetsUnits(
+    buffer: Buffer,
+    filename: string,
+    estateId: string,
+    userId: string
+  ): Promise<{
+    totalProcessed: number;
+    successCount: number;
+    streetsCreated: number;
+    unitsCreated: number;
+    skippedCount: number;
+    errors: Array<{ row: number; data: any; reason: string }>;
+  }> {
+    const rows = this.parseFile(buffer, filename);
+    const result = {
+      totalProcessed: rows.length,
+      successCount: 0,
+      streetsCreated: 0,
+      unitsCreated: 0,
+      skippedCount: 0,
+      errors: [] as Array<{ row: number; data: any; reason: string }>,
+    };
+
+    const validUnitTypes = ['flat', 'duplex', 'chalet', 'terrace', 'plot', 'house', 'apartment', 'other'];
+
+    const transaction = await sequelize.transaction();
+
+    try {
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        try {
+          const streetName: string =
+            row['street_name'] || row['Street Name'] || row['Street'] || '';
+          const unitIdentifier: string =
+            row['unit_identifier'] || row['Unit'] || row['Unit ID'] || row['Unit Identifier'] || '';
+
+          if (!streetName) {
+            result.errors.push({ row: i + 2, data: row, reason: 'street_name is required' });
+            continue;
+          }
+          if (!unitIdentifier) {
+            result.errors.push({ row: i + 2, data: row, reason: 'unit_identifier is required' });
+            continue;
+          }
+
+          // Deduplicate street within this estate
+          const [street, streetCreated] = await Street.findOrCreate({
+            where: { name: streetName, estate_id: estateId },
+            defaults: { name: streetName, estate_id: estateId },
+            transaction,
+          });
+          if (streetCreated) result.streetsCreated++;
+
+          // Resolve unit_type — coerce invalid values to 'flat'
+          const rawType = (row['unit_type'] || row['Type'] || '').toLowerCase();
+          const unitType = validUnitTypes.includes(rawType) ? rawType : 'flat';
+
+          const rawFloor = row['floor'] || row['Floor'];
+          const floor = rawFloor !== undefined && rawFloor !== '' ? parseInt(rawFloor, 10) || null : null;
+
+          const block: string | null = row['block'] || row['Block'] || null;
+
+          // IMPORTANT: deduplicate on (unit_identifier, street_id) — NOT unit_identifier alone.
+          // The unique constraint is now composite (migration 20260418000062).
+          const [, unitCreated] = await Unit.findOrCreate({
+            where: { unit_identifier: unitIdentifier, street_id: street.street_id },
+            defaults: {
+              unit_identifier: unitIdentifier,
+              street_id: street.street_id,
+              unit_type: unitType as any,
+              block: block ?? undefined,
+              floor: floor ?? undefined,
+              status: 'vacant',
+            },
+            transaction,
+          });
+
+          if (unitCreated) {
+            result.unitsCreated++;
+            result.successCount++;
+          } else {
+            result.skippedCount++;
+          }
+        } catch (err) {
+          result.errors.push({
+            row: i + 2,
+            data: row,
+            reason: err instanceof Error ? err.message : 'Unknown error',
+          });
+        }
+      }
+
+      await this.createBulkUploadJob(
+        {
+          userId,
+          uploadType: 'streets_units',
+          filename,
+          sourceFileKey: null,
+          sourceFileUrl: null,
+          ...result,
+        },
+        transaction
+      );
+
+      await transaction.commit();
+      return result;
+    } catch (err) {
+      await transaction.rollback();
+      throw err;
     }
   }
 

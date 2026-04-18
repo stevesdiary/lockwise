@@ -189,7 +189,8 @@ const options = {
             is_multi_entry: { type: 'boolean', example: true },
             max_entries: { type: 'number', example: 5 },
             resident_id: { type: 'string' },
-            remarks: { type: 'string', example: 'Birthday party guest' }
+            remarks: { type: 'string', example: 'Birthday party guest' },
+            access_direction: { type: 'string', enum: ['entry', 'exit', 'both'], example: 'entry', default: 'entry', description: 'Direction the access code is valid for' }
           }
         },
         PhoneVerification: {
@@ -568,6 +569,36 @@ const options = {
             type: { type: 'string', enum: ['resident', 'guest', 'ev_charging'], example: 'resident' },
             is_occupied: { type: 'boolean', example: false },
             hourly_rate: { type: 'number', example: 200 }
+          }
+        },
+        NotificationPreferences: {
+          type: 'object',
+          properties: {
+            push_notifications: { type: 'boolean', example: true },
+            email_notifications: { type: 'boolean', example: true },
+            sms_notifications: { type: 'boolean', example: true },
+            guest_entrance: { type: 'boolean', example: true },
+            emergency_alerts: { type: 'boolean', example: true },
+            system_updates: { type: 'boolean', example: true },
+            payment_reminders: { type: 'boolean', example: true }
+          }
+        },
+        DeviceRegistrationRequest: {
+          type: 'object',
+          required: ['fcmToken'],
+          properties: {
+            fcmToken: { type: 'string', example: 'fcm-token-string', description: 'Firebase Cloud Messaging token' },
+            deviceId: { type: 'string', example: 'iPhone14,2', description: 'Device model identifier' },
+            platform: { type: 'string', enum: ['ios', 'android', 'mobile'], example: 'ios', default: 'mobile' },
+            appVersion: { type: 'string', example: '1.2.0', description: 'App version string' }
+          }
+        },
+        PushTestRequest: {
+          type: 'object',
+          properties: {
+            title: { type: 'string', example: 'Test Notification', default: 'Test Notification' },
+            body: { type: 'string', example: 'This is a test push notification from Lockwise', default: 'This is a test push notification from Lockwise' },
+            data: { type: 'object', example: { key: 'value' }, description: 'Additional data payload' }
           }
         }
       }
@@ -1837,6 +1868,117 @@ const options = {
                 }
               }
             }
+          }
+        }
+      },
+      '/notifications/preferences': {
+        get: {
+          tags: ['Notifications'],
+          summary: 'Get notification preferences',
+          description: 'Retrieve the authenticated user notification preferences.',
+          security: [{ bearerAuth: [] }],
+          responses: {
+            '200': {
+              description: 'Preferences retrieved successfully',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      status: { type: 'string', example: 'success' },
+                      data: { $ref: '#/components/schemas/NotificationPreferences' }
+                    }
+                  }
+                }
+              }
+            },
+            '401': { description: 'Unauthorized', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            '500': { description: 'Internal server error', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
+          }
+        },
+        put: {
+          tags: ['Notifications'],
+          summary: 'Update notification preferences',
+          description: 'Update one or more notification preference flags for the authenticated user.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/NotificationPreferences' }
+              }
+            }
+          },
+          responses: {
+            '200': {
+              description: 'Preferences updated successfully',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      status: { type: 'string', example: 'success' },
+                      data: { $ref: '#/components/schemas/NotificationPreferences' }
+                    }
+                  }
+                }
+              }
+            },
+            '401': { description: 'Unauthorized', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            '500': { description: 'Internal server error', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
+          }
+        }
+      },
+      '/mobile/device/register': {
+        post: {
+          tags: ['Mobile'],
+          summary: 'Register device',
+          description: 'Register or update a mobile device for push notifications via FCM.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/DeviceRegistrationRequest' }
+              }
+            }
+          },
+          responses: {
+            '200': { description: 'Device registered successfully' },
+            '401': { description: 'Unauthorized', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            '500': { description: 'Internal server error', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
+          }
+        },
+        delete: {
+          tags: ['Mobile'],
+          summary: 'Unregister device',
+          description: 'Remove all registered devices for the authenticated user.',
+          security: [{ bearerAuth: [] }],
+          responses: {
+            '200': { description: 'Device unregistered successfully' },
+            '401': { description: 'Unauthorized', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            '500': { description: 'Internal server error', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
+          }
+        }
+      },
+      '/mobile/push/test': {
+        post: {
+          tags: ['Mobile'],
+          summary: 'Send test push notification',
+          description: 'Send a test push notification to the authenticated user registered devices.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: false,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/PushTestRequest' }
+              }
+            }
+          },
+          responses: {
+            '200': { description: 'Test push notification sent' },
+            '401': { description: 'Unauthorized', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            '500': { description: 'Internal server error', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
           }
         }
       },
