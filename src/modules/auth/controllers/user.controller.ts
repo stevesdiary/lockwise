@@ -145,7 +145,8 @@ export const updateProfile = async (req: Request, res: Response) => {
 export const linkUserToEstate = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user?.id || req.params.userId;
-    const { estate_code, unit_id } = req.body;
+    const { unit_id } = req.body;
+    const estate_code = typeof req.body.estate_code === 'string' ? req.body.estate_code.trim().toUpperCase() : '';
 
     if (!estate_code) {
       return res.status(400).json({ success: false, message: 'Estate code is required' });
