@@ -147,33 +147,166 @@ export const deleteUser = async (estateId: string, id: string) => {
   return { statusCode: 200, message: 'User deleted' };
 };
 
-export const linkUserToEstate = async (userId: string, estateCode: string) => {
+export const linkUserToEstate = async (userId: string, estateCode: string, unitId?: string) => {
   try {
     const user = await userRepository.findById(userId);
     if (!user) {
       return { statusCode: 404, message: 'User not found' };
     }
 
-    const { Estate } = await import('../../estate/models/estate.model');
+    // Use statically-imported Estate — dynamic import caused model resolution failures
     const estate = await Estate.findOne({ where: { estate_code: estateCode } as any });
     if (!estate) {
       return { statusCode: 404, message: 'Invalid estate code' };
     }
 
-    await userRepository.update(userId, { estate_id: estate.estate_id } as any);
-    
-    // Send welcome email
-    const emailService = (await import('../../communication/services/email.service')).default;
-    await emailService.sendWelcomeEmail(user.email, user.first_name, estate.name);
-    
-    return { 
-      statusCode: 200, 
-      message: 'User linked to estate successfully',
+    await sequelize.transaction(async (t) => {
+      await User.update(
+        { estate_id: estate.estate_id, status: 'pending' } as any,
+        { where: { id: userId } as any, transaction: t }
+      );
+
+      const [resident] = await Resident.findOrCreate({
+        where: { user_id: userId },
+        defaults: { user_id: userId, estate_id: estate.estate_id, unit_id: unitId || null } as any,
+        transaction: t,
+      });
+      if (resident.estate_id !== estate.estate_id || (unitId && resident.unit_id !== unitId)) {
+        await resident.update({ estate_id: estate.estate_id, unit_id: unitId || resident.unit_id }, { transaction: t });
+      }
+    });
+
+    // Build address string for manager notification
+    let fullAddress = '';
+    if (unitId) {
+      const { Unit } = await import('../../estate/models/unit.model');
+      const { Street } = await import('../../estate/models/street.model');
+      const unit = await Unit.findByPk(unitId, { include: [{ model: Street, as: 'street' }] });
+      if (unit) {
+        const parts = [
+          unit.unit_type ? unit.unit_type.charAt(0).toUpperCase() + unit.unit_type.slice(1) : null,
+          unit.unit_identifier,
+          (unit as any).street?.name,
+          estate.name,
+        ].filter(Boolean);
+        fullAddress = parts.join(', ');
+      }
+    }
+
+    // Notify estate managers
+    const managers = await User.findAll({
+      where: { estate_id: estate.estate_id, status: 'active' } as any,
+      include: [{ model: Role, as: 'role', where: { role: 'manager' }, required: true }],
+    });
+
+    const { pushNotificationService } = await import('../../communication/services/push-notification.service');
+    for (const manager of managers) {
+      pushNotificationService.sendToUser(
+        manager.id,
+        'New Join Request',
+        `${user.first_name} ${user.last_name} wants to join ${estate.name}${fullAddress ? ` — ${fullAddress}` : ''}`,
+        { type: 'join_request', residentUserId: userId, fullAddress }
+      ).catch(() => {});
+    }
+
+    return {
+      statusCode: 200,
+      message: 'Join request sent to estate manager. You will be notified once approved.',
       data: { estate: { id: estate.estate_id, name: estate.name } }
     };
   } catch (error: any) {
     console.error('Link user to estate error:', error);
-    return { statusCode: 500, message: 'Failed to link user to estate', error: error.message };
+    return { statusCode: 500, message: 'Failed to send join request', error: error.message };
+  }
+};
+
+export const getPendingResidents = async (estateId: string) => {
+  try {
+    const { Unit } = await import('../../estate/models/unit.model');
+    const { Street } = await import('../../estate/models/street.model');
+
+    const pendingUsers = await User.findAll({
+      where: { estate_id: estateId, status: 'pending' } as any,
+      include: [{
+        model: Resident,
+        as: 'residentProfile',
+        required: false,
+        include: [{
+          model: Unit,
+          as: 'unit',
+          include: [{ model: Street, as: 'street', attributes: ['name'] }],
+        }],
+      }],
+      attributes: ['id', 'first_name', 'last_name', 'email', 'phone', 'status', 'created_at'],
+    });
+
+    const data = pendingUsers.map((u) => {
+      const plain = u.toJSON() as any;
+      const resident = plain.residentProfile;
+      const unit = resident?.unit;
+      const addressParts = [
+        unit?.unit_type ? unit.unit_type.charAt(0).toUpperCase() + unit.unit_type.slice(1) : null,
+        unit?.unit_identifier,
+        unit?.street?.name,
+      ].filter(Boolean);
+      return { ...plain, fullAddress: addressParts.join(', ') || null, unit_id: resident?.unit_id || null };
+    });
+
+    return { statusCode: 200, success: true, data };
+  } catch (error: any) {
+    console.error('Get pending residents error:', error);
+    return { statusCode: 500, success: false, message: 'Failed to fetch pending residents' };
+  }
+};
+
+export const approveJoinRequest = async (targetUserId: string, approverId: string) => {
+  try {
+    const target = await userRepository.findById(targetUserId);
+    if (!target || target.status !== 'pending') {
+      return { statusCode: 404, message: 'Pending join request not found' };
+    }
+
+    await User.update({ status: 'active' } as any, { where: { id: targetUserId } as any });
+
+    const { pushNotificationService } = await import('../../communication/services/push-notification.service');
+    pushNotificationService.sendToUser(
+      targetUserId,
+      'Join Request Approved',
+      `Welcome to the estate! You can now generate access codes.`,
+      { type: 'join_approved' }
+    ).catch(() => {});
+
+    return { statusCode: 200, message: 'Resident approved successfully' };
+  } catch (error: any) {
+    console.error('Approve join request error:', error);
+    return { statusCode: 500, message: 'Failed to approve join request' };
+  }
+};
+
+export const rejectJoinRequest = async (targetUserId: string, approverId: string, reason?: string) => {
+  try {
+    const target = await userRepository.findById(targetUserId);
+    if (!target || target.status !== 'pending') {
+      return { statusCode: 404, message: 'Pending join request not found' };
+    }
+
+    await sequelize.transaction(async (t) => {
+      await User.update({ estate_id: null, status: 'inactive' } as any, { where: { id: targetUserId } as any, transaction: t });
+      await Resident.destroy({ where: { user_id: targetUserId } as any, transaction: t });
+    });
+
+    const { pushNotificationService } = await import('../../communication/services/push-notification.service');
+    pushNotificationService.sendToUser(
+      targetUserId,
+      'Join Request Declined',
+      reason || 'Your request to join the estate was declined. Contact your estate manager.',
+      { type: 'join_rejected' }
+    ).catch(() => {});
+
+    return { statusCode: 200, message: 'Join request rejected' };
+  } catch (error: any) {
+    console.error('Reject join request error:', error);
+    return { statusCode: 500, message: 'Failed to reject join request' };
   }
 };
 
