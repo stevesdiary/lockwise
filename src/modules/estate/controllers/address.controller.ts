@@ -17,7 +17,10 @@ class AddressController {
 
       const streets = await Street.findAll({ where, order: [['name', 'ASC']] });
 
-      return res.json({ status: 'success', data: streets });
+      // Inject `id` as alias for `street_id` so mobile clients can read either field
+      const data = streets.map((s) => ({ ...s.toJSON(), id: s.street_id }));
+
+      return res.json({ status: 'success', data });
     } catch (error) {
       return handleControllerError(error, res);
     }
@@ -33,7 +36,14 @@ class AddressController {
         order: [['unit_identifier', 'ASC']],
       });
 
-      return res.json({ status: 'success', data: units });
+      // Inject `id` into nested street so mobile Street interface resolves correctly
+      const data = units.map((u) => {
+        const plain = u.toJSON() as any;
+        if (plain.street) plain.street = { ...plain.street, id: plain.street.street_id };
+        return plain;
+      });
+
+      return res.json({ status: 'success', data });
     } catch (error) {
       return handleControllerError(error, res);
     }
