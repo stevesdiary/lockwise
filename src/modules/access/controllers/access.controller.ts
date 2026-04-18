@@ -7,6 +7,14 @@ async function createAccessRecord(req: Request, res: Response) {
   try {
     const user_id = req.user!.id;
     const estate_id = req.user!.estate_id;
+
+    if (!estate_id) {
+      return res.status(403).json({
+        status: 'error',
+        message: "You haven't joined an estate yet. Search for your estate using its estate code and complete your profile setup before generating access codes. Contact your estate manager for estate code.",
+      });
+    }
+
     const { scheduled_entry_date, scheduled_exit_date, vehicle_number, remarks, is_multi_entry, max_entries, access_type, valid_from, valid_until } = req.body;
     
     // For unlimited entry types, set is_multi_entry to true automatically

@@ -4585,7 +4585,38 @@
                 {
                   "key": "search",
                   "value": "",
-                  "disabled": true
+                  "description": "Case-insensitive substring match on street name"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search Units Across Estate",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/address/estates/{{estateId}}/units?search=&street_id=",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "address",
+                "estates",
+                "{{estateId}}",
+                "units"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "",
+                  "description": "Case-insensitive match on unit_identifier or block"
+                },
+                {
+                  "key": "street_id",
+                  "value": "",
+                  "description": "Optional street UUID to narrow results"
                 }
               ]
             }

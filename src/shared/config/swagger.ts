@@ -15,12 +15,12 @@ const options = {
     },
     servers: [
       {
-        url: process.env.API_BASE_URL || 'http://localhost:3001/api/v1',
-        description: 'Development server'
+        url: process.env.API_BASE_URL || 'http://localhost:3002/api/v1',
+        description: 'Local development server'
       },
       {
-        url: 'https://api.lockwise.com/api/v1',
-        description: 'Production server'
+        url: 'https://lockwise.onrender.com/api/v1',
+        description: 'Production server (Render)'
       }
     ],
     components: {
@@ -1980,6 +1980,241 @@ const options = {
             '401': { description: 'Unauthorized', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
             '500': { description: 'Internal server error', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
           }
+        }
+      },
+      '/address/estates/{estate_id}/streets': {
+        get: {
+          tags: ['Location'],
+          summary: 'List streets for an estate',
+          description: 'Returns all streets in the estate, optionally filtered by name. Each street includes an `id` alias for `street_id`.',
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'estate_id', in: 'path', required: true, schema: { type: 'string', example: '8e9ab13d-9d0a-4d22-9d12-3273ce36601f' }, description: 'Estate UUID' },
+            { name: 'search', in: 'query', required: false, schema: { type: 'string', example: 'Main' }, description: 'Case-insensitive substring match on street name' }
+          ],
+          responses: {
+            '200': { description: 'Streets retrieved', content: { 'application/json': { schema: { type: 'object', properties: { status: { type: 'string', example: 'success' }, data: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, street_id: { type: 'string' }, name: { type: 'string', example: 'Main Street' }, estate_id: { type: 'string' } } } } } } } } },
+            '401': { description: 'Unauthorized' }
+          }
+        },
+        post: {
+          tags: ['Location'],
+          summary: 'Create a street in an estate',
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'estate_id', in: 'path', required: true, schema: { type: 'string' } }
+          ],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['name'], properties: { name: { type: 'string', example: 'Acacia Avenue' } } } } } },
+          responses: {
+            '201': { description: 'Street created' },
+            '401': { description: 'Unauthorized' }
+          }
+        }
+      },
+      '/address/streets/{street_id}/units': {
+        get: {
+          tags: ['Location'],
+          summary: 'List units on a street',
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'street_id', in: 'path', required: true, schema: { type: 'string', example: 'street-uuid-here' }, description: 'Street UUID (use `id` from street response)' }
+          ],
+          responses: {
+            '200': { description: 'Units retrieved', content: { 'application/json': { schema: { type: 'object', properties: { status: { type: 'string', example: 'success' }, data: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, unit_identifier: { type: 'string', example: 'A101' }, block: { type: 'string', example: 'A' }, floor: { type: 'integer', example: 1 }, unit_type: { type: 'string', example: 'flat' }, status: { type: 'string', example: 'vacant' }, street: { type: 'object', properties: { id: { type: 'string' }, name: { type: 'string' } } } } } } } } } } },
+            '401': { description: 'Unauthorized' }
+          }
+        },
+        post: {
+          tags: ['Location'],
+          summary: 'Create a unit on a street',
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'street_id', in: 'path', required: true, schema: { type: 'string' } }
+          ],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['unit_identifier'], properties: { unit_identifier: { type: 'string', example: 'A101' }, block: { type: 'string', example: 'A' }, floor: { type: 'integer', example: 1 }, unit_type: { type: 'string', enum: ['flat', 'duplex', 'chalet', 'terrace', 'plot', 'house', 'apartment', 'other'], example: 'flat' } } } } } },
+          responses: {
+            '201': { description: 'Unit created' },
+            '401': { description: 'Unauthorized' }
+          }
+        }
+      },
+      '/address/estates/{estate_id}/units': {
+        get: {
+          tags: ['Location'],
+          summary: 'Search units across an estate',
+          description: 'Searches all units in the estate. Filter by unit identifier or street_id.',
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'estate_id', in: 'path', required: true, schema: { type: 'string' } },
+            { name: 'search', in: 'query', required: false, schema: { type: 'string', example: 'A1' } },
+            { name: 'street_id', in: 'query', required: false, schema: { type: 'string' } }
+          ],
+          responses: {
+            '200': { description: 'Units retrieved' },
+            '401': { description: 'Unauthorized' }
+          }
+        }
+      },
+      '/estate/{estateId}/gates': {
+        get: {
+          tags: ['Estates'],
+          summary: 'List gates for an estate',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'estateId', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { '200': { description: 'Gates retrieved' }, '401': { description: 'Unauthorized' } }
+        },
+        post: {
+          tags: ['Estates'],
+          summary: 'Create a gate for an estate',
+          description: 'gate_code is auto-generated server-side. Do not include it in the request.',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'estateId', in: 'path', required: true, schema: { type: 'string' } }],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { type: 'object', required: ['gate_name', 'gate_type', 'access_control_type'], properties: { gate_name: { type: 'string', example: 'Main Entrance' }, gate_type: { type: 'string', enum: ['main', 'service', 'pedestrian', 'emergency', 'vip'], example: 'main' }, access_control_type: { type: 'string', enum: ['manual', 'rfid', 'biometric', 'qr_code', 'hybrid'], example: 'qr_code' }, is_active: { type: 'boolean', example: true, default: true } } } } }
+          },
+          responses: { '201': { description: 'Gate created' }, '401': { description: 'Unauthorized' } }
+        }
+      },
+      '/estate/{estateId}/onboarding-step': {
+        patch: {
+          tags: ['Estates'],
+          summary: 'Update estate onboarding step',
+          description: 'Advance the wizard step. Pass `status: "pending"` on the final step to submit the estate for admin review.',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'estateId', in: 'path', required: true, schema: { type: 'string' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['step'], properties: { step: { type: 'integer', example: 2, description: 'Onboarding wizard step number' }, status: { type: 'string', enum: ['pending'], example: 'pending', description: 'Pass "pending" on final step to trigger admin review' } } } } } },
+          responses: { '200': { description: 'Onboarding step updated' }, '401': { description: 'Unauthorized' } }
+        }
+      },
+      '/estate/{estateId}/setup-checklist': {
+        patch: {
+          tags: ['Estates'],
+          summary: 'Update estate setup checklist',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'estateId', in: 'path', required: true, schema: { type: 'string' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: { gates_configured: { type: 'boolean', example: true }, residents_invited: { type: 'boolean', example: true } } } } } },
+          responses: { '200': { description: 'Checklist updated' }, '401': { description: 'Unauthorized' } }
+        }
+      },
+      '/bulk-upload/streets-units': {
+        post: {
+          tags: ['Upload'],
+          summary: 'Bulk upload streets and units',
+          description: 'Upload a CSV or Excel file to populate streets and units for an estate. Rows with duplicate unit identifiers on the same street are skipped (idempotent). Managers can only upload to their own estate.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'multipart/form-data': {
+                schema: {
+                  type: 'object',
+                  required: ['file', 'estateId'],
+                  properties: {
+                    file: { type: 'string', format: 'binary', description: 'CSV, XLSX, or XLS file' },
+                    estateId: { type: 'string', example: '8e9ab13d-9d0a-4d22-9d12-3273ce36601f', description: 'Estate to upload streets/units into' }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            '200': { description: 'Upload completed', content: { 'application/json': { schema: { type: 'object', properties: { status: { type: 'string', example: 'success' }, data: { type: 'object', properties: { totalProcessed: { type: 'integer' }, successCount: { type: 'integer' }, streetsCreated: { type: 'integer' }, unitsCreated: { type: 'integer' }, skippedCount: { type: 'integer' }, errorCount: { type: 'integer' }, errors: { type: 'array', items: { type: 'object', properties: { row: { type: 'integer' }, reason: { type: 'string' } } } } } } } } } } },
+            '400': { description: 'No file, missing estateId, or invalid format' },
+            '401': { description: 'Unauthorized' },
+            '403': { description: 'Forbidden — manager uploading to another estate' }
+          }
+        }
+      },
+      '/bulk-upload/template/{type}': {
+        get: {
+          tags: ['Upload'],
+          summary: 'Get upload template',
+          description: 'Returns column headers, sample data, and instructions for the given upload type.',
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'type', in: 'path', required: true, schema: { type: 'string', enum: ['estates', 'residents', 'addresses', 'streets-units'] }, description: 'Template type' }
+          ],
+          responses: {
+            '200': { description: 'Template info returned' },
+            '400': { description: 'Invalid type' }
+          }
+        }
+      },
+      '/access/scan': {
+        post: {
+          tags: ['Access Control'],
+          summary: 'Scan / process an access code',
+          description: 'Security scans a guest access code at the gate. For single-entry codes the status becomes `used` after one scan. For multi-entry codes `used_entries` is incremented; status becomes `used` when `max_entries` is reached.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { type: 'object', required: ['code'], properties: { code: { type: 'string', example: 'Dog47', description: 'The access code string to validate' }, gate_id: { type: 'string', description: 'Optional gate UUID where the scan occurs' }, scanned_by: { type: 'string', description: 'Optional user ID of the security staff scanning' } } } } }
+          },
+          responses: {
+            '200': { description: 'Access granted — entry recorded' },
+            '400': { description: 'Access code invalid, expired, or entries exhausted' },
+            '401': { description: 'Unauthorized' }
+          }
+        }
+      },
+      '/estate/residents/approvals': {
+        get: {
+          tags: ['Estates'],
+          summary: 'Get pending resident approvals',
+          security: [{ bearerAuth: [] }],
+          responses: { '200': { description: 'Pending approvals list returned' }, '401': { description: 'Unauthorized' } }
+        }
+      },
+      '/estate/residents/approvals/{residentId}/approve': {
+        patch: {
+          tags: ['Estates'],
+          summary: 'Approve a resident',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'residentId', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { '200': { description: 'Resident approved' }, '401': { description: 'Unauthorized' } }
+        }
+      },
+      '/estate/residents/approvals/{residentId}/decline': {
+        patch: {
+          tags: ['Estates'],
+          summary: 'Decline a resident',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'residentId', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { '200': { description: 'Resident declined' }, '401': { description: 'Unauthorized' } }
+        }
+      },
+      '/plan': {
+        get: {
+          tags: ['Plans'],
+          summary: 'Get all subscription plans',
+          description: 'Public — no auth required.',
+          responses: { '200': { description: 'Plans returned' } }
+        }
+      },
+      '/push/vapid-public-key': {
+        get: {
+          tags: ['Mobile'],
+          summary: 'Get VAPID public key for web push',
+          description: 'No auth required. Used by service workers to subscribe to push notifications.',
+          responses: { '200': { description: 'VAPID public key string returned' } }
+        }
+      },
+      '/push/subscribe': {
+        post: {
+          tags: ['Mobile'],
+          summary: 'Subscribe to web push',
+          security: [{ bearerAuth: [] }],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', description: 'PushSubscription object from browser Notification API' } } } },
+          responses: { '200': { description: 'Subscription saved' }, '401': { description: 'Unauthorized' } }
+        }
+      },
+      '/push/unsubscribe': {
+        delete: {
+          tags: ['Mobile'],
+          summary: 'Unsubscribe from web push',
+          security: [{ bearerAuth: [] }],
+          responses: { '200': { description: 'Subscription removed' }, '401': { description: 'Unauthorized' } }
         }
       },
       '/estate/residents/resend-invite': {

@@ -56,7 +56,10 @@ export const accessCodeController = {
       }
 
       if (!estateId) {
-        return res.status(400).json({ message: 'Estate ID is required. Please link your account to an estate.' });
+        return res.status(403).json({
+          success: false,
+          message: "You haven't joined an estate yet. Search for your estate using its estate code, complete your profile setup, and get approved by your estate manager before generating access codes.",
+        });
       }
 
       if (!visitor_name || !valid_until) {
