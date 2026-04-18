@@ -20,7 +20,7 @@ class AddressController {
       // Inject `id` as alias for `street_id` so mobile clients can read either field
       const data = streets.map((s) => ({ ...s.toJSON(), id: s.street_id }));
 
-      return res.json({ status: 'success', data });
+      return res.json({ success: true, data });
     } catch (error) {
       return handleControllerError(error, res);
     }
@@ -43,7 +43,7 @@ class AddressController {
         return plain;
       });
 
-      return res.json({ status: 'success', data });
+      return res.json({ success: true, data });
     } catch (error) {
       return handleControllerError(error, res);
     }
@@ -77,7 +77,7 @@ class AddressController {
         order: [['unit_identifier', 'ASC']],
       });
 
-      return res.json({ status: 'success', data: units });
+      return res.json({ success: true, data: units });
     } catch (error) {
       return handleControllerError(error, res);
     }
@@ -90,7 +90,7 @@ class AddressController {
 
       const street = await Street.create({ estate_id: estateId, name });
 
-      return res.status(201).json({ status: 'success', data: street });
+      return res.status(201).json({ success: true, data: street });
     } catch (error) {
       return handleControllerError(error, res);
     }
@@ -103,7 +103,7 @@ class AddressController {
 
       const unit = await Unit.create({ street_id: streetId, unit_identifier, block, floor, unit_type, unit_details });
 
-      return res.status(201).json({ status: 'success', data: unit });
+      return res.status(201).json({ success: true, data: unit });
     } catch (error) {
       return handleControllerError(error, res);
     }
@@ -122,12 +122,12 @@ class AddressController {
       });
 
       if (!unit) {
-        return res.status(404).json({ status: 'error', message: 'Unit not found' });
+        return res.status(404).json({ success: false, message: 'Unit not found' });
       }
 
       const fullAddress = `${unit.unit_identifier}, ${unit.street.name}, ${(unit.street as any).estate.name}`;
 
-      return res.json({ status: 'success', data: { unit, fullAddress } });
+      return res.json({ success: true, data: { unit, fullAddress } });
     } catch (error) {
       return handleControllerError(error, res);
     }

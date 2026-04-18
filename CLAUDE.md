@@ -110,6 +110,10 @@ if (!isAdmin) {
 
 **Estate service — Sequelize plain objects:** `getEstateByCode` calls `.toJSON()` before returning, then spreads `id: plain.estate_id` into the response data. Always do this for any service that returns a single Sequelize instance to mobile — raw instances expose `estate_id` but not `id`, causing undefined reads on the client.
 
+**Access module** (`src/modules/access/`):
+- `createAccessRecord` in `access.controller.ts`: access types `domestic_staff`, `service`, `maintenance` automatically set `is_multi_entry: true` and `max_entries: null` (unlimited); other types pass client-supplied `is_multi_entry` + `max_entries` through unchanged
+- `processCodeScan` in `access-log.service.ts`: both single-entry and multi-entry paths are wrapped in a DB transaction — single-entry creates the `access_entries` row then marks the log `'used'` atomically so a failure between the two steps leaves the code retryable; multi-entry increments `used_entries`, decrements on overflow, and marks `'used'` when `used_entries >= max_entries`
+
 **Bulk upload** (`src/modules/upload/`):
 - `POST /api/v1/bulk-upload/streets-units` — `requireManager`; `multipart/form-data` single file + `estateId` body param; parses CSV/Excel with `xlsx`; uses `Street.findOrCreate` + `Unit.findOrCreate` in a single transaction; `upload_type: 'streets_units'` in `bulk_upload_jobs`
 - `GET /api/v1/bulk-upload/template/:type` — download CSV template for a given upload type
