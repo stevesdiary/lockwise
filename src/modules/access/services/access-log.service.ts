@@ -111,21 +111,24 @@ export class AccessLogService {
       });
     }
 
-    // Single-entry: mark used and record entry
-    await accessLog.update({
-      status: 'used',
-      scanned_by: scannedBy,
-      entry_time: now
-    });
+    // Single-entry: create entry row first, then mark used — wrapped in a
+    // transaction so a failure between the two steps leaves the code retryable
+    return await sequelize.transaction(async (t) => {
+      const entry = await AccessEntry.create({
+        access_log_id: accessLog.id,
+        entry_time: now,
+        gate_id: gateId,
+        scanned_by: scannedBy,
+      }, { transaction: t });
 
-    const entry = await AccessEntry.create({
-      access_log_id: accessLog.id,
-      entry_time: now,
-      gate_id: gateId,
-      scanned_by: scannedBy
-    });
+      await accessLog.update({
+        status: 'used',
+        scanned_by: scannedBy,
+        entry_time: now,
+      }, { transaction: t });
 
-    return { action: 'entry', accessLog, entry };
+      return { action: 'entry', accessLog, entry };
+    });
   }
 
   // async processCodeScan(code: string, gateId?: string, scannedBy?: string) {
