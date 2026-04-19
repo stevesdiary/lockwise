@@ -14,6 +14,7 @@ import { errorHandler, notFound } from '../middleware/error-handler.middleware';
 import realTimeNotificationService from '../../modules/analytics/services/realtime-notification.service';
 import { startAccessCodeExpiryJob } from '../jobs/access-code-expiry.job';
 import { startSubscriptionExpiryJob } from '../jobs/subscription-expiry.job';
+import { resolveShortUrl } from '../utils/url-shortener.util';
 
 const server = express();
 const httpServer = createServer(server);
@@ -97,6 +98,18 @@ server.get("/home", (req, res) => {
 });
 
 server.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+
+// Public URL redirect — exempt from rate limiting (simple Redis lookup + 302)
+server.get('/s/:slug', async (req, res) => {
+  try {
+    const original = await resolveShortUrl(req.params.slug);
+    if (!original) return res.status(404).json({ message: 'Link not found or expired' });
+    return res.redirect(302, original);
+  } catch {
+    return res.status(500).json({ message: 'Redirect failed' });
+  }
+});
+
 server.use(limiter);
 // Stricter rate limit on auth routes — brute-force protection for login, registration, OTP
 server.use('/api/v1/auth', authLimiter);

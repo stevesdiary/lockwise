@@ -66,9 +66,12 @@ class EmailVerificationService {
 
       await deleteFromRedis(redisKey);
 
+      // Users with an estate_id stay 'pending' — they need manager approval
+      // Users without an estate go straight to 'active'
+      const newStatus = (user as any).estate_id ? 'pending' : 'active';
       await user.update({
         verified: true,
-        status: 'active'
+        status: newStatus
       });
 
       const token = jwt.sign(

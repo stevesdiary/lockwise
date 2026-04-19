@@ -99,6 +99,27 @@ export const registerUser = async (userData: {
     // Send verification code outside the transaction (external call)
     await emailVerificationService.sendVerificationCode(userData.email);
 
+    // If registered with an estate code, notify estate managers of the pending join request
+    if (estateId) {
+      try {
+        const managers = await User.findAll({
+          where: { estate_id: estateId, status: 'active' } as any,
+          include: [{ model: Role, as: 'role', where: { role: 'manager' }, required: true }],
+        });
+        const { pushNotificationService } = await import('../../communication/services/push-notification.service');
+        for (const manager of managers) {
+          pushNotificationService.sendToUser(
+            manager.id,
+            'New Join Request',
+            `${user.first_name} ${user.last_name} wants to join your estate`,
+            { type: 'join_request', residentUserId: user.id }
+          ).catch(() => {});
+        }
+      } catch {
+        // Non-fatal — proceed even if notification fails
+      }
+    }
+
     return {
       statusCode: 201,
       success: true,
