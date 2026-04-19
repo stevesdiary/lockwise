@@ -1,5 +1,6 @@
 import { User } from '../models/user.model';
 import emailService from '../../communication/services/email.service';
+import { formatDisplayName } from '../../../shared/utils/user.util';
 import jwt from 'jsonwebtoken';
 import { saveToRedis, getFromRedis, deleteFromRedis } from '../../../shared/core/redis';
 
@@ -32,7 +33,7 @@ class EmailVerificationService {
       
       await saveToRedis(redisKey, code, 600); // 10 minutes
       await saveToRedis(rateLimitKey, '1', 60); // 1 minute rate limit
-      await emailService.sendVerificationEmail(email, user.first_name, code);
+      await emailService.sendVerificationEmail(email, formatDisplayName(user), code);
       
       return { success: true, message: 'Verification code sent' };
     } catch (error: any) {
