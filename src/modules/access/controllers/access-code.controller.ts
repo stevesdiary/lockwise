@@ -179,6 +179,17 @@ export const accessCodeController = {
         return res.status(404).json({ success: false, message: 'Access code not found' });
       }
 
+      const direction = (accessLog as any).access_direction as 'entry' | 'exit' | 'both';
+      const now = new Date();
+
+      // For 'both' codes: first scan = entry (entry_time not set yet), second scan = exit
+      const isExitScan =
+        direction === 'exit' ||
+        (direction === 'both' && (accessLog as any).entry_time != null);
+
+      const timeField = isExitScan ? 'exit_time' : 'entry_time';
+      const eventType = isExitScan ? 'exit' : 'entry';
+
       if ((accessLog as any).is_multi_entry) {
         // Multi-entry: atomically increment used_entries; only mark 'used' when all entries are exhausted
         await sequelize.transaction(async (t) => {
@@ -197,29 +208,35 @@ export const accessCodeController = {
 
           await accessLog.update({
             status: isExhausted ? 'used' : 'active',
-            entry_time: new Date(),
+            [timeField]: now,
             scanned_by: securityId,
           }, { transaction: t });
         });
       } else {
         await accessLog.update({
           status: 'approved',
-          entry_time: new Date(),
+          [timeField]: now,
           scanned_by: securityId,
         });
       }
 
+      const guestName = accessLog.guest_name || 'Guest';
+      const notifTitle = isExitScan ? 'Guest Exit' : 'Guest Entry';
+      const notifBody = isExitScan
+        ? `${guestName} has exited the estate`
+        : `${guestName} has entered the estate`;
+
       if (accessLog.user_id) {
         pushNotificationService.sendToUser(
           accessLog.user_id,
-          'Guest Entry',
-          `${accessLog.guest_name || 'Guest'} has entered the estate`,
-          { type: 'entry', code, status: 'approved' }
+          notifTitle,
+          notifBody,
+          { type: eventType, code, status: 'approved' }
         ).catch(err => logger.error('Push notification error:', err));
       } else if (accessLog.user?.phone) {
         notificationService.sendEntryNotification(
           accessLog.user.phone,
-          accessLog.guest_name || 'Guest',
+          guestName,
           code,
           'approved'
         ).catch(err => logger.error('Notification error:', err));
@@ -227,7 +244,7 @@ export const accessCodeController = {
 
       return res.status(200).json({
         success: true,
-        message: 'Access approved',
+        message: isExitScan ? 'Exit approved' : 'Access approved',
         data: accessLog
       });
     } catch (error: any) {
@@ -359,17 +376,25 @@ export const accessCodeController = {
         remark: reason
       });
 
+      const guestName = accessLog.guest_name || 'Guest';
+      const rejDirection = (accessLog as any).access_direction as 'entry' | 'exit' | 'both';
+      const isExitReject = rejDirection === 'exit';
+      const rejEventType = isExitReject ? 'exit' : 'entry';
+      const rejBody = isExitReject
+        ? `${guestName}'s exit was rejected`
+        : `${guestName}'s entry was rejected`;
+
       if (accessLog.user_id) {
         pushNotificationService.sendToUser(
           accessLog.user_id,
-          'Guest Entry Denied',
-          `${accessLog.guest_name || 'Guest'}'s entry was rejected`,
-          { type: 'entry', code, status: 'rejected' }
+          isExitReject ? 'Guest Exit Denied' : 'Guest Entry Denied',
+          rejBody,
+          { type: rejEventType, code, status: 'rejected' }
         ).catch(err => logger.error('Push notification error:', err));
       } else if (accessLog.user?.phone) {
         notificationService.sendEntryNotification(
           accessLog.user.phone,
-          accessLog.guest_name || 'Guest',
+          guestName,
           code,
           'rejected'
         ).catch(err => logger.error('Notification error:', err));

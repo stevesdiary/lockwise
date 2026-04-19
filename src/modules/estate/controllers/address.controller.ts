@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { Op } from 'sequelize';
 import { Street } from '../models/street.model';
 import { Unit } from '../models/unit.model';
+import { Estate } from '../models/estate.model';
 import { handleControllerError } from '../../../shared/middleware/error-handler.middleware';
 
 class AddressController {
@@ -117,7 +118,7 @@ class AddressController {
         include: [{
           model: Street,
           as: 'street',
-          include: [{ model: require('../models/estate.model').Estate }],
+          include: [{ model: Estate, as: 'estate' }],
         }],
       });
 
