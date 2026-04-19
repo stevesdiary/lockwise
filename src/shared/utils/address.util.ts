@@ -67,7 +67,7 @@ export const buildGoogleMapsSearchUrl = (address: string): string => {
   }
 
   const encodedAddress = encodeURIComponent(address.trim());
-  return `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+  return `https://maps.google.com/?q=${encodedAddress}`;
 };
 
 export const formatAccessCodeMessage = (

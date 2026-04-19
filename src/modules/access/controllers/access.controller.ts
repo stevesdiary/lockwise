@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { handleControllerError } from '../../../shared/middleware/error-handler.middleware';
 import accessLogService from '../services/access-log.service';
+import { nullifyShortUrlForLog } from '../../../shared/utils/url-shortener.util';
 
 // Create access request
 async function createAccessRecord(req: Request, res: Response) {
@@ -193,7 +194,10 @@ async function revokeAccess(req: Request, res: Response) {
     }
 
     await accessLogService.revokeAccess(accessId, revokedBy);
-    
+
+    // Nullify the shared Maps short URL so the link in the guest's message stops working
+    nullifyShortUrlForLog(accessId).catch(() => {});
+
     return res.status(200).json({
       status: 'success',
       message: 'Access revoked successfully'

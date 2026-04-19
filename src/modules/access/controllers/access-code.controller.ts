@@ -6,7 +6,9 @@ import accessCodeService from '../services/access-code.service';
 import AccessLog from '../models/access-log.model';
 import { User } from '../../auth/models/user.model';
 import logger from '../../../shared/utils/logger';
-import { getResidentFullAddress, formatAccessCodeMessage, buildGoogleMapsSearchUrl } from '../../../shared/utils/address.util';
+import { formatAccessCodeMessage, buildGoogleMapsSearchUrl } from '../../../shared/utils/address.util';
+import { getOrCreateShortUrl, nullifyShortUrlForLog } from '../../../shared/utils/url-shortener.util';
+import { Estate } from '../../estate/models/estate.model';
 import notificationService from '../../../shared/services/notification.service';
 import { pushNotificationService } from '../../communication/services/push-notification.service';
 import { UserRole } from '../../../shared/constants/permissions';
@@ -70,10 +72,10 @@ export const accessCodeController = {
       const validFromDate = valid_from ? new Date(valid_from) : new Date();
       const validUntilDate = new Date(valid_until);
       
-      // Get resident full address
-      const fullAddress = await getResidentFullAddress(userId);
-      const destinationMapsUrl = buildGoogleMapsSearchUrl(fullAddress);
-      
+      // Use estate-level address (not resident unit) as the destination shown to guests
+      const estate = await Estate.findByPk(estateId, { attributes: ['name', 'city', 'state'] });
+      const estateAddress = [estate?.name, estate?.city, estate?.state].filter(Boolean).join(', ');
+
       const unlimitedTypes = ['domestic_staff', 'service', 'maintenance'];
       const shouldAllowUnlimited = unlimitedTypes.includes(access_type);
 
@@ -91,14 +93,13 @@ export const accessCodeController = {
         access_direction: access_direction ?? 'entry',
       });
 
-      // Format share message
+      // Share message without maps URL — URL is generated lazily when user taps Share
       const shareMessage = formatAccessCodeMessage(
         visitor_name,
         code,
-        fullAddress,
+        estateAddress,
         validFromDate,
-        validUntilDate,
-        destinationMapsUrl
+        validUntilDate
       );
 
       const codeJson = accessCode.toJSON() as any;
@@ -108,9 +109,9 @@ export const accessCodeController = {
         data: {
           ...codeJson,
           created_at: codeJson.created_at ?? codeJson.createdAt,
-          fullAddress,
-          destinationAddress: fullAddress || null,
-          destinationMapsUrl: destinationMapsUrl || null,
+          accessLogId: codeJson.id,
+          estateAddress,
+          destinationAddress: estateAddress || null,
           shareMessage
         }
       });
@@ -253,10 +254,53 @@ export const accessCodeController = {
 
       await accessLog.update({ status: 'revoked' });
 
+      // Nullify the shared Maps short URL so the link in the guest's message stops working
+      nullifyShortUrlForLog(accessLog.id).catch(() => {});
+
       return res.status(200).json({ success: true, message: 'Access code revoked', data: accessLog });
     } catch (error: any) {
       logger.error('Revoke access code error:', error);
       return res.status(500).json({ success: false, message: 'Failed to revoke access code' });
+    }
+  },
+
+  async getShareUrl(req: AuthRequest, res: Response) {
+    try {
+      const { logId } = req.params;
+      const userId = req.user?.id;
+
+      const accessLog = await AccessLog.findOne({
+        where: { id: logId, user_id: userId, status: { [Op.in]: ['active', 'pending'] } }
+      });
+
+      if (!accessLog) {
+        return res.status(404).json({ success: false, message: 'Access code not found or already revoked' });
+      }
+
+      const estate = await Estate.findByPk(accessLog.estate_id, { attributes: ['name', 'city', 'state'] });
+      const estateAddress = [estate?.name, estate?.city, estate?.state].filter(Boolean).join(', ');
+      const longMapsUrl = buildGoogleMapsSearchUrl(estateAddress);
+
+      let shortUrl = longMapsUrl;
+      try {
+        shortUrl = await getOrCreateShortUrl(longMapsUrl, logId);
+      } catch {
+        shortUrl = longMapsUrl;
+      }
+
+      const shareMessage = formatAccessCodeMessage(
+        accessLog.guest_name || 'Guest',
+        accessLog.access_code || '',
+        estateAddress,
+        accessLog.valid_from!,
+        accessLog.valid_until!,
+        shortUrl
+      );
+
+      return res.status(200).json({ success: true, data: { shortUrl, shareMessage } });
+    } catch (error: any) {
+      logger.error('Get share URL error:', error);
+      return res.status(500).json({ success: false, message: 'Failed to generate share link' });
     }
   },
 
