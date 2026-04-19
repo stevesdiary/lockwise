@@ -17,7 +17,7 @@ class SessionService {
     resident: parseInt(process.env.MAX_SESSIONS_RESIDENT || '3', 10),
     manager: parseInt(process.env.MAX_SESSIONS_MANAGER || '2', 10),
     admin: parseInt(process.env.MAX_SESSIONS_ADMIN || '5', 10),
-    security: parseInt(process.env.MAX_SESSIONS_SECURITY || '5', 10),
+    security: parseInt(process.env.MAX_SESSIONS_SECURITY || '2', 10),
     super_admin: parseInt(process.env.MAX_SESSIONS_SUPER_ADMIN || '3', 10),
   };
 

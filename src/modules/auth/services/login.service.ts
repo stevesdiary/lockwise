@@ -110,6 +110,7 @@ export const loginUser = async (email: string, password: string) => {
         user: {
           id: user.id,
           email: user.email,
+          title: user.title ?? null,
           first_name: user.first_name,
           last_name: user.last_name,
           phone: user.phone,

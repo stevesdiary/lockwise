@@ -6,6 +6,7 @@ import { Subscription } from '../../payment/models/subscription.model';
 import { Plan } from '../../payment/models/plan.model';
 import { Estate } from '../../estate/models/estate.model';
 import { User } from '../../auth/models/user.model';
+import { formatDisplayName } from '../../../shared/utils/user.util';
 
 interface WebhookResult {
   success: boolean;
@@ -114,7 +115,7 @@ export const webhookService = {
 
     const emailService = (await import('../../communication/services/email.service')).default;
     await emailService.sendSubscriptionReceiptEmail(manager.email, {
-      manager_name: `${manager.first_name} ${manager.last_name}`.trim(),
+      manager_name: formatDisplayName(manager),
       estate_name: estate.name,
       plan_name: plan?.name || 'Lockwise Plan',
       billing_cycle: plan?.billing_cycle || 'N/A',
