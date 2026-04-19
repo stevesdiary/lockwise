@@ -3,6 +3,7 @@ import { UserRepository } from '../repositories/user.repository';
 import { User } from '../models/user.model';
 import { Role } from '../models/role.model';
 import emailVerificationService from './email-verification.service';
+import sessionService from './session.service';
 import { Estate } from '../../estate/models/estate.model';
 import { Resident } from '../../estate/models/resident.model';
 
@@ -193,6 +194,9 @@ export const linkUserToEstate = async (userId: string, estateCode: string, unitI
       }
     }
 
+    // Patch Redis sessions so estate_id is available immediately
+    await sessionService.updateEstateIdForUser(userId, estate.estate_id).catch(() => {});
+
     // Notify estate managers
     const managers = await User.findAll({
       where: { estate_id: estate.estate_id, status: 'active' } as any,
@@ -267,6 +271,11 @@ export const approveJoinRequest = async (targetUserId: string, approverId: strin
     }
 
     await User.update({ status: 'active' } as any, { where: { id: targetUserId } as any });
+
+    // Patch all active Redis sessions so req.user.estate_id is immediately valid
+    if (target.estate_id) {
+      await sessionService.updateEstateIdForUser(targetUserId, target.estate_id).catch(() => {});
+    }
 
     const { pushNotificationService } = await import('../../communication/services/push-notification.service');
     pushNotificationService.sendToUser(
