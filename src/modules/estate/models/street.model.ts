@@ -1,4 +1,4 @@
-import { Column, HasMany, ForeignKey, Table, DataType, PrimaryKey, Model, Default } from "sequelize-typescript";
+import { Column, HasMany, ForeignKey, BelongsTo, Table, DataType, PrimaryKey, Model, Default } from "sequelize-typescript";
 import { Estate } from "./estate.model";
 import { Unit } from "./unit.model";
 
@@ -24,9 +24,12 @@ export class Street extends Model {
   declare estate_id: string;
 
   @Column({
-    type: DataType.STRING, 
+    type: DataType.STRING,
     allowNull: false })
   declare name: string;
+
+  @BelongsTo(() => Estate, { foreignKey: 'estate_id', as: 'estate' })
+  declare estate: Estate;
 
   @HasMany(() => Unit)
   declare units: Unit[];
