@@ -105,6 +105,21 @@ class SessionService {
     }
   }
 
+  async updateEstateIdForUser(userId: string, estateId: string): Promise<void> {
+    const sessionIds = await getFromRedis<string[]>(`user_sessions:${userId}`);
+    if (!sessionIds?.length) return;
+
+    await Promise.all(
+      sessionIds.map(async (sessionId) => {
+        const session = await getFromRedis<SessionData>(`session:${sessionId}`);
+        if (session) {
+          session.estateId = estateId;
+          await saveToRedis(`session:${sessionId}`, session, this.SESSION_TIMEOUT);
+        }
+      })
+    );
+  }
+
   async refreshSession(refreshToken: string): Promise<{ sessionId: string; newRefreshToken: string } | null> {
     const sessionId = await getFromRedis<string>(`refresh:${refreshToken}`);
     if (!sessionId) return null;
