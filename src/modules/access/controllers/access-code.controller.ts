@@ -266,7 +266,7 @@ export const accessCodeController = {
 
   async getShareUrl(req: AuthRequest, res: Response) {
     try {
-      const { logId } = req.params;
+      const logId = req.params.logId as string;
       const userId = req.user?.id;
 
       const accessLog = await AccessLog.findOne({
