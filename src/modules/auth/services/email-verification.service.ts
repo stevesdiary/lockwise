@@ -1,4 +1,5 @@
 import { User } from '../models/user.model';
+import { Estate } from '../../estate/models/estate.model';
 import emailService from '../../communication/services/email.service';
 import { formatDisplayName } from '../../../shared/utils/user.util';
 import jwt from 'jsonwebtoken';
@@ -74,6 +75,14 @@ class EmailVerificationService {
         verified: true,
         status: newStatus
       });
+
+      const estateId = (user as any).estate_id;
+      (estateId
+        ? Estate.findByPk(estateId).then((estate) =>
+            emailService.sendWelcomeEmail(user.email, formatDisplayName(user), estate?.name ?? undefined)
+          )
+        : emailService.sendWelcomeEmail(user.email, formatDisplayName(user))
+      ).catch(() => {});
 
       const token = jwt.sign(
         { id: user.id, email: user.email, user_type: user.user_type },

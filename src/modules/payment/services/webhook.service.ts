@@ -108,10 +108,12 @@ export const webhookService = {
     if (!manager?.email) return;
 
     const plan: any = subscription.plan;
+    const tz = (estate as any).timezone || 'Africa/Lagos';
+    const currency = (estate as any).currency_code || plan?.currency || 'NGN';
     const formatDate = (d: Date) => new Date(d).toLocaleDateString('en-GB', {
-      day: '2-digit', month: 'long', year: 'numeric',
+      day: '2-digit', month: 'long', year: 'numeric', timeZone: tz,
     });
-    const formatAmount = (kobo: number) => (kobo / 100).toLocaleString('en-NG', { minimumFractionDigits: 2 });
+    const formatAmount = (kobo: number) => (kobo / 100).toLocaleString('en-GB', { minimumFractionDigits: 2 });
 
     const emailService = (await import('../../communication/services/email.service')).default;
     await emailService.sendSubscriptionReceiptEmail(manager.email, {
@@ -122,7 +124,7 @@ export const webhookService = {
       start_date: formatDate(subscription.start_date),
       end_date: formatDate(subscription.end_date),
       amount: formatAmount(payment.amount),
-      currency: plan?.currency || 'NGN',
+      currency,
       reference: payment.reference,
     });
   },

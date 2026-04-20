@@ -97,7 +97,7 @@ The Lockwise Team`
   }),
   
   welcome: (data: any) => ({
-    subject: 'Welcome to Lockwise - Your Smart Estate Management Solution',
+    subject: data.estate_name ? `Welcome to ${data.estate_name} – Lockwise` : 'Welcome to Lockwise',
     html: baseTemplate(`
       <div class="content">
         <h2>Welcome to Lockwise! 🎉</h2>
@@ -136,7 +136,9 @@ The Lockwise Team`
   }),
   
   accessCode: (data: any) => ({
-    subject: 'Access Code Generated - Lockwise',
+    subject: data.estate_name
+      ? `Access Code for ${data.guest_name || 'Your Guest'} – ${data.estate_name}`
+      : 'Access Code Generated – Lockwise',
     html: baseTemplate(`
       <div class="content">
         <h2>Access Code Generated</h2>
@@ -233,7 +235,9 @@ The Lockwise Team`
   }),
 
   subscriptionReceipt: (data: any) => ({
-    subject: `Subscription Receipt – ${data.plan_name || 'Lockwise Plan'} Activated`,
+    subject: data.estate_name
+      ? `${data.estate_name} – ${data.plan_name || 'Plan'} Subscription Activated`
+      : `Subscription Receipt – ${data.plan_name || 'Lockwise Plan'} Activated`,
     html: baseTemplate(`
       <div class="content">
         <h2>Subscription Receipt 🎉</h2>
