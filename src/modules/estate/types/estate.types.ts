@@ -42,6 +42,7 @@ export interface EstateAttributes {
     email?: string;
     address?: string;
   };
+  logo_url?: string | null;
   approval_status?: string;
   approved_on?: Date;
   approved_by?: string;
