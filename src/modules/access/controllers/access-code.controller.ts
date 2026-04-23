@@ -123,7 +123,7 @@ export const accessCodeController = {
 
   async validateCode(req: AuthRequest, res: Response) {
     try {
-      const { code } = req.body;
+      const { code, scan_type } = req.body;
 
       if (!code) {
         return res.status(400).json({ message: 'Code is required' });
@@ -140,6 +140,12 @@ export const accessCodeController = {
 
       if (accessLog.valid_until && new Date() > new Date(accessLog.valid_until)) {
         return res.status(400).json({ success: false, message: 'Access code expired' });
+      }
+
+      // 'exit'-only codes cannot be used for entry
+      const direction = (accessLog as any).access_direction || 'entry';
+      if (scan_type === 'entry' && direction === 'exit') {
+        return res.status(403).json({ success: false, message: 'This code is for exit only and cannot be used for entry' });
       }
 
       const maxEntries = (accessLog as any).max_entries as number | null;

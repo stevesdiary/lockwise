@@ -11,8 +11,8 @@ chatRouter.use(authenticateToken);
 
 chatRouter.post('/create', chatController.createSupportChat);
 
-chatRouter.post('/send', 
-  fileUploadService.uploader.array('attachments', 3),
+chatRouter.post('/send',
+  fileUploadService.chatUploader.array('attachments', 3),
   validateFileUpload,
   chatController.sendMessage
 );

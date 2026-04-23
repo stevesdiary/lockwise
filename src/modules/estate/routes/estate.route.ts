@@ -168,6 +168,14 @@ estateRouter.put('/update/:estateId',
   }
 );
 
+estateRouter.post('/:estateId/apply-update',
+  authenticateToken,
+  requireAdmin,
+  async (req: ExpressRequest, res: Response) => {
+    await estateController.applyEstateUpdate(req as any, res);
+  }
+);
+
 estateRouter.delete('/delete/:estateId',
   authenticateToken,
   requireManager,

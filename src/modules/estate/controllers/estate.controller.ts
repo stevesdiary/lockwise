@@ -178,16 +178,36 @@ class EstateController {
       }
 
       const { status, approval_status, created_by, approved_by, estate_id, ...safeBody } = req.body;
+
+      if (!isAdmin) {
+        // Managers submit for approval — changes are not applied directly
+        const result = await estateService.requestEstateUpdate(estateId, userId, safeBody);
+        return res.status(202).json(result);
+      }
+
       const estate = await estateService.updateEstate(estateId, safeBody);
       if (!estate) {
-        return res.status(404).json({
-          status: 'fail',
-          message: 'Estate not found'
-        });
+        return res.status(404).json({ status: 'fail', message: 'Estate not found' });
       }
-      return res.json( estate );
+      return res.json(estate);
     } catch (error) {
       console.error('Update estate error:', error);
+      return handleControllerError(error, res);
+    }
+  }
+
+  async applyEstateUpdate(req: AuthRequest, res: Response): Promise<Response> {
+    try {
+      const estateId = asString(req.params.estateId);
+      const { approved, rejection_reason } = req.body;
+
+      if (typeof approved !== 'boolean') {
+        return res.status(400).json({ success: false, message: '`approved` (boolean) is required' });
+      }
+
+      const result = await estateService.applyEstateUpdate(estateId, approved, rejection_reason);
+      return res.json(result);
+    } catch (error) {
       return handleControllerError(error, res);
     }
   }

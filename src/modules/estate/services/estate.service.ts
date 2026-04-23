@@ -315,6 +315,66 @@ class EstateService {
     }
   }
 
+  async requestEstateUpdate(estateId: string, managerId: string, proposedData: Record<string, any>): Promise<ApiResponse> {
+    const estate = await Estate.findByPk(estateId);
+    if (!estate) return { success: false, message: 'Estate not found', data: null };
+
+    await estate.update({ pending_update_data: { ...proposedData, _requested_by: managerId, _requested_at: new Date().toISOString() } });
+
+    // Notify admins
+    this.notifyAdminsOnEstateUpdateRequest(estate.toJSON()).catch(() => undefined);
+
+    return { success: true, message: 'Update request submitted — pending admin approval', data: null };
+  }
+
+  async applyEstateUpdate(estateId: string, approved: boolean, rejectionReason?: string): Promise<ApiResponse> {
+    const estate = await Estate.findByPk(estateId);
+    if (!estate) return { success: false, message: 'Estate not found', data: null };
+    if (!estate.pending_update_data) return { success: false, message: 'No pending update found', data: null };
+
+    if (approved) {
+      const { _requested_by, _requested_at, ...changes } = estate.pending_update_data as any;
+      await estate.update({ ...changes, pending_update_data: null });
+      return { success: true, message: 'Estate update approved and applied', data: estate.toJSON() };
+    } else {
+      await estate.update({ pending_update_data: null });
+      return { success: true, message: 'Estate update rejected', data: null };
+    }
+  }
+
+  private async notifyAdminsOnEstateUpdateRequest(estate: any): Promise<void> {
+    try {
+      const adminRoles = await Role.findAll({
+        where: { role: { [Op.in]: ['admin', 'super_admin', 'master'] } },
+        attributes: ['id'],
+      });
+      const adminRoleIds = adminRoles.map((r: any) => r.id);
+      const admins = await User.findAll({ where: { role_id: { [Op.in]: adminRoleIds } } });
+      const adminIds = admins.map((a: any) => a.id);
+
+      if (adminIds.length > 0) {
+        notificationService.queueWebPush(adminIds, {
+          title: 'Estate Update Request',
+          body: `${estate.name} manager has submitted changes for your review.`,
+          tag: 'estate-update-request',
+          url: `/admin/estates/${estate.estate_id}`,
+        }).catch(() => undefined);
+      }
+
+      for (const admin of admins) {
+        await notificationService.sendNotification({
+          type: 'in_app',
+          to: admin.email,
+          template: 'estateUpdateRequest',
+          data: { admin_name: (admin as any).first_name || admin.email, estate_name: estate.name },
+          priority: 'normal',
+        }).catch(() => undefined);
+      }
+    } catch (err) {
+      logger.error('Failed to notify admins on estate update request', { error: err });
+    }
+  }
+
   private async notifyAdminsOnEstateSubmit(estate: any): Promise<void> {
     try {
       // Use a subquery via direct FK lookup — avoids relying on a Sequelize association

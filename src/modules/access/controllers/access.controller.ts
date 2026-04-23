@@ -101,7 +101,7 @@ async function recordExit(req: Request, res: Response) {
 // Process code scan with entry limit validation
 async function processCodeScan(req: Request, res: Response) {
   try {
-    const { code, gate_id, scanned_by } = req.body;
+    const { code, gate_id, scanned_by, scan_type } = req.body;
 
     if (!code) {
       return res.status(400).json({
@@ -113,7 +113,8 @@ async function processCodeScan(req: Request, res: Response) {
     const result = await accessLogService.processCodeScan(
       code,
       gate_id,
-      scanned_by || req.user?.id
+      scanned_by || req.user?.id,
+      scan_type
     );
 
     return res.status(200).json({

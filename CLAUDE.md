@@ -62,7 +62,7 @@ NODE_ENV=test npx jest --config tests/setup/jest.config.ts --no-coverage
 ## Key Conventions
 
 **Migrations** (`migrations/`):
-- Naming: `YYYYMMDDHHMMSS-<action>-<entity>.js`; active baseline uses `20260319XXXXXX` timestamps (60 migrations, 001–060); post-baseline additions: 061–063 (`20260418XXXXXX`–`20260422XXXXXX`)
+- Naming: `YYYYMMDDHHMMSS-<action>-<entity>.js`; active baseline uses `20260319XXXXXX` timestamps (60 migrations, 001–060); post-baseline additions: 061–065 (`20260418XXXXXX`–`20260423XXXXXX`)
 - No `{ ifNotExists: true }` guards in main branch migrations
 - Deferred FK pattern for circular deps (e.g., `estates.created_by → users.id` added in migration 051)
 - Security profile seed in migration 053 (`20260330000053`): inserts one `security` user per estate; email `security@<estate_code>.lockwise.local`; default password `Security@1234` (bcrypt, salt 10); uses `ON CONFLICT DO NOTHING`
@@ -76,6 +76,8 @@ NODE_ENV=test npx jest --config tests/setup/jest.config.ts --no-coverage
 - Migration 061 (`20260418000061`): adds `'streets_units'` to `enum_bulk_upload_jobs_upload_type` ENUM (uses `ADD VALUE IF NOT EXISTS`)
 - Migration 062 (`20260418000062`): drops global unique index on `units.unit_identifier`; adds composite unique index `units_unit_identifier_street_id_unique` on (`unit_identifier`, `street_id`) — uniqueness is scoped per street, not globally
 - Migration 063 (`20260422000063`): adds `logo_url` STRING nullable (default null) to `estates`; no `{ ifNotExists: true }` guard
+- Migration 064 (`20260423000064`): converts `units.unit_type` from ENUM to VARCHAR so new types can be added without future migrations; default remains `'flat'`; drops `enum_units_unit_type`; `down` recreates the ENUM with values flat/duplex/chalet/terrace/plot/house/apartment/villa/other
+- Migration 065 (`20260423000065`): adds `pending_update_data` JSONB nullable (default null) to `estates` — stores manager-submitted changes awaiting admin approval
 
 **Middleware** (`shared/middleware/`):
 - `authenticateToken` — verifies JWT, attaches `req.user`
@@ -115,11 +117,12 @@ if (!isAdmin) {
 - `getStreets`: injects `id: s.street_id` alias on each street so mobile reads either `street_id` or `id`
 - `getUnits`: injects `id: plain.street.street_id` into the nested street object for the same reason
 - `searchUnits` (new): GET `/address/estates/:estate_id/units/search`; required param `estateId`; optional query `search` (iLike on `unit_identifier` or `block`), optional `street_id`; returns units with nested street (attributes: `street_id`, `name` only)
-- `createUnit`: coerces `floor` to `Number`; treats empty string as `undefined`; accepts `unit_details` JSONB field
+- `createUnit`: coerces `floor` to `Number`; treats empty string as `undefined`; accepts `unit_details` JSONB field; `unit_type` is VARCHAR (converted from ENUM in migration 064); accepted values: `flat | duplex | chalet | terrace | plot | house | apartment | villa | other` (default `flat`)
 
 **Estate route auth changes:**
 - `GET /estate/one/:estateId`: `authenticateToken` only — `requireManager` guard removed; any authenticated user can fetch an estate by ID
-- `PUT /estate/update/:estateId`: strips `status`, `approval_status`, `created_by`, `approved_by`, `estate_id` from request body before update to prevent field injection
+- `PUT /estate/update/:estateId`: strips `status`, `approval_status`, `created_by`, `approved_by`, `estate_id` from request body; **manager** path calls `estateService.requestEstateUpdate` → stages changes in `pending_update_data`, returns 202; **admin** path calls `estateService.updateEstate` → applied immediately
+- `POST /estate/:estateId/apply-update` (`requireAdmin`): body `{ approved: boolean, rejection_reason? }`; calls `estateService.applyEstateUpdate` to commit or discard `pending_update_data`
 - `POST /estate/residents/bulk-invite`: resolves manager's `estate_id` from DB via `getManagerEstateId(userId)`, not from request body
 
 **Access module** (`src/modules/access/`):
@@ -129,6 +132,12 @@ if (!isAdmin) {
 **Bulk upload** (`src/modules/upload/`):
 - `POST /api/v1/bulk-upload/streets-units` — `requireManager`; `multipart/form-data` single file + `estateId` body param; parses CSV/Excel with `xlsx`; uses `Street.findOrCreate` + `Unit.findOrCreate` in a single transaction; `upload_type: 'streets_units'` in `bulk_upload_jobs`
 - `GET /api/v1/bulk-upload/template/:type` — download CSV template for a given upload type
+
+**Chat routes** (`communication/routes/chat.route.ts`):
+- All routes require `authenticateToken`
+- `POST /chat/create` — creates a support chat session
+- `POST /chat/send` — sends a message; `fileUploadService.chatUploader.array('attachments', 3)` + `validateFileUpload` middleware; max 3 file attachments
+- `GET /chat/history/:chatId` — retrieves chat history; `validateChatAccess` middleware
 
 **Email:** Uses Brevo (formerly Sendinblue) via `emailService`. Templates in `shared/templates/email.templates.ts`.
 

@@ -189,6 +189,13 @@ export class Estate extends Model<EstateAttributes, EstateCreationAttributes> {
   declare logo_url: string | null;
 
   @Column({
+    type: DataType.JSONB,
+    allowNull: true,
+    defaultValue: null,
+  })
+  declare pending_update_data: Record<string, any> | null;
+
+  @Column({
     type: DataType.ENUM('approved', 'pending', 'declined'),
     allowNull: false,
     defaultValue: 'pending'
