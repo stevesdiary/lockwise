@@ -60,7 +60,7 @@ export class AccessLogService {
     return accessLog;
   }
 
-  async processCodeScan(code: string, gateId?: string, scannedBy?: string) {
+  async processCodeScan(code: string, gateId?: string, scannedBy?: string, scanType?: 'entry' | 'exit') {
     const accessLog = await AccessLog.findOne({ where: { access_code: code } });
 
     if (!accessLog) {
@@ -81,6 +81,15 @@ export class AccessLogService {
     if (accessLog.valid_until && now > new Date(accessLog.valid_until)) {
       await accessLog.update({ status: 'expired' });
       throw new Error('Access code has expired');
+    }
+
+    // Direction enforcement:
+    // 'entry' codes allow both entry and exit (resident should not be trapped).
+    // 'exit'  codes are exit-only — reject at entry gates.
+    // 'both'  codes allow both (explicit alias of 'entry' semantics).
+    const direction = accessLog.access_direction || 'entry';
+    if (scanType === 'entry' && direction === 'exit') {
+      throw new Error('This code is for exit only and cannot be used for entry');
     }
 
     if (accessLog.is_multi_entry) {
