@@ -43,6 +43,7 @@ export interface EstateAttributes {
     address?: string;
   };
   logo_url?: string | null;
+  pending_update_data?: Record<string, any> | null;
   approval_status?: string;
   approved_on?: Date;
   approved_by?: string;

@@ -38,11 +38,19 @@ estateRouter.get('/estates',
   }
 );
 
-estateRouter.get('/estates/pending', 
+estateRouter.get('/estates/pending',
   authenticateToken,
   requireAdmin,
   async (req: ExpressRequest, res: Response) => {
     await estateController.getPendingEstates(req, res);
+  }
+);
+
+estateRouter.get('/estates/pending-updates',
+  authenticateToken,
+  requireAdmin,
+  async (req: ExpressRequest, res: Response) => {
+    await estateController.getEstatesWithPendingUpdates(req, res);
   }
 );
 
