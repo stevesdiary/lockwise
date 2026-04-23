@@ -102,7 +102,14 @@ class AddressController {
       const streetId = Array.isArray(req.params.street_id) ? req.params.street_id[0] : req.params.street_id;
       const { unit_identifier, block, floor, unit_type, unit_details } = req.body;
 
-      const unit = await Unit.create({ street_id: streetId, unit_identifier, block, floor, unit_type, unit_details });
+      const unit = await Unit.create({
+        street_id: streetId,
+        unit_identifier,
+        block: block || undefined,
+        floor: floor !== '' && floor !== undefined ? Number(floor) : undefined,
+        unit_type: unit_type || undefined,
+        unit_details: unit_details || undefined,
+      });
 
       return res.status(201).json({ success: true, data: unit });
     } catch (error) {
