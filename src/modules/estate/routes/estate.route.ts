@@ -5,6 +5,7 @@ import { verifyUser } from '../../../shared/middleware/verify-user.middleware';
 import estateInvitationService from '../services/estate-invitation.service';
 import { asString } from '../../../shared/utils/param.util';
 import { User } from '../../auth/models/user.model';
+import fileUploadService from '../../upload/services/file-upload.service';
 
 const estateRouter = Router();
 
@@ -172,6 +173,15 @@ estateRouter.delete('/delete/:estateId',
   requireManager,
   async (req: ExpressRequest, res: Response) => {
     await estateController.deleteDraftEstate(req, res);
+  }
+);
+
+estateRouter.patch('/:estateId/logo',
+  authenticateToken,
+  requireManager,
+  fileUploadService.uploader.single('logo'),
+  async (req: ExpressRequest, res: Response) => {
+    await estateController.uploadLogo(req as any, res);
   }
 );
 

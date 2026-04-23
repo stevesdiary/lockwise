@@ -1,6 +1,7 @@
 import { UserRepository } from "../repositories/user.repository";
 import { EstateRepository } from '../../estate/repositories/estate.repository';
 import sendEmail from '../../communication/services/email.service';
+import { formatDisplayName } from '../../../shared/utils/user.util';
 import { ResidentRepository } from '../../estate/repositories/resident.repository';
 import { ApiResponse } from "../../../shared/types/api.types";
 import { getFromRedis, saveToRedis, deleteFromRedis} from '../../../shared/core/redis';
@@ -72,7 +73,7 @@ export class VerifyService {
     const verification_code =  nanoid(6);
     await saveToRedis(key, verification_code, 15 * 60);
     
-    const sendNotification = await sendEmail.sendVerificationEmail(user.email, user.first_name, verification_code);
+    const sendNotification = await sendEmail.sendVerificationEmail(user.email, formatDisplayName(user), verification_code);
 
     return {
       success: true,

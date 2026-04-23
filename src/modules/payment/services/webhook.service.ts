@@ -6,6 +6,7 @@ import { Subscription } from '../../payment/models/subscription.model';
 import { Plan } from '../../payment/models/plan.model';
 import { Estate } from '../../estate/models/estate.model';
 import { User } from '../../auth/models/user.model';
+import { formatDisplayName } from '../../../shared/utils/user.util';
 
 interface WebhookResult {
   success: boolean;
@@ -107,21 +108,23 @@ export const webhookService = {
     if (!manager?.email) return;
 
     const plan: any = subscription.plan;
+    const tz = (estate as any).timezone || 'Africa/Lagos';
+    const currency = (estate as any).currency_code || plan?.currency || 'NGN';
     const formatDate = (d: Date) => new Date(d).toLocaleDateString('en-GB', {
-      day: '2-digit', month: 'long', year: 'numeric',
+      day: '2-digit', month: 'long', year: 'numeric', timeZone: tz,
     });
-    const formatAmount = (kobo: number) => (kobo / 100).toLocaleString('en-NG', { minimumFractionDigits: 2 });
+    const formatAmount = (kobo: number) => (kobo / 100).toLocaleString('en-GB', { minimumFractionDigits: 2 });
 
     const emailService = (await import('../../communication/services/email.service')).default;
     await emailService.sendSubscriptionReceiptEmail(manager.email, {
-      manager_name: `${manager.first_name} ${manager.last_name}`.trim(),
+      manager_name: formatDisplayName(manager),
       estate_name: estate.name,
       plan_name: plan?.name || 'Lockwise Plan',
       billing_cycle: plan?.billing_cycle || 'N/A',
       start_date: formatDate(subscription.start_date),
       end_date: formatDate(subscription.end_date),
       amount: formatAmount(payment.amount),
-      currency: plan?.currency || 'NGN',
+      currency,
       reference: payment.reference,
     });
   },

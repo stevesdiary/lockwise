@@ -62,7 +62,7 @@ NODE_ENV=test npx jest --config tests/setup/jest.config.ts --no-coverage
 ## Key Conventions
 
 **Migrations** (`migrations/`):
-- Naming: `YYYYMMDDHHMMSS-<action>-<entity>.js`; active baseline uses `20260319XXXXXX` timestamps (60 migrations, 001–060); post-baseline additions: 061–062 (`20260418XXXXXX`)
+- Naming: `YYYYMMDDHHMMSS-<action>-<entity>.js`; active baseline uses `20260319XXXXXX` timestamps (60 migrations, 001–060); post-baseline additions: 061–063 (`20260418XXXXXX`–`20260422XXXXXX`)
 - No `{ ifNotExists: true }` guards in main branch migrations
 - Deferred FK pattern for circular deps (e.g., `estates.created_by → users.id` added in migration 051)
 - Security profile seed in migration 053 (`20260330000053`): inserts one `security` user per estate; email `security@<estate_code>.lockwise.local`; default password `Security@1234` (bcrypt, salt 10); uses `ON CONFLICT DO NOTHING`
@@ -75,6 +75,7 @@ NODE_ENV=test npx jest --config tests/setup/jest.config.ts --no-coverage
 - Migration 060 (`20260417000060`): adds `access_direction` ENUM('entry','exit','both') NOT NULL default 'entry' to `access_logs`
 - Migration 061 (`20260418000061`): adds `'streets_units'` to `enum_bulk_upload_jobs_upload_type` ENUM (uses `ADD VALUE IF NOT EXISTS`)
 - Migration 062 (`20260418000062`): drops global unique index on `units.unit_identifier`; adds composite unique index `units_unit_identifier_street_id_unique` on (`unit_identifier`, `street_id`) — uniqueness is scoped per street, not globally
+- Migration 063 (`20260422000063`): adds `logo_url` STRING nullable (default null) to `estates`; no `{ ifNotExists: true }` guard
 
 **Middleware** (`shared/middleware/`):
 - `authenticateToken` — verifies JWT, attaches `req.user`
@@ -109,6 +110,17 @@ if (!isAdmin) {
 **Estate code:** `estate_code` auto-generated in `estate.controller.ts` as `EST-${customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 8)()}` — never supplied by the mobile client.
 
 **Estate service — Sequelize plain objects:** `getEstateByCode` calls `.toJSON()` before returning, then spreads `id: plain.estate_id` into the response data. Always do this for any service that returns a single Sequelize instance to mobile — raw instances expose `estate_id` but not `id`, causing undefined reads on the client.
+
+**Address controller** (`estate/controllers/address.controller.ts`):
+- `getStreets`: injects `id: s.street_id` alias on each street so mobile reads either `street_id` or `id`
+- `getUnits`: injects `id: plain.street.street_id` into the nested street object for the same reason
+- `searchUnits` (new): GET `/address/estates/:estate_id/units/search`; required param `estateId`; optional query `search` (iLike on `unit_identifier` or `block`), optional `street_id`; returns units with nested street (attributes: `street_id`, `name` only)
+- `createUnit`: coerces `floor` to `Number`; treats empty string as `undefined`; accepts `unit_details` JSONB field
+
+**Estate route auth changes:**
+- `GET /estate/one/:estateId`: `authenticateToken` only — `requireManager` guard removed; any authenticated user can fetch an estate by ID
+- `PUT /estate/update/:estateId`: strips `status`, `approval_status`, `created_by`, `approved_by`, `estate_id` from request body before update to prevent field injection
+- `POST /estate/residents/bulk-invite`: resolves manager's `estate_id` from DB via `getManagerEstateId(userId)`, not from request body
 
 **Access module** (`src/modules/access/`):
 - `createAccessRecord` in `access.controller.ts`: access types `domestic_staff`, `service`, `maintenance` automatically set `is_multi_entry: true` and `max_entries: null` (unlimited); other types pass client-supplied `is_multi_entry` + `max_entries` through unchanged

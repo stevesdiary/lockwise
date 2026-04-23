@@ -182,6 +182,13 @@ export class Estate extends Model<EstateAttributes, EstateCreationAttributes> {
   };
 
   @Column({
+    type: DataType.STRING,
+    allowNull: true,
+    defaultValue: null,
+  })
+  declare logo_url: string | null;
+
+  @Column({
     type: DataType.ENUM('approved', 'pending', 'declined'),
     allowNull: false,
     defaultValue: 'pending'

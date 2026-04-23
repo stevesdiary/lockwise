@@ -13,6 +13,8 @@ import { User } from '../../auth/models/user.model';
 import { Resident } from '../models/resident.model';
 import { Unit } from '../models/unit.model';
 import { Street } from '../models/street.model';
+import fileUploadService from '../../upload/services/file-upload.service';
+import { Estate } from '../models/estate.model';
 
 class EstateController {
   async createEstate(req: AuthRequest, res: Response) {
@@ -481,6 +483,41 @@ class EstateController {
         success: true,
         message: 'Successfully joined estate',
         data: { estate_id: validation.estate_id },
+      });
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  }
+
+  async uploadLogo(req: AuthRequest, res: Response): Promise<Response> {
+    try {
+      const estateId = asString(req.params.estateId);
+      if (!req.file) {
+        return res.status(400).json({ success: false, message: 'No file provided' });
+      }
+
+      const estate = await Estate.findByPk(estateId);
+      if (!estate) {
+        return res.status(404).json({ success: false, message: 'Estate not found' });
+      }
+
+      const userRole = (req.user!.role as string)?.toLowerCase() || '';
+      const isAdmin = ['master', 'super_admin', 'admin'].includes(userRole);
+      if (!isAdmin && req.user!.estate_id !== estateId) {
+        return res.status(403).json({ success: false, message: 'Forbidden' });
+      }
+
+      const result = await fileUploadService.uploadFile(req.file, 'estate-logos');
+      if (!result.success || !result.url) {
+        return res.status(500).json({ success: false, message: result.error || 'Upload failed' });
+      }
+
+      await estate.update({ logo_url: result.url });
+
+      return res.status(200).json({
+        success: true,
+        message: 'Logo uploaded successfully',
+        data: { logo_url: result.url },
       });
     } catch (error) {
       return handleControllerError(error, res);
