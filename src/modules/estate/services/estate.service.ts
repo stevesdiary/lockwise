@@ -363,7 +363,7 @@ class EstateService {
 
       for (const admin of admins) {
         await notificationService.sendNotification({
-          type: 'in_app',
+          type: 'email',
           to: admin.email,
           template: 'estateUpdateRequest',
           data: { admin_name: (admin as any).first_name || admin.email, estate_name: estate.name },
