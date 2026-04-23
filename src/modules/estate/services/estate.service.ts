@@ -251,8 +251,7 @@ class EstateService {
 
   async updateOnboardingStep(
     estateId: string,
-    // userId is accepted for future ownership-check extension; auth enforced at route middleware layer
-    userId: string,
+    _userId: string,
     step: number,
     status?: string
   ): Promise<ApiResponse & { statusCode?: number }> {
@@ -292,7 +291,7 @@ class EstateService {
 
   async updateSetupChecklist(
     estateId: string,
-    userId: string,
+    _userId: string,
     updates: Partial<{ gates_configured: boolean; residents_invited: boolean }>
   ): Promise<ApiResponse & { statusCode?: number }> {
     try {
@@ -315,6 +314,23 @@ class EstateService {
     }
   }
 
+  async getPendingUpdateEstates(): Promise<ApiResponse> {
+    try {
+      const estates = await Estate.findAll({
+        where: { pending_update_data: { [Op.ne]: null } } as any,
+        attributes: ['estate_id', 'name', 'estate_code', 'city', 'state', 'pending_update_data', 'logo_url', 'status', 'approval_status'],
+      });
+      return {
+        statusCode: 200,
+        success: true,
+        message: 'Estates with pending updates retrieved successfully',
+        data: estates.map(e => e.toJSON()),
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async requestEstateUpdate(estateId: string, managerId: string, proposedData: Record<string, any>): Promise<ApiResponse> {
     const estate = await Estate.findByPk(estateId);
     if (!estate) return { success: false, message: 'Estate not found', data: null };
@@ -327,7 +343,7 @@ class EstateService {
     return { success: true, message: 'Update request submitted — pending admin approval', data: null };
   }
 
-  async applyEstateUpdate(estateId: string, approved: boolean, rejectionReason?: string): Promise<ApiResponse> {
+  async applyEstateUpdate(estateId: string, approved: boolean, _rejectionReason?: string): Promise<ApiResponse> {
     const estate = await Estate.findByPk(estateId);
     if (!estate) return { success: false, message: 'Estate not found', data: null };
     if (!estate.pending_update_data) return { success: false, message: 'No pending update found', data: null };

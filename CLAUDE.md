@@ -121,13 +121,17 @@ if (!isAdmin) {
 
 **Estate route auth changes:**
 - `GET /estate/one/:estateId`: `authenticateToken` only — `requireManager` guard removed; any authenticated user can fetch an estate by ID
-- `PUT /estate/update/:estateId`: strips `status`, `approval_status`, `created_by`, `approved_by`, `estate_id` from request body; **manager** path calls `estateService.requestEstateUpdate` → stages changes in `pending_update_data`, returns 202; **admin** path calls `estateService.updateEstate` → applied immediately
-- `POST /estate/:estateId/apply-update` (`requireAdmin`): body `{ approved: boolean, rejection_reason? }`; calls `estateService.applyEstateUpdate` to commit or discard `pending_update_data`
+- `PUT /estate/update/:estateId`: strips `status`, `approval_status`, `created_by`, `approved_by`, `estate_id` from request body; **manager** path calls `estateService.requestEstateUpdate` → stages changes in `pending_update_data` (also stores `_requested_by: userId` and `_requested_at: ISO timestamp` as metadata keys prefixed with `_`), returns 202; **admin** path calls `estateService.updateEstate` → applied immediately
+- `GET /estate/estates/pending-updates` (`requireAdmin`): returns all estates where `pending_update_data IS NOT NULL`; used by `EstateUpdateRequestsScreen` on mobile
+- `POST /estate/:estateId/apply-update` (`requireAdmin`): body `{ approved: boolean, rejection_reason? }`; calls `estateService.applyEstateUpdate` to commit or discard `pending_update_data`; on approval: merges non-`_`-prefixed keys from `pending_update_data` into estate, clears `pending_update_data`; on rejection: clears `pending_update_data` only
 - `POST /estate/residents/bulk-invite`: resolves manager's `estate_id` from DB via `getManagerEstateId(userId)`, not from request body
 
 **Access module** (`src/modules/access/`):
 - `createAccessRecord` in `access.controller.ts`: access types `domestic_staff`, `service`, `maintenance` automatically set `is_multi_entry: true` and `max_entries: null` (unlimited); other types pass client-supplied `is_multi_entry` + `max_entries` through unchanged
-- `processCodeScan` in `access-log.service.ts`: both single-entry and multi-entry paths are wrapped in a DB transaction — single-entry creates the `access_entries` row then marks the log `'used'` atomically so a failure between the two steps leaves the code retryable; multi-entry increments `used_entries`, decrements on overflow, and marks `'used'` when `used_entries >= max_entries`
+- `generateCode` in `access-code.controller.ts`: security role returns 403; `access_direction` defaults to `'entry'`; response includes `estateAddress`, `destinationAddress`, and `shareMessage`; share message formatted without maps URL (URL generated lazily via `/access-codes/:logId/share-url`)
+- `validateCode` in `access-code.controller.ts`: returns `remaining_entries` (null for unlimited, integer for bounded multi-entry) in response `data`; 'exit'-only codes rejected at `scan_type: 'entry'` scan
+- `approveAccess` in `access-code.controller.ts`: handles `access_direction: 'both'` — first scan sets `entry_time` (entry event); second scan (when `entry_time` already set) sets `exit_time` (exit event); `isExitScan` flag drives `entry_time` vs `exit_time` field and WebSocket event type
+- `processCodeScan` in `access-log.service.ts`: valid statuses are `active`, `pending`, `approved`; both single-entry and multi-entry paths are wrapped in a DB transaction — single-entry creates the `access_entries` row then marks the log `'used'` atomically so a failure between the two steps leaves the code retryable; multi-entry increments `used_entries`, decrements on overflow, and marks `'used'` when `used_entries >= max_entries`; direction enforcement: `'exit'`-direction code throws when `scanType === 'entry'`
 
 **Bulk upload** (`src/modules/upload/`):
 - `POST /api/v1/bulk-upload/streets-units` — `requireManager`; `multipart/form-data` single file + `estateId` body param; parses CSV/Excel with `xlsx`; uses `Street.findOrCreate` + `Unit.findOrCreate` in a single transaction; `upload_type: 'streets_units'` in `bulk_upload_jobs`

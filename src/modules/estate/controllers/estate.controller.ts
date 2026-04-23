@@ -212,6 +212,15 @@ class EstateController {
     }
   }
 
+  async getEstatesWithPendingUpdates(req: AuthRequest, res: Response): Promise<Response> {
+    try {
+      const result = await estateService.getPendingUpdateEstates();
+      return res.status(result.statusCode || 200).json(result);
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  }
+
   async getPendingEstates(req: AuthRequest, res: Response): Promise<Response> {
     try {
       const estates = await estateService.getEstatesByStatus('pending');
