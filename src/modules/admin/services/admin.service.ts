@@ -7,6 +7,7 @@ const getBcrypt = async () => (await import('bcryptjs')).default;
 
 export const adminService = {
   async createAdmin(data: {
+    title?: string;
     first_name: string;
     last_name: string;
     email: string;
@@ -43,6 +44,7 @@ export const adminService = {
 
     // Create admin user
     const admin = await User.create({
+      title: data.title,
       first_name: data.first_name,
       last_name: data.last_name,
       email: data.email,
