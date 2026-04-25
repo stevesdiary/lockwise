@@ -1,11 +1,25 @@
 import { Request, Response } from 'express';
 import bulkUploadService from '../services/bulk-upload.service';
 import fileUploadService from '../services/file-upload.service';
+import fileValidationService from '../services/file-validation.service';
 import { asyncHandler } from '../../../shared/middleware/error-handler.middleware';
 import { asString } from '../../../shared/utils/param.util';
 
 interface BulkUploadRequest extends Request {
   file?: Express.Multer.File;
+}
+
+async function validateBulkFile(file: Express.Multer.File, res: Response): Promise<boolean> {
+  const validation = await fileValidationService.validateFile(
+    file.buffer,
+    file.originalname,
+    file.mimetype
+  );
+  if (!validation.isValid) {
+    res.status(400).json({ status: 'error', message: validation.error || 'Invalid file' });
+    return false;
+  }
+  return true;
 }
 
 const bulkUploadController = {
@@ -132,6 +146,8 @@ const bulkUploadController = {
         message: 'Invalid file format. Only .xlsx, .xls, and .csv are allowed',
       });
     }
+
+    if (!await validateBulkFile(req.file, res)) return;
 
     // Managers can only upload to their own estate; admins/super_admins can upload to any
     const userRole = (req.user!.role as string)?.toLowerCase() || '';
