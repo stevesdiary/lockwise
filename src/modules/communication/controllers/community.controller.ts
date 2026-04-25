@@ -45,6 +45,7 @@ export const communityController = {
             user_id: msg.user_id,
             user_name: `${(msg.user as any).first_name} ${(msg.user as any).last_name}`,
             message: msg.message,
+            title: msg.title,
             file_url: msg.file_url,
             file_name: msg.file_name,
             file_type: msg.file_type,
@@ -150,7 +151,7 @@ export const communityController = {
   async sendAnnouncement(req: Request, res: Response) {
     try {
       const user = (req as any).user;
-      const { message } = req.body;
+      const { message, title } = req.body;
 
       if (user.role !== 'admin' && user.role !== 'manager') {
         return res.status(403).json({ success: false, error: 'Unauthorized' });
@@ -161,10 +162,11 @@ export const communityController = {
         user_id: user.id,
         message: message.trim(),
         is_announcement: true,
+        title: title?.trim() || null,
       });
 
       pushNotificationService.sendToEstate(user.estate_id, {
-        title: '📢 New Announcement',
+        title: `📢 ${title?.trim() || 'New Announcement'}`,
         message: message.trim(),
         type: 'system_alert',
         data: { message_id: announcement.id, is_announcement: true },
