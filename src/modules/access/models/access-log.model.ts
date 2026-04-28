@@ -122,5 +122,6 @@ AccessLog.init({
 });
 
 AccessLog.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+AccessLog.belongsTo(User, { foreignKey: 'scanned_by', as: 'scanner' });
 
 export default AccessLog;

@@ -1,3 +1,4 @@
+import { Op } from 'sequelize';
 import { Payment } from '../../payment/models/payment.model';
 import { User } from '../../auth/models/user.model';
 import { Subscription } from '../../payment/models/subscription.model';
@@ -68,11 +69,23 @@ export const managerDashboardService = {
     });
   },
 
-  getEstateAccessLogs: async (estate_id: string, filters: { limit?: number; offset?: number }) => {
-    return await accessLogService.getAccessLogs({
-      estate_id,
-      limit: filters.limit || 100,
-      offset: filters.offset || 0
+  getEstateAccessLogs: async (estate_id: string, filters: { limit?: number; offset?: number; from_date?: string; to_date?: string }) => {
+    const where: any = { estate_id };
+    if (filters.from_date || filters.to_date) {
+      const from = filters.from_date ? new Date(filters.from_date) : new Date(0);
+      const to = filters.to_date ? new Date(filters.to_date) : new Date();
+      to.setHours(23, 59, 59, 999);
+      where.created_at = { [Op.between]: [from, to] };
+    }
+    return await AccessLog.findAll({
+      where,
+      include: [
+        { model: User, as: 'user', attributes: ['first_name', 'last_name', 'email'] },
+        { model: User, as: 'scanner', attributes: ['first_name', 'last_name', 'email'] },
+      ],
+      order: [['created_at', 'DESC']],
+      limit: filters.limit || 500,
+      offset: filters.offset || 0,
     });
   },
 
