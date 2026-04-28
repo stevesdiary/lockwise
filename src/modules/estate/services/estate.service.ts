@@ -249,6 +249,29 @@ class EstateService {
     }
   }
 
+  async rejectEstate(estateId: string, rejectedBy: string, reason?: string): Promise<ApiResponse> {
+    try {
+      const estate = await Estate.findByPk(estateId);
+      if (!estate) {
+        return { statusCode: 404, success: false, message: 'Estate not found', data: null };
+      }
+
+      await estate.update({
+        approval_status: 'rejected',
+        approved_by: rejectedBy,
+      } as any);
+
+      return {
+        statusCode: 200,
+        success: true,
+        message: reason ? `Estate rejected: ${reason}` : 'Estate rejected',
+        data: estate,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async updateOnboardingStep(
     estateId: string,
     _userId: string,

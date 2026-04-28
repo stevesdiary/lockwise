@@ -62,7 +62,7 @@ NODE_ENV=test npx jest --config tests/setup/jest.config.ts --no-coverage
 ## Key Conventions
 
 **Migrations** (`migrations/`):
-- Naming: `YYYYMMDDHHMMSS-<action>-<entity>.js`; active baseline uses `20260319XXXXXX` timestamps (60 migrations, 001–060); post-baseline additions: 061–065 (`20260418XXXXXX`–`20260423XXXXXX`)
+- Naming: `YYYYMMDDHHMMSS-<action>-<entity>.js`; active baseline uses `20260319XXXXXX` timestamps (60 migrations, 001–060); post-baseline additions: 061–068 (`20260418XXXXXX`–`20260425XXXXXX`)
 - No `{ ifNotExists: true }` guards in main branch migrations
 - Deferred FK pattern for circular deps (e.g., `estates.created_by → users.id` added in migration 051)
 - Security profile seed in migration 053 (`20260330000053`): inserts one `security` user per estate; email `security@<estate_code>.lockwise.local`; default password `Security@1234` (bcrypt, salt 10); uses `ON CONFLICT DO NOTHING`
@@ -78,6 +78,9 @@ NODE_ENV=test npx jest --config tests/setup/jest.config.ts --no-coverage
 - Migration 063 (`20260422000063`): adds `logo_url` STRING nullable (default null) to `estates`; no `{ ifNotExists: true }` guard
 - Migration 064 (`20260423000064`): converts `units.unit_type` from ENUM to VARCHAR so new types can be added without future migrations; default remains `'flat'`; drops `enum_units_unit_type`; `down` recreates the ENUM with values flat/duplex/chalet/terrace/plot/house/apartment/villa/other
 - Migration 065 (`20260423000065`): adds `pending_update_data` JSONB nullable (default null) to `estates` — stores manager-submitted changes awaiting admin approval
+- Migration 066 (`20260425000066`): adds `title` STRING(120) nullable (default null) to `community_messages`
+- Migration 067 (`20260425000067`): creates 5 new tables — `emergency_contact_categories` (id UUID, name, icon, priority INTEGER default 100), `countries` (id UUID, name, iso_code CHAR(2) unique, phone_prefix), `states` (id UUID, country_id FK→countries CASCADE, name, code), `cities` (id UUID, state_id FK→states CASCADE, name), `location_emergency_contacts` (id UUID, category_id FK→categories CASCADE, name, phone_number, alt_phone_number, country_id FK, state_id FK nullable, city_id FK nullable, description, is_active BOOLEAN default true, priority; indexed on country_id/state_id/city_id and category_id)
+- Migration 068 (`20260425000068`): seeds Nigeria (NG, +234), 4 states (Lagos LA, FCT FC, Rivers RI, Oyo OY), cities per state, 6 emergency contact categories (Police 10, Fire Service 20, Ambulance 30, Hospital 40, Rapid Response 50, Utility Emergency 60) with `location_emergency_contacts` entries at national/state scope; uses `ignoreDuplicates: true`
 
 **Middleware** (`shared/middleware/`):
 - `authenticateToken` — verifies JWT, attaches `req.user`
@@ -136,6 +139,12 @@ if (!isAdmin) {
 **Bulk upload** (`src/modules/upload/`):
 - `POST /api/v1/bulk-upload/streets-units` — `requireManager`; `multipart/form-data` single file + `estateId` body param; parses CSV/Excel with `xlsx`; uses `Street.findOrCreate` + `Unit.findOrCreate` in a single transaction; `upload_type: 'streets_units'` in `bulk_upload_jobs`
 - `GET /api/v1/bulk-upload/template/:type` — download CSV template for a given upload type
+
+**Location emergency contacts** (`communication/`):
+- Models (`models/location-emergency.model.ts`): `EmergencyContactCategory`, `Country`, `State`, `City`, `LocationEmergencyContact` — all sequelize-typescript decorator style
+- Service (`services/location-emergency.service.ts`): `getContactsForLocation({ countryId, stateId?, cityId? })` — OR-queries national + state + city scoped contacts, groups by category, annotates scope badge (Local/State/National); `getCountries/getStates/getCities/getCategories` for hierarchical selectors; `createContact/updateContact/deleteContact/getAllContacts` for admin CRUD
+- Routes (`routes/emergency.route.ts`): GET `/emergency/location-contacts` (authenticated); GET `/emergency/location-contacts/countries`, `/countries/:id/states`, `/states/:id/cities`, `/categories`; admin CRUD at `/emergency/location-contacts/admin[/:contactId]` (`requireAdmin`)
+- `community_messages.title` STRING(120) nullable (added in migration 066); `sendAnnouncement` controller reads+saves optional `title`; `getMessages` includes `title` in response
 
 **Chat routes** (`communication/routes/chat.route.ts`):
 - All routes require `authenticateToken`

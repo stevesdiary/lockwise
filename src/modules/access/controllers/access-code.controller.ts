@@ -177,6 +177,13 @@ export const accessCodeController = {
         return res.status(400).json({ success: false, message: 'Code is required' });
       }
 
+      if (req.user?.role === UserRole.SECURITY) {
+        const securityUser = await User.findByPk(securityId, { attributes: ['status'] });
+        if (!securityUser || (securityUser as any).status !== 'active') {
+          return res.status(403).json({ success: false, message: 'Your account is inactive. Contact your estate manager.' });
+        }
+      }
+
       const accessLog = await AccessLog.findOne({
         where: { access_code: code, status: 'active' },
         include: [{ model: User, as: 'user', attributes: ['id', 'phone'] }]
@@ -366,6 +373,13 @@ export const accessCodeController = {
 
       if (!code) {
         return res.status(400).json({ success: false, message: 'Code is required' });
+      }
+
+      if (req.user?.role === UserRole.SECURITY) {
+        const securityUser = await User.findByPk(securityId, { attributes: ['status'] });
+        if (!securityUser || (securityUser as any).status !== 'active') {
+          return res.status(403).json({ success: false, message: 'Your account is inactive. Contact your estate manager.' });
+        }
       }
 
       const accessLog = await AccessLog.findOne({

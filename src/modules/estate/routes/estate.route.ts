@@ -62,7 +62,15 @@ estateRouter.patch('/estates/:estateId/approve',
   }
 );
 
-estateRouter.get('/one/:estateId', 
+estateRouter.patch('/estates/:estateId/reject',
+  authenticateToken,
+  requireAdmin,
+  async (req: ExpressRequest, res: Response) => {
+    await estateController.rejectEstate(req, res);
+  }
+);
+
+estateRouter.get('/one/:estateId',
   authenticateToken,
   // requireManager,
   async (req: ExpressRequest, res: Response) => {

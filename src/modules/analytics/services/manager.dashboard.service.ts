@@ -125,5 +125,25 @@ export const managerDashboardService = {
       } as any,
       { where: { id: user_id, user_type: 'resident' } }
     );
-  }
+  },
+
+  getEstateSecurityPersonnel: async (estate_id: string) => {
+    return await User.findAll({
+      where: { estate_id, user_type: 'security' } as any,
+      attributes: ['id', 'first_name', 'last_name', 'email', 'phone', 'status', 'createdAt'],
+      order: [['createdAt', 'DESC']],
+    });
+  },
+
+  setSecurityStatus: async (user_id: string, status: 'active' | 'inactive') => {
+    return await User.update({ status }, { where: { id: user_id, user_type: 'security' } as any });
+  },
+
+  deleteSecurityUser: async (user_id: string, estate_id: string) => {
+    const [affected] = await User.update(
+      { estate_id: null as any, status: 'inactive' } as any,
+      { where: { id: user_id, user_type: 'security', estate_id } as any }
+    );
+    return affected > 0;
+  },
 };
