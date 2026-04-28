@@ -21,6 +21,7 @@ class AccessLog extends Model {
   declare max_entries?: number | null;
   declare used_entries: number;
   declare access_direction: 'entry' | 'exit' | 'both';
+  declare gate_id?: string | null;
   declare headshot_url?: string | null;
   declare created_at?: Date;
   declare updated_at?: Date;
@@ -103,6 +104,11 @@ AccessLog.init({
     type: DataTypes.ENUM('entry', 'exit', 'both'),
     allowNull: false,
     defaultValue: 'entry'
+  },
+  gate_id: {
+    type: DataTypes.UUID,
+    allowNull: true,
+    references: { model: 'gates', key: 'gate_id' }
   },
   headshot_url: {
     type: DataTypes.STRING,
