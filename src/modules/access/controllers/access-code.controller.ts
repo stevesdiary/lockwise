@@ -170,7 +170,7 @@ export const accessCodeController = {
 
   async approveAccess(req: AuthRequest, res: Response) {
     try {
-      const { code } = req.body;
+      const { code, gate_id } = req.body;
       const securityId = req.user?.id;
 
       if (!code) {
@@ -204,6 +204,9 @@ export const accessCodeController = {
       const timeField = isExitScan ? 'exit_time' : 'entry_time';
       const eventType = isExitScan ? 'exit' : 'entry';
 
+      const updateFields: any = { [timeField]: now, scanned_by: securityId };
+      if (gate_id) updateFields.gate_id = gate_id;
+
       if ((accessLog as any).is_multi_entry) {
         // Multi-entry: atomically increment used_entries; only mark 'used' when all entries are exhausted
         await sequelize.transaction(async (t) => {
@@ -221,16 +224,14 @@ export const accessCodeController = {
           const isExhausted = maxEntries !== null && maxEntries !== undefined && usedEntries >= maxEntries;
 
           await accessLog.update({
+            ...updateFields,
             status: isExhausted ? 'used' : 'active',
-            [timeField]: now,
-            scanned_by: securityId,
           }, { transaction: t });
         });
       } else {
         await accessLog.update({
+          ...updateFields,
           status: 'approved',
-          [timeField]: now,
-          scanned_by: securityId,
         });
       }
 
@@ -368,7 +369,7 @@ export const accessCodeController = {
 
   async rejectAccess(req: AuthRequest, res: Response) {
     try {
-      const { code, reason } = req.body;
+      const { code, reason, gate_id } = req.body;
       const securityId = req.user?.id;
 
       if (!code) {
@@ -394,7 +395,8 @@ export const accessCodeController = {
       await accessLog.update({
         status: 'rejected',
         scanned_by: securityId,
-        remark: reason
+        remark: reason,
+        ...(gate_id ? { gate_id } : {}),
       });
 
       const guestName = accessLog.guest_name || 'Guest';

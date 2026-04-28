@@ -89,12 +89,14 @@ const managerDashboardController = {
     try {
       const estate_id = asString(req.params.estate_id);
       if (!assertEstateAccess(req, res, estate_id)) return;
-      const { page = 1, limit = 100 } = req.query;
+      const { page = 1, limit = 500, from_date, to_date } = req.query;
       const offset = (Number(page) - 1) * Number(limit);
-      
+
       const logs = await managerDashboardService.getEstateAccessLogs(estate_id, {
         limit: Number(limit),
-        offset
+        offset,
+        from_date: from_date as string | undefined,
+        to_date: to_date as string | undefined,
       });
 
       res.json({
