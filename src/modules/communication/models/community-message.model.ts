@@ -71,4 +71,10 @@ export class CommunityMessage extends Model {
     defaultValue: false,
   })
   declare is_announcement: boolean;
+
+  @Column({
+    type: DataType.STRING(120),
+    allowNull: true,
+  })
+  declare title: string | null;
 }

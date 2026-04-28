@@ -206,7 +206,50 @@ const managerDashboardController = {
     } catch (error) {
       return handleControllerError(error, res);
     }
-  }
+  },
+
+  getEstateSecurityPersonnel: async (req: Request, res: Response) => {
+    try {
+      const estate_id = asString(req.params.estate_id);
+      if (!assertEstateAccess(req, res, estate_id)) return;
+      const personnel = await managerDashboardService.getEstateSecurityPersonnel(estate_id);
+      res.json({ status: 'success', data: personnel });
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  },
+
+  setSecurityStatus: async (req: Request, res: Response) => {
+    try {
+      const user_id = asString(req.params.user_id);
+      const { status } = req.body as { status?: string };
+      if (status !== 'active' && status !== 'inactive') {
+        return res.status(400).json({ status: 'error', message: 'status must be active or inactive' });
+      }
+      await managerDashboardService.setSecurityStatus(user_id, status);
+      res.json({ status: 'success', message: `Security personnel set to ${status}` });
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  },
+
+  deleteSecurityUser: async (req: Request, res: Response) => {
+    try {
+      const user_id = asString(req.params.user_id);
+      const caller = (req as any).user;
+      const estate_id: string = caller?.estate_id || '';
+      if (!estate_id) {
+        return res.status(403).json({ status: 'error', message: 'Manager is not linked to an estate' });
+      }
+      const deleted = await managerDashboardService.deleteSecurityUser(user_id, estate_id);
+      if (!deleted) {
+        return res.status(404).json({ status: 'error', message: 'Security user not found or not linked to this estate' });
+      }
+      res.json({ status: 'success', message: 'Security profile removed' });
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  },
 };
 
 export default managerDashboardController;

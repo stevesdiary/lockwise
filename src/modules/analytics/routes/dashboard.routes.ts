@@ -113,4 +113,23 @@ dashboardRouter.post('/manager/residents/:user_id/reject',
   managerDashboardController.rejectResident
 );
 
+// Security personnel management
+dashboardRouter.get('/manager/:estate_id/security',
+  authenticateToken,
+  authorizeRoles(['manager', 'admin']),
+  managerDashboardController.getEstateSecurityPersonnel
+);
+
+dashboardRouter.patch('/manager/security/:user_id/status',
+  authenticateToken,
+  authorizeRoles(['manager', 'admin']),
+  managerDashboardController.setSecurityStatus
+);
+
+dashboardRouter.delete('/manager/security/:user_id',
+  authenticateToken,
+  authorizeRoles(['manager', 'admin']),
+  managerDashboardController.deleteSecurityUser
+);
+
 export default dashboardRouter;

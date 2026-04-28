@@ -44,7 +44,7 @@ export const accessCodeController = {
     try {
       const userId = req.user?.id;
       const estateId = req.user?.estate_id;
-      const { visitor_name, valid_until, valid_from, visitor_phone, access_type, is_multi_entry, max_entries, access_direction } = req.body;
+      const { visitor_name, valid_until, valid_from, visitor_phone, access_type, is_multi_entry, max_entries, access_direction, headshot_url } = req.body;
 
       if (!userId) {
         return res.status(401).json({ message: 'Unauthorized' });
@@ -91,6 +91,7 @@ export const accessCodeController = {
         is_multi_entry: shouldAllowUnlimited ? true : (is_multi_entry || false),
         max_entries: shouldAllowUnlimited ? null : (max_entries ?? (is_multi_entry ? null : undefined)),
         access_direction: access_direction ?? 'entry',
+        headshot_url: headshot_url ?? null,
       });
 
       // Share message without maps URL — URL is generated lazily when user taps Share
@@ -174,6 +175,13 @@ export const accessCodeController = {
 
       if (!code) {
         return res.status(400).json({ success: false, message: 'Code is required' });
+      }
+
+      if (req.user?.role === UserRole.SECURITY) {
+        const securityUser = await User.findByPk(securityId, { attributes: ['status'] });
+        if (!securityUser || (securityUser as any).status !== 'active') {
+          return res.status(403).json({ success: false, message: 'Your account is inactive. Contact your estate manager.' });
+        }
       }
 
       const accessLog = await AccessLog.findOne({
@@ -365,6 +373,13 @@ export const accessCodeController = {
 
       if (!code) {
         return res.status(400).json({ success: false, message: 'Code is required' });
+      }
+
+      if (req.user?.role === UserRole.SECURITY) {
+        const securityUser = await User.findByPk(securityId, { attributes: ['status'] });
+        if (!securityUser || (securityUser as any).status !== 'active') {
+          return res.status(403).json({ success: false, message: 'Your account is inactive. Contact your estate manager.' });
+        }
       }
 
       const accessLog = await AccessLog.findOne({

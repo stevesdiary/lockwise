@@ -34,6 +34,7 @@ import { CommunityMessage } from '../../modules/communication/models/community-m
 import { MessageReaction }  from '../../modules/communication/models/message-reaction.model';
 import { Notification }     from '../../modules/communication/models/notification.model';
 import { EmergencyAlert, EmergencyContact } from '../../modules/communication/models/emergency.model';
+import { EmergencyContactCategory, Country, State, City, LocationEmergencyContact } from '../../modules/communication/models/location-emergency.model';
 // UserDevice uses plain sequelize .init() — self-registers on import in its service
 
 import { NFCCard }          from '../../modules/access/models/nfc-card.model';
@@ -166,6 +167,7 @@ const sequelizeOptions: SequelizeOptions = {
     Address,
     Payment, Plan, Referrer, ReferralBonus, Subscription,
     CommunityMessage, MessageReaction, Notification, EmergencyAlert, EmergencyContact,
+    EmergencyContactCategory, Country, State, City, LocationEmergencyContact,
     NFCCard, NFCAccessLog,
     Amenity, Reservation,
     ParkingSlot, ParkingAssignment, GuestParking, EVChargingSession,

@@ -1,17 +1,45 @@
 import { EmergencyAlert } from "../models/emergency.model";
 import { User } from "../../auth/models/user.model";
+import { Resident } from "../../estate/models/resident.model";
 import pushNotificationService from "./push.notification.service";
 import { saveToRedis } from "../../../shared/core/redis";
 
 class EmergencyNotificationService {
   async broadcastEmergencyAlert(alert: EmergencyAlert) {
-    // Get all estate users
-    const users = await User.findAll({
-      where: { estate_id: alert.estate_id },
-      attributes: ["id", "first_name", "last_name", "phone", "email"],
-    });
+    let users: any[];
 
-    // Send push notifications
+    if (alert.type === 'medical') {
+      // Medical alerts go only to neighbours sharing the same unit as the reporter
+      const reporterResident = await Resident.findOne({
+        where: { user_id: alert.user_id },
+        attributes: ['unit_id']
+      });
+
+      if (reporterResident?.unit_id) {
+        const unitResidents = await Resident.findAll({
+          where: { unit_id: reporterResident.unit_id },
+          attributes: ['user_id']
+        });
+        const unitUserIds = unitResidents.map((r: any) => r.user_id);
+        users = await User.findAll({
+          where: { id: unitUserIds },
+          attributes: ["id", "first_name", "last_name", "phone", "email"],
+        });
+      } else {
+        // Reporter has no unit — fall back to all estate residents
+        users = await User.findAll({
+          where: { estate_id: alert.estate_id },
+          attributes: ["id", "first_name", "last_name", "phone", "email"],
+        });
+      }
+    } else {
+      // All other emergencies (fire, security, flood, etc.) notify the whole estate
+      users = await User.findAll({
+        where: { estate_id: alert.estate_id },
+        attributes: ["id", "first_name", "last_name", "phone", "email"],
+      });
+    }
+
     const notificationPromises = users.map((user: any) =>
       pushNotificationService.sendToUser(user.id, {
         title: `🚨 EMERGENCY: ${alert.type.toUpperCase()}`,
@@ -28,7 +56,6 @@ class EmergencyNotificationService {
 
     await Promise.all(notificationPromises);
 
-    // Store alert in Redis for real-time updates
     await saveToRedis(
       `emergency:${alert.estate_id}:${alert.id}`,
       JSON.stringify({
@@ -40,7 +67,7 @@ class EmergencyNotificationService {
         created_at: alert.createdAt,
       }),
       3600
-    ); // 1 hour expiry
+    );
 
     return users.length;
   }

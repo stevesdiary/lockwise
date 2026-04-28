@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import emergencyController from '../controllers/emergency.controller';
 import { authenticateToken } from '../../auth/middleware/auth.middleware';
+import { requireAdmin } from '../../auth/middleware/auth.middleware';
 
 const router = Router();
 
@@ -31,9 +32,22 @@ router.post('/contacts',
   emergencyController.createEmergencyContact
 );
 
-router.post('/contacts/setup-defaults', 
+router.post('/contacts/setup-defaults',
   authenticateToken,
   emergencyController.setupDefaultContacts
 );
+
+// Location-based emergency contacts (authenticated)
+router.get('/location-contacts', authenticateToken, emergencyController.getLocationContacts);
+router.get('/location-contacts/countries', authenticateToken, emergencyController.getCountries);
+router.get('/location-contacts/countries/:countryId/states', authenticateToken, emergencyController.getStates);
+router.get('/location-contacts/states/:stateId/cities', authenticateToken, emergencyController.getCities);
+router.get('/location-contacts/categories', authenticateToken, emergencyController.getCategories);
+
+// Admin CRUD
+router.get('/location-contacts/admin', authenticateToken, requireAdmin, emergencyController.adminListContacts);
+router.post('/location-contacts/admin', authenticateToken, requireAdmin, emergencyController.adminCreateContact);
+router.put('/location-contacts/admin/:contactId', authenticateToken, requireAdmin, emergencyController.adminUpdateContact);
+router.delete('/location-contacts/admin/:contactId', authenticateToken, requireAdmin, emergencyController.adminDeleteContact);
 
 export default router;

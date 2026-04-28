@@ -259,6 +259,27 @@ class EstateController {
     }
   }
 
+  async rejectEstate(req: AuthRequest, res: Response): Promise<Response> {
+    try {
+      const estateId = asString(req.params.estateId);
+      const { reason } = req.body;
+      const rejectedBy = req.user!.id;
+
+      if (!estateId) {
+        return res.status(400).json({ status: 'fail', message: 'Estate ID is required' });
+      }
+
+      const result = await estateService.rejectEstate(estateId, rejectedBy, reason);
+      return res.status(result.statusCode || 200).json({
+        status: result.success ? 'success' : 'fail',
+        message: result.message,
+        data: result.data,
+      });
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  }
+
   async updateOnboardingStep(req: AuthRequest, res: Response): Promise<Response> {
     try {
       const estateId = asString(req.params.estateId);
