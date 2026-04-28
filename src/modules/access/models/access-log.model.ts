@@ -21,6 +21,7 @@ class AccessLog extends Model {
   declare max_entries?: number | null;
   declare used_entries: number;
   declare access_direction: 'entry' | 'exit' | 'both';
+  declare headshot_url?: string | null;
   declare created_at?: Date;
   declare updated_at?: Date;
   declare user?: User;
@@ -102,6 +103,10 @@ AccessLog.init({
     type: DataTypes.ENUM('entry', 'exit', 'both'),
     allowNull: false,
     defaultValue: 'entry'
+  },
+  headshot_url: {
+    type: DataTypes.STRING,
+    allowNull: true
   }
 }, {
   sequelize,

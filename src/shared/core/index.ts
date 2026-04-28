@@ -14,6 +14,7 @@ import { errorHandler, notFound } from '../middleware/error-handler.middleware';
 import realTimeNotificationService from '../../modules/analytics/services/realtime-notification.service';
 import { startAccessCodeExpiryJob } from '../jobs/access-code-expiry.job';
 import { startSubscriptionExpiryJob } from '../jobs/subscription-expiry.job';
+import { startSafetyNotificationJob } from '../jobs/safety-notification.job';
 import { resolveShortUrl } from '../utils/url-shortener.util';
 
 const server = express();
@@ -139,6 +140,7 @@ const startServer = async () => {
     // 4 Start cron jobs
     startAccessCodeExpiryJob();
     startSubscriptionExpiryJob();
+    startSafetyNotificationJob();
 
   } catch (error) {
     console.error('Unable to start server:', error);
