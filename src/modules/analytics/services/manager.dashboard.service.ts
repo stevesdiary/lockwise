@@ -15,9 +15,9 @@ export const managerDashboardService = {
       Payment.sum('amount', { where: { estate_id, payment_status: 'completed' }}),
       sequelize.query<{ count: string }>(
         `SELECT COUNT(*)::text as count
-         FROM subscriptions
-         WHERE estate_id = $1
-           AND status = 'active'`,
+          FROM subscriptions
+          WHERE estate_id = $1
+          AND status = 'active'`,
         {
           bind: [estate_id],
           type: QueryTypes.SELECT,
