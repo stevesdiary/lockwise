@@ -73,6 +73,21 @@ module.exports = {
       { id: uuidv4(), category_id: catPolice, name: 'Rivers State Police Command', phone_number: '08033210703', alt_phone_number: null, country_id: nigeriaId, state_id: riversId, city_id: null, description: 'Rivers State police emergency', is_active: true, priority: 5, created_at: now, updated_at: now },
       { id: uuidv4(), category_id: catHospital, name: 'UPTH (University of Port Harcourt Teaching Hospital)', phone_number: '084-230258', alt_phone_number: null, country_id: nigeriaId, state_id: riversId, city_id: phId, description: 'Major hospital with 24/7 emergency', is_active: true, priority: 10, created_at: now, updated_at: now },
     ], {});
+
+    // Oyo State contacts (Ibadan)
+    await queryInterface.bulkInsert('location_emergency_contacts', [
+      { id: uuidv4(), category_id: catPolice, name: 'Oyo State Police Command', phone_number: '08039283333', alt_phone_number: '07055175554', country_id: nigeriaId, state_id: oyoId, city_id: null, description: 'Oyo State police emergency headquarters', is_active: true, priority: 5, created_at: now, updated_at: now },
+      { id: uuidv4(), category_id: catFire, name: 'Oyo State Fire Service', phone_number: '08062754752', alt_phone_number: null, country_id: nigeriaId, state_id: oyoId, city_id: null, description: 'Oyo State fire emergencies', is_active: true, priority: 5, created_at: now, updated_at: now },
+      { id: uuidv4(), category_id: catRapid, name: 'Amotekun Oyo State Security Network', phone_number: '08088101942', alt_phone_number: null, country_id: nigeriaId, state_id: oyoId, city_id: null, description: 'South-West regional rapid response unit', is_active: true, priority: 5, created_at: now, updated_at: now },
+    ], {});
+
+    // Ibadan city contacts
+    await queryInterface.bulkInsert('location_emergency_contacts', [
+      { id: uuidv4(), category_id: catPolice, name: 'Iyaganku Police Division Ibadan', phone_number: '07055175554', alt_phone_number: null, country_id: nigeriaId, state_id: oyoId, city_id: ibadanId, description: 'Central Ibadan police division', is_active: true, priority: 1, created_at: now, updated_at: now },
+      { id: uuidv4(), category_id: catHospital, name: 'University College Hospital (UCH) Ibadan', phone_number: '08077664173', alt_phone_number: '02-2410088', country_id: nigeriaId, state_id: oyoId, city_id: ibadanId, description: 'Premier teaching hospital with 24/7 A&E — Queen Elizabeth Road', is_active: true, priority: 1, created_at: now, updated_at: now },
+      { id: uuidv4(), category_id: catHospital, name: 'Adeoyo State Hospital Ibadan', phone_number: '08058580948', alt_phone_number: null, country_id: nigeriaId, state_id: oyoId, city_id: ibadanId, description: 'Government hospital — Ring Road, Ibadan', is_active: true, priority: 5, created_at: now, updated_at: now },
+      { id: uuidv4(), category_id: catAmbulance, name: 'Oyo State Emergency Medical Services (Ibadan)', phone_number: '112', alt_phone_number: '08062001971', country_id: nigeriaId, state_id: oyoId, city_id: ibadanId, description: 'Ambulance dispatch for Ibadan metropolis', is_active: true, priority: 1, created_at: now, updated_at: now },
+    ], {});
   },
 
   async down(queryInterface) {
