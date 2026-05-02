@@ -22,8 +22,18 @@ export const accessCodeController = {
         return res.status(401).json({ message: 'Unauthorized' });
       }
 
+      const userRole = (req.user!.role as string)?.toLowerCase() || '';
+      const isManager = ['master', 'super_admin', 'admin', 'manager'].includes(userRole);
+
+      const where: any = isManager && req.user?.estate_id
+        ? { estate_id: req.user.estate_id }
+        : { user_id: userId };
+
       const accessCodes = await AccessLog.findAll({
-        where: { user_id: userId },
+        where,
+        include: isManager
+          ? [{ model: User, as: 'user', attributes: ['id', 'first_name', 'last_name'] }]
+          : [],
         order: [['created_at', 'DESC']]
       });
 
