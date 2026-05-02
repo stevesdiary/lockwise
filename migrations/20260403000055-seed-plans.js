@@ -38,9 +38,9 @@ module.exports = {
     const now = new Date().toISOString();
     for (const plan of PLANS) {
       await queryInterface.sequelize.query(
-        `INSERT INTO plans (id, name, description, billing_cycle, category, price, currency, duration, features, created_at, updated_at)
-         VALUES (gen_random_uuid(), :name, :description, :billing_cycle, :category, :price, :currency, :duration, :features::jsonb, :now, :now)
-         ON CONFLICT (name) DO NOTHING`,
+        `INSERT INTO plans (id, name, description, billing_cycle, category, price, price_paid, currency, duration, features, created_at, updated_at)
+         VALUES (gen_random_uuid(), :name, :description, :billing_cycle, :category, :price, :price_paid, :currency, :duration, :features::jsonb, :now, :now)
+         ON CONFLICT (name) DO UPDATE SET price_paid = EXCLUDED.price_paid`,
         {
           replacements: {
             name: plan.name,
@@ -48,6 +48,7 @@ module.exports = {
             billing_cycle: plan.billing_cycle,
             category: plan.category,
             price: plan.price,
+            price_paid: plan.price,
             currency: plan.currency,
             duration: plan.duration,
             features: plan.features,
