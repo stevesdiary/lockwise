@@ -14,7 +14,7 @@ export class AccessLogService {
   }
 
   async createAccessRequest(data: any) {
-    return await AccessLog.create({ ...data, status: 'pending' });
+    return await AccessLog.create({ ...data, status: 'active' });
   }
 
   async logEntry(data: any) {

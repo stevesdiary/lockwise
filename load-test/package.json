@@ -1,11 +1,22 @@
 {
   "name": "lockwise-load-test",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "scripts": {
+    "seed": "cd .. && npx sequelize-cli db:seed --seed seeders/loadtest-seed-users.js",
+    "seed:undo": "cd .. && npx sequelize-cli db:seed:undo --seed seeders/loadtest-seed-users.js",
+    "test:smoke": "k6 run tests/smoke.js",
+    "test:load": "k6 run tests/load.js",
+    "test:stress": "k6 run tests/stress.js",
+    "test:spike": "k6 run tests/spike.js",
+    "test:full": "k6 run tests/full-load-test.js",
+    "test:resident": "k6 run --vus 20 --duration 3m tests/scenarios/resident-journey-standalone.js",
+    "test:manager": "k6 run --vus 10 --duration 3m tests/scenarios/manager-journey-standalone.js",
+    "test:queue": "k6 run --vus 5 --duration 2m tests/scenarios/queue-backpressure-standalone.js",
     "test:light": "k6 run --vus 10 --duration 30s tests/auth-load.js",
     "test:moderate": "k6 run --vus 50 --duration 2m tests/access-code-load.js",
     "test:heavy": "k6 run --vus 200 --duration 5m tests/database-stress.js",
     "test:stress-50": "k6 run tests/stress-50-users.js",
-    "test:stress-100": "k6 run tests/stress-100-users.js"
+    "test:stress-100": "k6 run tests/stress-100-users.js",
+    "report": "echo 'View results in summary.json after test run'"
   }
 }

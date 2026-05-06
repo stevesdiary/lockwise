@@ -34,7 +34,17 @@
     "load:baseline": "k6 run -e STAGE=baseline tests/load/journey.js",
     "load:stress": "k6 run -e STAGE=stress   tests/load/journey.js",
     "load:spike": "k6 run -e STAGE=spike    tests/load/journey.js",
-    "load:all": "k6 run tests/load/journey.js"
+    "load:all": "k6 run tests/load/journey.js",
+    "load:seed": "npx sequelize-cli db:seed --seed seeders/loadtest-seed-users.js",
+    "load:seed:undo": "npx sequelize-cli db:seed:undo --seed seeders/loadtest-seed-users.js",
+    "test:smoke": "k6 run load-test/tests/smoke.js",
+    "test:load": "k6 run load-test/tests/load.js",
+    "test:stress": "k6 run load-test/tests/stress.js",
+    "test:spike": "k6 run load-test/tests/spike.js",
+    "test:full": "k6 run load-test/tests/full-load-test.js",
+    "test:resident": "k6 run --vus 20 --duration 3m load-test/tests/scenarios/resident-journey-standalone.js",
+    "test:manager": "k6 run --vus 10 --duration 3m load-test/tests/scenarios/manager-journey-standalone.js",
+    "test:queue": "k6 run --vus 5 --duration 2m load-test/tests/scenarios/queue-backpressure-standalone.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.817.0",

@@ -68,7 +68,8 @@ const limiter = rateLimit({
   legacyHeaders: false,
   message: 'Too many requests from this IP, try again after 10 minutes',
   // Paystack webhook is exempt — Paystack retries on non-200 and could exhaust the limit
-  skip: (req) => req.path.includes('/webhooks/paystack'),
+  // In development, skip rate limiting entirely so load tests against localhost aren't throttled
+  skip: (req) => req.path.includes('/webhooks/paystack') || process.env.NODE_ENV === 'development',
 });
 
 // Strict limiter for auth endpoints — brute-force protection for login/registration/OTP
@@ -77,7 +78,8 @@ const authLimiter = rateLimit({
   max: 20,
   standardHeaders: true,
   legacyHeaders: false,
-  message: 'Too many authentication attempts, try again after 15 minutes'
+  message: 'Too many authentication attempts, try again after 15 minutes',
+  skip: () => process.env.NODE_ENV === 'development',
 });
 
 // Health check — exempt from rate limiting, used by load balancers
