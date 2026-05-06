@@ -1,7 +1,6 @@
 import { Op } from 'sequelize';
 import { Payment } from '../../payment/models/payment.model';
 import { User } from '../../auth/models/user.model';
-import { Subscription } from '../../payment/models/subscription.model';
 import accessLogService from '../../access/services/access-log.service';
 import AccessLog from '../../access/models/access-log.model';
 import sequelize from '../../../shared/core/database';
@@ -41,14 +40,7 @@ export const managerDashboardService = {
   getEstateResidents: async (estate_id: string, filters: { limit?: number; offset?: number }) => {
     return await User.findAll({
       where: { estate_id },
-      include: [
-        { 
-          model: Subscription, 
-          where: { estate_id },
-          required: false,
-          attributes: ['status', 'start_date', 'end_date']
-        }
-      ],
+      attributes: ['id', 'first_name', 'last_name', 'email', 'phone', 'status', 'user_type', 'createdAt'],
       limit: filters.limit || 50,
       offset: filters.offset || 0,
       order: [['createdAt', 'DESC']]

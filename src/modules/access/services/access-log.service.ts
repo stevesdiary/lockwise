@@ -2,6 +2,7 @@ import AccessLog from '../models/access-log.model';
 import AccessEntry from '../models/access-entry.model';
 import sequelize from '../../../shared/core/database';
 import { getFromRedis, deleteFromRedis } from '../../../shared/core/redis';
+import { Gate } from '../../estate/models/gate.model';
 
 export class AccessLogService {
   async logAccess(data: any) {
@@ -60,8 +61,11 @@ export class AccessLogService {
     return accessLog;
   }
 
-  async processCodeScan(code: string, gateId?: string, scannedBy?: string, scanType?: 'entry' | 'exit') {
-    const accessLog = await AccessLog.findOne({ where: { access_code: code } });
+  async processCodeScan(code: string, gateId?: string, scannedBy?: string, scanType?: 'entry' | 'exit', estateId?: string) {
+    // Scope lookup to a specific estate when known (prevents cross-estate code scanning)
+    const where: any = { access_code: code };
+    if (estateId) where.estate_id = estateId;
+    const accessLog = await AccessLog.findOne({ where });
 
     if (!accessLog) {
       throw new Error('Invalid access code');
