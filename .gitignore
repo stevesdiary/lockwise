@@ -19,3 +19,6 @@ coverage/
 lockwise-mobile/
 logs/
 .worktrees/
+tests
+K6_USAGE.md
+.env.loadtest
