@@ -115,7 +115,7 @@ const dialectOptions = {
 };
 
 const pools: Record<AppEnvironment, { max: number; min: number }> = {
-  development: { max: 5, min: 0 },
+  development: { max: 20, min: 2 },
   production: { max: 50, min: 3 },
   test: { max: 2, min: 0 },
 };
