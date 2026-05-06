@@ -55,6 +55,9 @@ import monitoringRouter from "./modules/analytics/routes/monitoring.route";
 import uploadRouter from "./modules/upload/routes/upload.route";
 import bulkUploadRouter from "./modules/upload/routes/bulk-upload.route";
 
+// Electricity Module
+import electricityRouter from "./modules/electricity/routes/electricity.route";
+
 // Location Module
 import addressRouter from "./modules/location/routes/address.route";
 import estateAddressRouter from "./modules/estate/routes/address.route";
@@ -130,6 +133,9 @@ router.use('/monitoring', monitoringRouter);
 // Upload Routes
 router.use('/upload', uploadRouter);
 router.use('/bulk-upload', bulkUploadRouter);
+
+// Electricity Routes
+router.use('/electricity', electricityRouter);
 
 // Location Routes
 router.use('/address', addressRouter);
