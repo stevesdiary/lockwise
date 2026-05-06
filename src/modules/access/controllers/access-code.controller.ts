@@ -140,16 +140,17 @@ export const accessCodeController = {
         return res.status(400).json({ message: 'Code is required' });
       }
 
-      const codeWhere: any = { access_code: code, status: 'active' };
-      if (req.user?.estate_id) codeWhere.estate_id = req.user.estate_id;
-
       const accessLog = await AccessLog.findOne({
-        where: codeWhere,
+        where: { access_code: code, status: 'active' },
         include: [{ model: User, as: 'user', attributes: ['id', 'first_name', 'last_name', 'phone'] }]
       });
 
       if (!accessLog) {
         return res.status(404).json({ success: false, message: 'Invalid or expired access code' });
+      }
+
+      if (req.user?.estate_id && (accessLog as any).estate_id !== req.user.estate_id) {
+        return res.status(403).json({ success: false, message: 'This access code was not generated for your estate. Please ensure the resident belongs to this estate.' });
       }
 
       if (accessLog.valid_until && new Date() > new Date(accessLog.valid_until)) {
@@ -197,16 +198,17 @@ export const accessCodeController = {
         }
       }
 
-      const approveWhere: any = { access_code: code, status: 'active' };
-      if (req.user?.estate_id) approveWhere.estate_id = req.user.estate_id;
-
       const accessLog = await AccessLog.findOne({
-        where: approveWhere,
+        where: { access_code: code, status: 'active' },
         include: [{ model: User, as: 'user', attributes: ['id', 'phone'] }]
       });
 
       if (!accessLog) {
         return res.status(404).json({ success: false, message: 'Access code not found' });
+      }
+
+      if (req.user?.estate_id && (accessLog as any).estate_id !== req.user.estate_id) {
+        return res.status(403).json({ success: false, message: 'This access code was not generated for your estate. Please ensure the resident belongs to this estate.' });
       }
 
       const direction = (accessLog as any).access_direction as 'entry' | 'exit' | 'both';
@@ -399,16 +401,17 @@ export const accessCodeController = {
         }
       }
 
-      const rejectWhere: any = { access_code: code, status: 'active' };
-      if (req.user?.estate_id) rejectWhere.estate_id = req.user.estate_id;
-
       const accessLog = await AccessLog.findOne({
-        where: rejectWhere,
+        where: { access_code: code, status: 'active' },
         include: [{ model: User, as: 'user', attributes: ['id', 'phone'] }]
       });
 
       if (!accessLog) {
         return res.status(404).json({ success: false, message: 'Access code not found' });
+      }
+
+      if (req.user?.estate_id && (accessLog as any).estate_id !== req.user.estate_id) {
+        return res.status(403).json({ success: false, message: 'This access code was not generated for your estate. Please ensure the resident belongs to this estate.' });
       }
 
       await accessLog.update({
