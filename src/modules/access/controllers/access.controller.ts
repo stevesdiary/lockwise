@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { handleControllerError } from '../../../shared/middleware/error-handler.middleware';
 import accessLogService from '../services/access-log.service';
 import { nullifyShortUrlForLog } from '../../../shared/utils/url-shortener.util';
+import { Gate } from '../../estate/models/gate.model';
 
 // Create access request
 async function createAccessRecord(req: Request, res: Response) {
@@ -110,11 +111,19 @@ async function processCodeScan(req: Request, res: Response) {
       });
     }
 
+    // Derive the gate's estate so the scan is scoped to that estate only
+    let gateEstateId: string | undefined;
+    if (gate_id) {
+      const gate = await Gate.findByPk(gate_id, { attributes: ['estate_id'] });
+      gateEstateId = (gate as any)?.estate_id ?? undefined;
+    }
+
     const result = await accessLogService.processCodeScan(
       code,
       gate_id,
       scanned_by || req.user?.id,
-      scan_type
+      scan_type,
+      gateEstateId
     );
 
     return res.status(200).json({

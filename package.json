@@ -30,7 +30,11 @@
     "test:integration": "NODE_ENV=test jest tests/integration --config tests/setup/jest.config.ts",
     "test:auth": "NODE_ENV=test jest tests/integration/auth --config tests/setup/jest.config.ts",
     "test:payments": "NODE_ENV=test jest tests/integration/payments --config tests/setup/jest.config.ts",
-    "test:rbac": "NODE_ENV=test jest tests/integration/rbac --config tests/setup/jest.config.ts"
+    "test:rbac": "NODE_ENV=test jest tests/integration/rbac --config tests/setup/jest.config.ts",
+    "load:baseline": "k6 run -e STAGE=baseline tests/load/journey.js",
+    "load:stress": "k6 run -e STAGE=stress   tests/load/journey.js",
+    "load:spike": "k6 run -e STAGE=spike    tests/load/journey.js",
+    "load:all": "k6 run tests/load/journey.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.817.0",

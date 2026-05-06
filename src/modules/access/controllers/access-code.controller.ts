@@ -140,8 +140,11 @@ export const accessCodeController = {
         return res.status(400).json({ message: 'Code is required' });
       }
 
+      const codeWhere: any = { access_code: code, status: 'active' };
+      if (req.user?.estate_id) codeWhere.estate_id = req.user.estate_id;
+
       const accessLog = await AccessLog.findOne({
-        where: { access_code: code, status: 'active' },
+        where: codeWhere,
         include: [{ model: User, as: 'user', attributes: ['id', 'first_name', 'last_name', 'phone'] }]
       });
 
@@ -194,8 +197,11 @@ export const accessCodeController = {
         }
       }
 
+      const approveWhere: any = { access_code: code, status: 'active' };
+      if (req.user?.estate_id) approveWhere.estate_id = req.user.estate_id;
+
       const accessLog = await AccessLog.findOne({
-        where: { access_code: code, status: 'active' },
+        where: approveWhere,
         include: [{ model: User, as: 'user', attributes: ['id', 'phone'] }]
       });
 
@@ -393,8 +399,11 @@ export const accessCodeController = {
         }
       }
 
+      const rejectWhere: any = { access_code: code, status: 'active' };
+      if (req.user?.estate_id) rejectWhere.estate_id = req.user.estate_id;
+
       const accessLog = await AccessLog.findOne({
-        where: { access_code: code, status: 'active' },
+        where: rejectWhere,
         include: [{ model: User, as: 'user', attributes: ['id', 'phone'] }]
       });
 
