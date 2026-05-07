@@ -314,6 +314,33 @@ Best regards,
 The Lockwise Team`
   }),
 
+  electricityReceipt: (data: any) => ({
+    subject: `Electricity Recharge Receipt - ${data.reference}`,
+    html: baseTemplate(`
+      <div class="content">
+        <h2>⚡ Electricity Recharge Receipt</h2>
+        <p>Hello ${data.name || 'there'},</p>
+        <p>Your electricity recharge was successful. Here are the details:</p>
+        <div class="code-box">
+          <p><strong>Token:</strong></p>
+          <div class="code">${data.token}</div>
+        </div>
+        <table style="width:100%; border-collapse:collapse; margin:20px 0;">
+          <tr><td style="padding:8px 0; border-bottom:1px solid #eee;"><strong>Meter Number</strong></td><td style="padding:8px 0; border-bottom:1px solid #eee;">${data.meter_number}</td></tr>
+          <tr><td style="padding:8px 0; border-bottom:1px solid #eee;"><strong>Disco</strong></td><td style="padding:8px 0; border-bottom:1px solid #eee;">${data.disco}</td></tr>
+          <tr><td style="padding:8px 0; border-bottom:1px solid #eee;"><strong>Amount</strong></td><td style="padding:8px 0; border-bottom:1px solid #eee;">${data.amount}</td></tr>
+          <tr><td style="padding:8px 0; border-bottom:1px solid #eee;"><strong>Units</strong></td><td style="padding:8px 0; border-bottom:1px solid #eee;">${data.units}</td></tr>
+          <tr><td style="padding:8px 0; border-bottom:1px solid #eee;"><strong>Reference</strong></td><td style="padding:8px 0; border-bottom:1px solid #eee;">${data.reference}</td></tr>
+          <tr><td style="padding:8px 0; border-bottom:1px solid #eee;"><strong>Provider</strong></td><td style="padding:8px 0; border-bottom:1px solid #eee;">${data.provider}</td></tr>
+          <tr><td style="padding:8px 0;"><strong>Date</strong></td><td style="padding:8px 0;">${data.date}</td></tr>
+        </table>
+        <p>Please keep this receipt for your records.</p>
+        <p>Best regards,<br>The Lockwise Team</p>
+      </div>
+    `),
+    text: `Electricity Recharge Receipt\nToken: ${data.token}\nMeter: ${data.meter_number}\nDisco: ${data.disco}\nAmount: ${data.amount}\nUnits: ${data.units}\nRef: ${data.reference}\nDate: ${data.date}`
+  }),
+
   estateSubmitted: (data: any) => ({
     subject: `New estate "${data.estate_name || 'Unknown'}" submitted for approval`,
     html: baseTemplate(`
