@@ -33,7 +33,7 @@ class WebPushService {
 
   /** Send a web push to a single user by their userId */
   async sendToUser(userId: string, payload: WebPushPayload): Promise<void> {
-    const raw = await redis.get<string>(subKey(userId));
+    const raw = await redis.get(subKey(userId)) as string | null;
     if (!raw) return; // user hasn't subscribed from a browser
 
     let subscription: PushSubscription;

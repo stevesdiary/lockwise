@@ -54,6 +54,9 @@ import { Faq }             from '../../modules/community/models/faq.model';
 
 import { SupportTicket, SupportMessage } from '../../modules/support/models/support.model';
 
+import { SmartMeter }                    from '../../modules/electricity/models/smart-meter.model';
+import { ElectricityTransactionRecord }  from '../../modules/electricity/models/electricity-transaction.model';
+
 type AppEnvironment = 'development' | 'production' | 'test';
 
 // ── Runtime config (single source for app + migrations) ──────────────────────
@@ -115,7 +118,7 @@ const dialectOptions = {
 };
 
 const pools: Record<AppEnvironment, { max: number; min: number }> = {
-  development: { max: 5, min: 0 },
+  development: { max: 50, min: 5 },
   production: { max: 50, min: 3 },
   test: { max: 2, min: 0 },
 };
@@ -173,6 +176,7 @@ const sequelizeOptions: SequelizeOptions = {
     ParkingSlot, ParkingAssignment, GuestParking, EVChargingSession,
     CommunityPost, CommunityComment, Faq,
     SupportTicket, SupportMessage,
+    SmartMeter, ElectricityTransactionRecord,
   ],
 };
 const sequelize = hasDatabaseUrl
