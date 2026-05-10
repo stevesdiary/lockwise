@@ -240,7 +240,7 @@ class EstateService {
 
       // Auto-provision the Free plan if estate has ≤50 residents and no subscription yet
       try {
-        const { subscriptionService } = await import('../../payment/services/subscription.service');
+        const { default: subscriptionService } = await import('../../payment/services/subscription.service');
         const existing = await subscriptionService.getCurrentSubscriptionForEstate(estateId);
         if (!existing.data) {
           const residentCount = await subscriptionService.getResidentCount(estateId);
