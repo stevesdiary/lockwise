@@ -1,13 +1,14 @@
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import { schemas } from './schemas';
-import { 
-  authPaths, 
-  estatePaths, 
-  paymentPaths, 
-  electricityPaths, 
-  billsPaths, 
-  walletPaths 
+import {
+  authPaths,
+  estatePaths,
+  paymentPaths,
+  electricityPaths,
+  billsPaths,
+  walletPaths,
+  collectionsPaths
 } from './paths';
 
 const options = {
@@ -48,7 +49,8 @@ const options = {
       ...paymentPaths,
       ...electricityPaths,
       ...billsPaths,
-      ...walletPaths
+      ...walletPaths,
+      ...collectionsPaths
     },
     tags: [
       { name: 'Authentication', description: 'User authentication and authorization' },
