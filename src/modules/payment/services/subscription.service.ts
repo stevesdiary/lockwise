@@ -237,23 +237,46 @@ class SubscriptionService {
 
   async getCurrentSubscriptionForEstate(estateId: string) {
     try {
-      // Prefer active/grace_period over inactive; most recently created wins within same status
+      const now = new Date();
+      
+      // Only return truly active or grace period subscriptions
       const subscription = await Subscription.findOne({
         where: {
           estate_id: estateId,
           status: {
-            [Op.in]: ['active', 'grace_period', 'inactive']
+            [Op.in]: ['active', 'grace_period']
           }
         },
         include: [Plan],
         order: [
-          // active > grace_period > inactive
-          [sequelize.literal(`CASE status WHEN 'active' THEN 0 WHEN 'grace_period' THEN 1 ELSE 2 END`), 'ASC'],
+          // active > grace_period
+          [sequelize.literal(`CASE status WHEN 'active' THEN 0 WHEN 'grace_period' THEN 1 END`), 'ASC'],
           ['created_at', 'DESC'],
         ],
       });
 
       if (subscription) {
+        // Double-check if subscription is actually expired (in case cron hasn't run)
+        if (subscription.status === 'active' && subscription.end_date < now) {
+          // Subscription expired but cron hasn't processed it yet
+          return {
+            statusCode: 200,
+            status: 'success',
+            message: 'Subscription expired',
+            data: null,
+          };
+        }
+        
+        if (subscription.status === 'grace_period' && subscription.grace_period_end_date && subscription.grace_period_end_date < now) {
+          // Grace period ended but cron hasn't processed it yet
+          return {
+            statusCode: 200,
+            status: 'success',
+            message: 'Subscription expired',
+            data: null,
+          };
+        }
+        
         return {
           statusCode: 200,
           status: 'success',
@@ -262,19 +285,12 @@ class SubscriptionService {
         };
       }
 
-      const latestSubscription = await Subscription.findOne({
-        where: { estate_id: estateId },
-        include: [Plan],
-        order: [['created_at', 'DESC']]
-      });
-
+      // No active/grace subscription found
       return {
         statusCode: 200,
         status: 'success',
-        message: latestSubscription
-          ? 'Latest subscription retrieved successfully'
-          : 'No subscription found for this estate',
-        data: latestSubscription || null,
+        message: 'No active subscription found for this estate',
+        data: null,
       };
     } catch (error: any) {
       return {
@@ -287,23 +303,46 @@ class SubscriptionService {
 
   async checkExpiredSubscriptions() {
     try {
-      const expiredSubscriptions = await Subscription.findAll({
+      const now = new Date();
+      
+      // 1. Active subscriptions that have passed end_date → grace_period
+      const activeExpired = await Subscription.findAll({
         where: {
           status: 'active',
           end_date: {
-            [Op.lt]: new Date(),
+            [Op.lt]: now,
           },
         },
       });
 
-      for (const subscription of expiredSubscriptions) {
-        await subscription.update({ status: 'expired' });
+      for (const subscription of activeExpired) {
+        const gracePeriodEnd = new Date(subscription.end_date);
+        gracePeriodEnd.setDate(gracePeriodEnd.getDate() + 7); // 7 days grace period
         
-        // Send expiration notification
-        console.log(`Subscription expired: ${subscription.id}`);
+        await subscription.update({ 
+          status: 'grace_period',
+          grace_period_end_date: gracePeriodEnd
+        });
+        
+        console.log(`Subscription ${subscription.id} moved to grace_period`);
+      }
+      
+      // 2. Grace period subscriptions that have passed grace_period_end_date → expired
+      const graceExpired = await Subscription.findAll({
+        where: {
+          status: 'grace_period',
+          grace_period_end_date: {
+            [Op.lt]: now,
+          },
+        },
+      });
+
+      for (const subscription of graceExpired) {
+        await subscription.update({ status: 'expired' });
+        console.log(`Subscription ${subscription.id} expired`);
       }
 
-      return expiredSubscriptions.length;
+      return activeExpired.length + graceExpired.length;
     } catch (error) {
       console.error('Error checking expired subscriptions:', error);
       return 0;
