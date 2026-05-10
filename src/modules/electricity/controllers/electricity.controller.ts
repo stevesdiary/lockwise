@@ -12,7 +12,9 @@ export const electricityController = {
 
   async registerMeter(req: Request, res: Response) {
     try {
-      const { meterNumber, disco, meterType } = req.body;
+      const meterNumber = req.body.meterNumber || req.body.meter_number;
+      const disco = req.body.disco;
+      const meterType = req.body.meterType || req.body.meter_type;
       const userId = req.user?.id;
       if (!userId) return res.status(401).json({ error: 'Authentication required' });
       if (!meterNumber || !disco || !meterType) {
@@ -72,7 +74,9 @@ export const electricityController = {
   // ─── Validation ───
 
   async validateMeter(req: Request, res: Response) {
-    const { meterNumber, disco, meterType } = req.body;
+    const meterNumber = req.body.meterNumber || req.body.meter_number;
+    const disco = req.body.disco;
+    const meterType = req.body.meterType || req.body.meter_type;
     if (!meterNumber || !disco || !meterType) {
       return res.status(400).json({ error: 'meterNumber, disco, and meterType are required' });
     }
@@ -82,16 +86,22 @@ export const electricityController = {
 
     try {
       const result = await electricityService.validateMeter(meterNumber, disco as DiscoCode, meterType as MeterType);
-      res.json({ success: result.valid, data: result });
+      if (!result.valid) {
+        return res.status(400).json({ success: false, error: 'Invalid meter number. Please check and try again.' });
+      }
+      res.json({ success: true, data: result });
     } catch (error) {
-      res.status(500).json({ error: 'Meter validation failed', details: (error as Error).message });
+      res.status(400).json({ success: false, error: 'Meter verification failed. Please check the meter number and try again.' });
     }
   },
 
   // ─── Vend (manual) ───
 
   async vend(req: Request, res: Response) {
-    const { meterNumber, disco, meterType, amount } = req.body;
+    const meterNumber = req.body.meterNumber || req.body.meter_number;
+    const disco = req.body.disco;
+    const meterType = req.body.meterType || req.body.meter_type;
+    const amount = req.body.amount;
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ error: 'Authentication required' });
     if (!meterNumber || !disco || !meterType || !amount) {
