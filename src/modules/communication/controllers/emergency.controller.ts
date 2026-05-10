@@ -177,31 +177,20 @@ class EmergencyController {
   async getLocationContacts(req: Request, res: Response) {
     try {
       const user = req.user!;
-      const { estate_id, country_id, state_id, city_id } = req.query as any;
+      const { country_id, state_id, city_id } = req.query as any;
 
       let countryId = country_id as string | undefined;
       let stateId = (state_id as string) || null;
       let cityId = (city_id as string) || null;
 
-      if (estate_id) {
-        const estate = await Estate.findByPk(estate_id as string, {
-          attributes: ['country_id', 'state_id', 'city_id'],
-        });
-        if (!estate) {
-          return res.status(404).json({ success: false, message: 'Estate not found' });
-        }
-        countryId = (estate as any).country_id;
-        stateId = (estate as any).state_id || null;
-        cityId = (estate as any).city_id || null;
-      }
-
-      if (!countryId && user.estate_id) {
-        const estate = await Estate.findByPk(user.estate_id, { attributes: ['country_id'] });
-        countryId = (estate as any)?.country_id;
+      // If no country_id provided, try to get default Nigeria country
+      if (!countryId) {
+        const nigeriaCountry = await locationEmergencyService.getCountryByCode('NG');
+        countryId = nigeriaCountry?.id;
       }
 
       if (!countryId) {
-        return res.status(400).json({ success: false, message: 'Could not determine location' });
+        return res.status(400).json({ success: false, message: 'Could not determine location. Please provide country_id.' });
       }
 
       const contacts = await locationEmergencyService.getContactsForLocation({

@@ -73,6 +73,10 @@ class LocationEmergencyService {
     return Country.findAll({ order: [['name', 'ASC']] });
   }
 
+  async getCountryByCode(isoCode: string) {
+    return Country.findOne({ where: { iso_code: isoCode } });
+  }
+
   async getStates(countryId: string) {
     return State.findAll({ where: { country_id: countryId }, order: [['name', 'ASC']] });
   }
