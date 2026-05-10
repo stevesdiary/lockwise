@@ -210,6 +210,78 @@ const managerDashboardController = {
     }
   },
 
+  getEstateStaff: async (req: Request, res: Response) => {
+    try {
+      const estate_id = asString(req.params.estate_id);
+      if (!assertEstateAccess(req, res, estate_id)) return;
+      const staff = await managerDashboardService.getEstateStaff(estate_id);
+      res.json({ status: 'success', data: staff });
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  },
+
+  createStaffAccount: async (req: Request, res: Response) => {
+    try {
+      const caller = (req as any).user;
+      const estate_id: string = caller?.estate_id || '';
+      if (!estate_id) {
+        return res.status(403).json({ status: 'error', message: 'Manager is not linked to an estate' });
+      }
+      const { first_name, last_name, email, password, role, phone } = req.body as {
+        first_name?: string; last_name?: string; email?: string; password?: string;
+        role?: string; phone?: string;
+      };
+      if (!first_name || !last_name || !email || !password || !role) {
+        return res.status(400).json({ status: 'error', message: 'first_name, last_name, email, password, and role are required' });
+      }
+      const allowed = ['security', 'domestic_staff'];
+      if (!allowed.includes(role)) {
+        return res.status(400).json({ status: 'error', message: `role must be one of: ${allowed.join(', ')}` });
+      }
+      const newUser = await managerDashboardService.createStaffAccount(estate_id, {
+        first_name, last_name, email, password, role: role as 'security' | 'domestic_staff', phone,
+      });
+      res.status(201).json({ status: 'success', data: newUser, message: 'Staff account created' });
+    } catch (error: any) {
+      if (error?.statusCode === 409) return res.status(409).json({ status: 'error', message: error.message });
+      return handleControllerError(error, res);
+    }
+  },
+
+  setStaffStatus: async (req: Request, res: Response) => {
+    try {
+      const user_id = asString(req.params.user_id);
+      const { status } = req.body as { status?: string };
+      if (status !== 'active' && status !== 'inactive') {
+        return res.status(400).json({ status: 'error', message: 'status must be active or inactive' });
+      }
+      const caller = (req as any).user;
+      const estate_id: string = caller?.estate_id || '';
+      const updated = await managerDashboardService.setStaffStatus(user_id, estate_id, status);
+      if (!updated) return res.status(404).json({ status: 'error', message: 'Staff member not found' });
+      res.json({ status: 'success', message: `Staff member set to ${status}` });
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  },
+
+  removeStaffMember: async (req: Request, res: Response) => {
+    try {
+      const user_id = asString(req.params.user_id);
+      const caller = (req as any).user;
+      const estate_id: string = caller?.estate_id || '';
+      if (!estate_id) {
+        return res.status(403).json({ status: 'error', message: 'Manager is not linked to an estate' });
+      }
+      const removed = await managerDashboardService.removeStaffMember(user_id, estate_id);
+      if (!removed) return res.status(404).json({ status: 'error', message: 'Staff member not found' });
+      res.json({ status: 'success', message: 'Staff member removed' });
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  },
+
   getEstateSecurityPersonnel: async (req: Request, res: Response) => {
     try {
       const estate_id = asString(req.params.estate_id);

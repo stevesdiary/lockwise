@@ -113,7 +113,7 @@ dashboardRouter.post('/manager/residents/:user_id/reject',
   managerDashboardController.rejectResident
 );
 
-// Security personnel management
+// Security personnel management (legacy — security only)
 dashboardRouter.get('/manager/:estate_id/security',
   authenticateToken,
   authorizeRoles(['manager', 'admin']),
@@ -130,6 +130,31 @@ dashboardRouter.delete('/manager/security/:user_id',
   authenticateToken,
   authorizeRoles(['manager', 'admin']),
   managerDashboardController.deleteSecurityUser
+);
+
+// Staff management (security + domestic_staff)
+dashboardRouter.get('/manager/:estate_id/staff',
+  authenticateToken,
+  authorizeRoles(['manager', 'admin']),
+  managerDashboardController.getEstateStaff
+);
+
+dashboardRouter.post('/manager/staff',
+  authenticateToken,
+  authorizeRoles(['manager', 'admin']),
+  managerDashboardController.createStaffAccount
+);
+
+dashboardRouter.patch('/manager/staff/:user_id/status',
+  authenticateToken,
+  authorizeRoles(['manager', 'admin']),
+  managerDashboardController.setStaffStatus
+);
+
+dashboardRouter.delete('/manager/staff/:user_id',
+  authenticateToken,
+  authorizeRoles(['manager', 'admin']),
+  managerDashboardController.removeStaffMember
 );
 
 export default dashboardRouter;
