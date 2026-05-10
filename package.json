@@ -16,7 +16,7 @@
   "main": "index.js",
   "scripts": {
     "prestart": "node ./build/src/scripts/migrate.js",
-    "build": "pnpm install && tsc",
+    "build": "npm install && tsc",
     "start": "node ./build/src/main.js",
     "dev": "ts-node src/main.ts",
     "dev:watch": "nodemon --watch src --ext ts --exec ts-node src/main.ts",
