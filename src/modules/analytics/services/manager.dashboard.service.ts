@@ -140,14 +140,67 @@ export const managerDashboardService = {
     });
   },
 
+  getEstateStaff: async (estate_id: string) => {
+    return await User.findAll({
+      where: { estate_id, user_type: ['security', 'domestic_staff'] } as any,
+      attributes: ['id', 'first_name', 'last_name', 'email', 'phone', 'status', 'user_type', 'createdAt'],
+      order: [['user_type', 'ASC'], ['createdAt', 'DESC']],
+    });
+  },
+
+  createStaffAccount: async (
+    estate_id: string,
+    data: { first_name: string; last_name: string; email: string; password: string; role: 'security' | 'domestic_staff'; phone?: string }
+  ) => {
+    const { Role } = await import('../../auth/models/role.model');
+    const bcrypt = (await import('bcryptjs')).default;
+
+    const existing = await User.findOne({ where: { email: data.email } as any });
+    if (existing) throw Object.assign(new Error('Email already registered'), { statusCode: 409 });
+
+    const roleRecord = await Role.findOne({ where: { role: data.role } as any });
+    if (!roleRecord) throw new Error(`Role '${data.role}' not found`);
+
+    const hashed = await bcrypt.hash(data.password, 12);
+    const user = await User.create({
+      first_name: data.first_name,
+      last_name: data.last_name,
+      email: data.email.toLowerCase().trim(),
+      password: hashed,
+      phone: data.phone || null,
+      user_type: data.role,
+      role_id: (roleRecord as any).id,
+      estate_id,
+      status: 'active',
+    } as any);
+
+    return { id: (user as any).id, first_name: data.first_name, last_name: data.last_name, email: data.email, user_type: data.role };
+  },
+
   setSecurityStatus: async (user_id: string, status: 'active' | 'inactive') => {
     return await User.update({ status }, { where: { id: user_id, user_type: 'security' } as any });
+  },
+
+  setStaffStatus: async (user_id: string, estate_id: string, status: 'active' | 'inactive') => {
+    const [affected] = await User.update(
+      { status } as any,
+      { where: { id: user_id, estate_id, user_type: ['security', 'domestic_staff'] } as any }
+    );
+    return affected > 0;
   },
 
   deleteSecurityUser: async (user_id: string, estate_id: string) => {
     const [affected] = await User.update(
       { estate_id: null as any, status: 'inactive' } as any,
       { where: { id: user_id, user_type: 'security', estate_id } as any }
+    );
+    return affected > 0;
+  },
+
+  removeStaffMember: async (user_id: string, estate_id: string) => {
+    const [affected] = await User.update(
+      { estate_id: null as any, status: 'inactive' } as any,
+      { where: { id: user_id, estate_id, user_type: ['security', 'domestic_staff'] } as any }
     );
     return affected > 0;
   },

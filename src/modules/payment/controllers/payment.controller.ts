@@ -347,7 +347,32 @@ const paymentController = {
         return res.status(400).json({ status: 'error', message: 'User is not linked to an estate' });
       }
 
-      const result = await subscriptionService.getCurrentSubscriptionForEstate(req.user.estate_id);
+      const estateId = req.user.estate_id;
+      let result = await subscriptionService.getCurrentSubscriptionForEstate(estateId);
+
+      // No active subscription — auto-provision Free or prompt to subscribe
+      if (result.statusCode === 200 && !result.data) {
+        const residentCount = await subscriptionService.getResidentCount(estateId);
+        if (residentCount <= 50) {
+          const provisioned = await subscriptionService.provisionFreePlan(estateId);
+          if (provisioned) {
+            result = { statusCode: 200, status: 'success', message: 'Free plan auto-provisioned', data: provisioned };
+          }
+        } else {
+          return res.status(200).json({
+            status: 'success',
+            data: {
+              subscription: null,
+              show_banner: true,
+              banner_type: 'subscribe_required',
+              banner_message: `Your estate has ${residentCount} residents and needs a paid plan. Subscribe to unlock all features.`,
+              days_remaining: null,
+              payment_url: `${process.env.WEB_PORTAL_URL}/subscribe`,
+            },
+          });
+        }
+      }
+
       if (result.statusCode !== 200 || !result.data) {
         return res.status(result.statusCode).json(result);
       }
@@ -357,7 +382,7 @@ const paymentController = {
       const paymentUrl = `${process.env.WEB_PORTAL_URL}/subscribe`;
 
       let showBanner = false;
-      let bannerType: 'warning' | 'urgent' | 'critical' | null = null;
+      let bannerType: 'warning' | 'urgent' | 'critical' | 'subscribe_required' | null = null;
       let bannerMessage = '';
       let daysRemaining: number | null = null;
 
