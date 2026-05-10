@@ -15,6 +15,7 @@ import realTimeNotificationService from '../../modules/analytics/services/realti
 import { startAccessCodeExpiryJob } from '../jobs/access-code-expiry.job';
 import { startSubscriptionExpiryJob } from '../jobs/subscription-expiry.job';
 import { startSafetyNotificationJob } from '../jobs/safety-notification.job';
+import { startCollectionsCronJobs } from '../jobs/collections.job';
 import { resolveShortUrl } from '../utils/url-shortener.util';
 
 const server = express();
@@ -52,8 +53,13 @@ server.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token']
 }));
 
-// Body parsing with size limits
-server.use(express.json({ limit: '10mb' }));
+// Body parsing with size limits; capture raw body for webhook signature verification
+server.use(express.json({
+  limit: '10mb',
+  verify: (req: any, _res, buf) => {
+    req.rawBody = buf.toString('utf8');
+  },
+}));
 server.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Compression
@@ -69,7 +75,7 @@ const limiter = rateLimit({
   message: 'Too many requests from this IP, try again after 10 minutes',
   // Paystack webhook is exempt — Paystack retries on non-200 and could exhaust the limit
   // In development, skip rate limiting entirely so load tests against localhost aren't throttled
-  skip: (req) => req.path.includes('/webhooks/paystack') || process.env.NODE_ENV === 'development',
+  skip: (req) => req.path.includes('/webhooks/paystack') || req.path.includes('/kuda/webhook') || process.env.NODE_ENV === 'development',
 });
 
 // Strict limiter for auth endpoints — brute-force protection for login/registration/OTP
@@ -143,6 +149,7 @@ const startServer = async () => {
     startAccessCodeExpiryJob();
     startSubscriptionExpiryJob();
     startSafetyNotificationJob();
+    startCollectionsCronJobs();
 
   } catch (error) {
     console.error('Unable to start server:', error);
