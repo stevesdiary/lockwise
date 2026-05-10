@@ -20,6 +20,7 @@ class VTpassService {
 
     this.client = axios.create({
       baseURL,
+      timeout: 60000, // VTpass sandbox can be slow
       headers: {
         'Content-Type': 'application/json',
         'api-key': process.env.VTPASS_API_KEY!,

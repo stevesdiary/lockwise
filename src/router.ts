@@ -172,7 +172,6 @@ router.use('/legal', legalRouter);
 
 // Bills Routes
 router.use('/bills', billsRouter);
-router.use('/electricity', electricityRouter);
 
 // Wallet Routes
 router.use('/wallet', walletRouter);
