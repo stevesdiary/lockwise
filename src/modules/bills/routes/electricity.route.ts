@@ -72,11 +72,15 @@ router.post('/vend', authenticateToken, async (req: Request, res: Response) => {
       data: {
         reference: result.requestId,
         token: result.token,
+        units: null,
         amount: result.amount,
-        status: result.status,
+        status: result.status === 'success' ? 'successful' : result.status,
         provider: result.provider,
-        meter_number,
+        meterNumber: meter_number,
+        disco: disco.toUpperCase(),
+        meterType: meter_type,
         transaction_id: result.transactionId,
+        createdAt: new Date().toISOString(),
       },
     });
   } catch (error: any) {
@@ -97,8 +101,9 @@ router.post('/requery', authenticateToken, async (req: Request, res: Response) =
       data: {
         reference: result.requestId,
         token: result.token,
+        units: null,
         amount: result.amount,
-        status: result.status,
+        status: result.status === 'success' ? 'successful' : result.status,
         provider: result.provider,
       },
     });
@@ -115,10 +120,44 @@ router.get('/transactions', authenticateToken, async (req: Request, res: Respons
     const offset = parseInt(req.query.offset as string) || 0;
 
     const { rows, count } = await billsService.getUserTransactions(user.id, limit, offset);
-    return res.json({ success: true, data: { transactions: rows, total: count } });
+
+    // Map to mobile-expected format
+    const transactions = rows.map((tx: any) => ({
+      id: tx.id,
+      meter_number: tx.billers_code,
+      disco: serviceIdToDisco(tx.service_id),
+      meter_type: tx.variation_code,
+      amount: Number(tx.amount),
+      token: tx.token,
+      units: null,
+      status: tx.status === 'success' ? 'successful' : tx.status,
+      provider: tx.provider_name,
+      request_id: tx.request_id,
+      auto_loaded: false,
+      created_at: tx.created_at || tx.createdAt,
+    }));
+
+    return res.json({ success: true, data: { transactions, total: count } });
   } catch (error: any) {
     return res.status(500).json({ success: false, error: error.message });
   }
 });
+
+// Map VTpass serviceID back to short disco code for mobile
+function serviceIdToDisco(serviceId: string): string {
+  const map: Record<string, string> = {
+    'ikeja-electric': 'IKEDC',
+    'eko-electric': 'EKEDC',
+    'kano-electric': 'KEDCO',
+    'portharcourt-electric': 'PHED',
+    'jos-electric': 'JED',
+    'ibadan-electric': 'IBEDC',
+    'kaduna-electric': 'KAEDCO',
+    'abuja-electric': 'AEDC',
+    'enugu-electric': 'EEDC',
+    'benin-electric': 'BEDC',
+  };
+  return map[serviceId] || serviceId;
+}
 
 export default router;
