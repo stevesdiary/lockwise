@@ -39,7 +39,12 @@ router.post('/validate-meter', authenticateToken, async (req: Request, res: Resp
     const result = await billsService.verifyMeter(serviceID, meter_number, meter_type);
     return res.json({ success: true, data: result });
   } catch (error: any) {
-    return res.status(400).json({ success: false, error: error.message });
+    const isInvalidMeter = error.message.includes('not correct') || error.message.includes('not a valid') || error.message.includes('Invalid meter');
+    return res.status(isInvalidMeter ? 422 : 400).json({
+      success: false,
+      error: error.message,
+      code: isInvalidMeter ? 'INVALID_METER' : 'VERIFICATION_FAILED',
+    });
   }
 });
 

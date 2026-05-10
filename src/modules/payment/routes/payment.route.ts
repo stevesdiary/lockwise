@@ -90,4 +90,13 @@ paymentRouter.patch(
   }
 );
 
+paymentRouter.post(
+  "/subscription/check-expired",
+  authenticateToken,
+  requireAdmin,
+  async (req: ExpressRequest, res: Response) => {
+    await paymentController.checkExpiredSubscriptions(req, res);
+  }
+);
+
 export default paymentRouter;
