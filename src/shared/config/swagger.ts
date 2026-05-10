@@ -2300,7 +2300,7 @@ const options = {
             { name: 'cityId', in: 'query', schema: { type: 'string' }, description: 'City UUID (optional)' }
           ],
           responses: {
-            '200': { description: 'Emergency contacts grouped by category', content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'array', items: { type: 'object', properties: { category: { type: 'string', example: 'Police' }, icon: { type: 'string', example: 'shield-account' }, contacts: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, name: { type: 'string' }, phone_number: { type: 'string' }, scope: { type: 'string', enum: ['Local', 'State', 'National'] } } } } } } } } } } },
+            '200': { description: 'Emergency contacts grouped by category' },
             '401': { description: 'Unauthorized' }
           }
         }
