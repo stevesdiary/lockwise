@@ -2292,7 +2292,7 @@ const options = {
         get: {
           tags: ['Emergency'],
           summary: 'Get location-based emergency contacts',
-          description: 'Returns emergency contacts scoped to the user's country, state, and city — grouped by category and annotated with scope badge (Local/State/National).',
+          description: "Returns emergency contacts scoped to the user's country, state, and city - grouped by category and annotated with scope badge (Local/State/National).",
           security: [{ bearerAuth: [] }],
           parameters: [
             { name: 'countryId', in: 'query', required: true, schema: { type: 'string' }, description: 'Country UUID' },
@@ -2397,7 +2397,7 @@ const options = {
         get: {
           tags: ['Wallet'],
           summary: 'Get wallet account details',
-          description: 'Returns the authenticated resident's wallet account info including virtual account number if provisioned.',
+          description: "Returns the authenticated resident's wallet account info including virtual account number if provisioned.",
           security: [{ bearerAuth: [] }],
           responses: {
             '200': { description: 'Wallet account details', content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'object', properties: { id: { type: 'string' }, balance: { type: 'number', example: 5000 }, currency: { type: 'string', example: 'NGN' }, kuda_account_number: { type: 'string', nullable: true }, kuda_account_name: { type: 'string', nullable: true } } } } } } } },
@@ -2523,7 +2523,7 @@ const options = {
       '/collections/residents/{residentId}/status': {
         get: {
           tags: ['Collections'],
-          summary: 'Get a resident's payment status (Manager)',
+          summary: "Get a resident's payment status (Manager)",
           security: [{ bearerAuth: [] }],
           parameters: [{ name: 'residentId', in: 'path', required: true, schema: { type: 'string' } }],
           responses: { '200': { description: 'Resident payment status' }, '403': { description: 'Manager role required' } }
@@ -2533,7 +2533,7 @@ const options = {
         post: {
           tags: ['Collections'],
           summary: 'Request a withdrawal (Manager)',
-          description: 'Request a payout from the estate's collected funds to a designated bank account.',
+          description: "Request a payout from the estate's collected funds to a designated bank account.",
           security: [{ bearerAuth: [] }],
           requestBody: {
             required: true,
