@@ -456,6 +456,24 @@ const paymentController = {
     }
   },
 
+  // Admin endpoint to manually trigger subscription expiry check
+  checkExpiredSubscriptions: async (req: ExpressRequest, res: Response) => {
+    try {
+      const count = await subscriptionService.checkExpiredSubscriptions();
+      return res.json({
+        status: 'success',
+        message: `Processed ${count} expired subscription(s)`,
+        data: { count }
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: 'error',
+        message: 'Failed to check expired subscriptions',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  },
+
 };
 
 export default paymentController;

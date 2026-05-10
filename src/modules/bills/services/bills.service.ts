@@ -21,7 +21,12 @@ class BillsService {
 
   async verifyMeter(serviceID: ElectricityProvider, meterNumber: string, type: 'prepaid' | 'postpaid') {
     const result = await vtpassService.verifyMeter({ billersCode: meterNumber, serviceID, type });
+
     if (result.code !== '000') throw new Error(result.content?.toString() || 'Meter verification failed');
+    if (result.content?.WrongBillersCode || result.content?.error) {
+      throw new Error(result.content.error || 'Invalid meter number');
+    }
+
     return {
       customerName: result.content.Customer_Name,
       meterNumber: result.content.Meter_Number,
