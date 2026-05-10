@@ -36,7 +36,7 @@ const pool = {
 
 const baseConfig = {
   dialect: 'postgres',
-  migrationStorageTableName: 'migrations',
+  migrationStorageTableName: 'SequelizeMeta',
   seedersStorage: 'sequelize',
   seedersStorageTableName: 'seeders',
   dialectOptions,
