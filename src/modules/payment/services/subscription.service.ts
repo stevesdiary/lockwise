@@ -235,6 +235,36 @@ class SubscriptionService {
     }
   }
 
+  async provisionFreePlan(estateId: string): Promise<Subscription | null> {
+    try {
+      const freePlan = await Plan.findOne({ where: { name: 'Free' } as any });
+      if (!freePlan) return null;
+
+      const now = new Date();
+      const end = new Date(now);
+      end.setFullYear(end.getFullYear() + 1);
+
+      const sub = await Subscription.create({
+        estate_id: estateId,
+        plan_id: (freePlan as any).id,
+        status: 'active',
+        start_date: now,
+        end_date: end,
+        auto_renew: true,
+        paid_on: null,
+      } as any);
+
+      return Subscription.findByPk((sub as any).id, { include: [Plan] });
+    } catch {
+      return null;
+    }
+  }
+
+  async getResidentCount(estateId: string): Promise<number> {
+    const { User } = await import('../../auth/models/user.model');
+    return User.count({ where: { estate_id: estateId, user_type: 'resident' } as any });
+  }
+
   async getCurrentSubscriptionForEstate(estateId: string) {
     try {
       const now = new Date();

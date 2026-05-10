@@ -238,6 +238,20 @@ class EstateService {
         approved_on: new Date()
       } as any);
 
+      // Auto-provision the Free plan if estate has ≤50 residents and no subscription yet
+      try {
+        const { subscriptionService } = await import('../../payment/services/subscription.service');
+        const existing = await subscriptionService.getCurrentSubscriptionForEstate(estateId);
+        if (!existing.data) {
+          const residentCount = await subscriptionService.getResidentCount(estateId);
+          if (residentCount <= 50) {
+            await subscriptionService.provisionFreePlan(estateId);
+          }
+        }
+      } catch {
+        // Non-fatal — subscription can be provisioned lazily on first status check
+      }
+
       return {
         statusCode: 200,
         success: true,
