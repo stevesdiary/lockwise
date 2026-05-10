@@ -2087,6 +2087,77 @@ const options = {
           responses: { '200': { description: 'Onboarding step updated' }, '401': { description: 'Unauthorized' } }
         }
       },
+      '/estate/{estateId}/logo': {
+        patch: {
+          tags: ['Estates'],
+          summary: 'Upload estate logo',
+          description: 'Upload or replace the estate logo image. Requires manager ownership of the estate.',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'estateId', in: 'path', required: true, schema: { type: 'string' }, description: 'Estate UUID' }],
+          requestBody: {
+            required: true,
+            content: {
+              'multipart/form-data': {
+                schema: {
+                  type: 'object',
+                  required: ['logo'],
+                  properties: {
+                    logo: { type: 'string', format: 'binary', description: 'Logo image file (jpg, png, webp)' }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            '200': { description: 'Logo uploaded', content: { 'application/json': { schema: { type: 'object', properties: { logo_url: { type: 'string', example: 'https://cdn.example.com/logos/abc.png' } } } } } },
+            '401': { description: 'Unauthorized' },
+            '403': { description: 'Forbidden — not estate owner or admin' }
+          }
+        }
+      },
+      '/estate/estates/pending-updates': {
+        get: {
+          tags: ['Estates'],
+          summary: 'List estates with pending manager update requests (Admin)',
+          description: 'Returns all estates where a manager has submitted field changes awaiting admin approval.',
+          security: [{ bearerAuth: [] }],
+          responses: {
+            '200': { description: 'List of estates with pending_update_data', content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'array', items: { $ref: '#/components/schemas/Estate' } } } } } } },
+            '401': { description: 'Unauthorized' },
+            '403': { description: 'Admin role required' }
+          }
+        }
+      },
+      '/estate/{estateId}/apply-update': {
+        post: {
+          tags: ['Estates'],
+          summary: 'Approve or reject a pending estate update (Admin)',
+          description: 'Admin approves or rejects staged estate field changes from a manager. On approval the changes are applied immediately; on rejection `pending_update_data` is cleared.',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'estateId', in: 'path', required: true, schema: { type: 'string' } }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['approved'],
+                  properties: {
+                    approved: { type: 'boolean', example: true },
+                    rejection_reason: { type: 'string', example: 'Invalid address format' }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            '200': { description: 'Update applied or rejected' },
+            '401': { description: 'Unauthorized' },
+            '403': { description: 'Admin role required' },
+            '404': { description: 'Estate not found' }
+          }
+        }
+      },
       '/estate/{estateId}/setup-checklist': {
         patch: {
           tags: ['Estates'],
@@ -2217,6 +2288,723 @@ const options = {
           responses: { '200': { description: 'Subscription removed' }, '401': { description: 'Unauthorized' } }
         }
       },
+      '/emergency/location-contacts': {
+        get: {
+          tags: ['Emergency'],
+          summary: 'Get location-based emergency contacts',
+          description: 'Returns emergency contacts scoped to the user's country, state, and city — grouped by category and annotated with scope badge (Local/State/National).',
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'countryId', in: 'query', required: true, schema: { type: 'string' }, description: 'Country UUID' },
+            { name: 'stateId', in: 'query', schema: { type: 'string' }, description: 'State UUID (optional)' },
+            { name: 'cityId', in: 'query', schema: { type: 'string' }, description: 'City UUID (optional)' }
+          ],
+          responses: {
+            '200': { description: 'Emergency contacts grouped by category', content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'array', items: { type: 'object', properties: { category: { type: 'string', example: 'Police' }, icon: { type: 'string', example: 'shield-account' }, contacts: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, name: { type: 'string' }, phone_number: { type: 'string' }, scope: { type: 'string', enum: ['Local', 'State', 'National'] } } } } } } } } } } },
+            '401': { description: 'Unauthorized' }
+          }
+        }
+      },
+      '/emergency/location-contacts/countries': {
+        get: {
+          tags: ['Emergency'],
+          summary: 'List countries for emergency contact selectors',
+          security: [{ bearerAuth: [] }],
+          responses: { '200': { description: 'Countries list' } }
+        }
+      },
+      '/emergency/location-contacts/countries/{countryId}/states': {
+        get: {
+          tags: ['Emergency'],
+          summary: 'List states for a country',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'countryId', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { '200': { description: 'States list' } }
+        }
+      },
+      '/emergency/location-contacts/states/{stateId}/cities': {
+        get: {
+          tags: ['Emergency'],
+          summary: 'List cities for a state',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'stateId', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { '200': { description: 'Cities list' } }
+        }
+      },
+      '/emergency/location-contacts/categories': {
+        get: {
+          tags: ['Emergency'],
+          summary: 'List emergency contact categories',
+          security: [{ bearerAuth: [] }],
+          responses: { '200': { description: 'Categories list' } }
+        }
+      },
+      '/emergency/location-contacts/admin': {
+        get: {
+          tags: ['Emergency'],
+          summary: 'Admin — list all location emergency contacts',
+          security: [{ bearerAuth: [] }],
+          responses: { '200': { description: 'All contacts' }, '403': { description: 'Admin role required' } }
+        },
+        post: {
+          tags: ['Emergency'],
+          summary: 'Admin — create a location emergency contact',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['category_id', 'name', 'phone_number', 'country_id'],
+                  properties: {
+                    category_id: { type: 'string' },
+                    name: { type: 'string', example: 'Lagos State Fire Service' },
+                    phone_number: { type: 'string', example: '0800-FIRE' },
+                    alt_phone_number: { type: 'string' },
+                    country_id: { type: 'string' },
+                    state_id: { type: 'string' },
+                    city_id: { type: 'string' },
+                    description: { type: 'string' },
+                    is_active: { type: 'boolean', default: true },
+                    priority: { type: 'integer', default: 100 }
+                  }
+                }
+              }
+            }
+          },
+          responses: { '201': { description: 'Contact created' }, '403': { description: 'Admin role required' } }
+        }
+      },
+      '/emergency/location-contacts/admin/{contactId}': {
+        put: {
+          tags: ['Emergency'],
+          summary: 'Admin — update a location emergency contact',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'contactId', in: 'path', required: true, schema: { type: 'string' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object' } } } },
+          responses: { '200': { description: 'Contact updated' }, '403': { description: 'Admin role required' }, '404': { description: 'Not found' } }
+        },
+        delete: {
+          tags: ['Emergency'],
+          summary: 'Admin — delete a location emergency contact',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'contactId', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { '200': { description: 'Contact deleted' }, '403': { description: 'Admin role required' }, '404': { description: 'Not found' } }
+        }
+      },
+      '/wallet/account': {
+        get: {
+          tags: ['Wallet'],
+          summary: 'Get wallet account details',
+          description: 'Returns the authenticated resident's wallet account info including virtual account number if provisioned.',
+          security: [{ bearerAuth: [] }],
+          responses: {
+            '200': { description: 'Wallet account details', content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'object', properties: { id: { type: 'string' }, balance: { type: 'number', example: 5000 }, currency: { type: 'string', example: 'NGN' }, kuda_account_number: { type: 'string', nullable: true }, kuda_account_name: { type: 'string', nullable: true } } } } } } } },
+            '401': { description: 'Unauthorized' }
+          }
+        }
+      },
+      '/collections/fees': {
+        get: {
+          tags: ['Collections'],
+          summary: 'Get estate fees',
+          description: 'Returns all fees defined for the estate. Any authenticated user in the estate can list fees.',
+          security: [{ bearerAuth: [] }],
+          responses: { '200': { description: 'Fee list', content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'array', items: { type: 'object', properties: { fee_id: { type: 'string' }, name: { type: 'string', example: 'Monthly Service Charge' }, amount: { type: 'number', example: 5000 }, frequency: { type: 'string', enum: ['monthly', 'quarterly', 'annually', 'one_time'] }, is_active: { type: 'boolean' } } } } } } } } },
+            '401': { description: 'Unauthorized' }
+          }
+        },
+        post: {
+          tags: ['Collections'],
+          summary: 'Create a fee (Manager)',
+          description: 'Define a new recurring or one-time fee for residents in the estate.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['name', 'amount', 'frequency'],
+                  properties: {
+                    name: { type: 'string', example: 'Monthly Service Charge' },
+                    amount: { type: 'number', example: 5000 },
+                    frequency: { type: 'string', enum: ['monthly', 'quarterly', 'annually', 'one_time'], example: 'monthly' },
+                    description: { type: 'string' }
+                  }
+                }
+              }
+            }
+          },
+          responses: { '201': { description: 'Fee created' }, '401': { description: 'Unauthorized' }, '403': { description: 'Manager role required' } }
+        }
+      },
+      '/collections/fees/{feeId}': {
+        patch: {
+          tags: ['Collections'],
+          summary: 'Update a fee (Manager)',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'feeId', in: 'path', required: true, schema: { type: 'string' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: { name: { type: 'string' }, amount: { type: 'number' }, is_active: { type: 'boolean' } } } } } },
+          responses: { '200': { description: 'Fee updated' }, '403': { description: 'Manager role required' }, '404': { description: 'Fee not found' } }
+        },
+        delete: {
+          tags: ['Collections'],
+          summary: 'Delete a fee (Manager)',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'feeId', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { '200': { description: 'Fee deleted' }, '403': { description: 'Manager role required' } }
+        }
+      },
+      '/collections/invoices/generate': {
+        post: {
+          tags: ['Collections'],
+          summary: 'Generate invoices for residents (Manager)',
+          description: 'Bulk-generate invoices for all active residents in the estate for a given fee and billing period.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['fee_id', 'due_date'],
+                  properties: {
+                    fee_id: { type: 'string' },
+                    due_date: { type: 'string', format: 'date', example: '2026-06-01' },
+                    resident_ids: { type: 'array', items: { type: 'string' }, description: 'Optional subset of residents; omit to target all' }
+                  }
+                }
+              }
+            }
+          },
+          responses: { '200': { description: 'Invoices generated' }, '403': { description: 'Manager role required' } }
+        }
+      },
+      '/collections/invoices': {
+        get: {
+          tags: ['Collections'],
+          summary: 'Get my invoices (Resident)',
+          description: 'Returns all invoices for the authenticated resident.',
+          security: [{ bearerAuth: [] }],
+          responses: { '200': { description: 'Invoice list' }, '401': { description: 'Unauthorized' } }
+        }
+      },
+      '/collections/invoices/{invoiceId}/pay': {
+        post: {
+          tags: ['Collections'],
+          summary: 'Pay an invoice',
+          description: 'Initiate payment for a specific invoice. Triggers Paystack payment flow.',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'invoiceId', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { '200': { description: 'Payment initiated', content: { 'application/json': { schema: { $ref: '#/components/schemas/PaymentResponse' } } } }, '404': { description: 'Invoice not found' } }
+        }
+      },
+      '/collections/invoices/{invoiceId}/waive': {
+        patch: {
+          tags: ['Collections'],
+          summary: 'Waive an invoice (Manager)',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'invoiceId', in: 'path', required: true, schema: { type: 'string' } }],
+          requestBody: { required: false, content: { 'application/json': { schema: { type: 'object', properties: { reason: { type: 'string' } } } } } },
+          responses: { '200': { description: 'Invoice waived' }, '403': { description: 'Manager role required' } }
+        }
+      },
+      '/collections/summary': {
+        get: {
+          tags: ['Collections'],
+          summary: 'Get collections summary (Manager)',
+          description: 'Returns aggregate collection statistics — total billed, collected, outstanding, and waived — for the estate.',
+          security: [{ bearerAuth: [] }],
+          responses: { '200': { description: 'Collections summary' }, '403': { description: 'Manager role required' } }
+        }
+      },
+      '/collections/residents/{residentId}/status': {
+        get: {
+          tags: ['Collections'],
+          summary: 'Get a resident's payment status (Manager)',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'residentId', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { '200': { description: 'Resident payment status' }, '403': { description: 'Manager role required' } }
+        }
+      },
+      '/collections/withdraw': {
+        post: {
+          tags: ['Collections'],
+          summary: 'Request a withdrawal (Manager)',
+          description: 'Request a payout from the estate's collected funds to a designated bank account.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['amount'],
+                  properties: {
+                    amount: { type: 'number', example: 50000 },
+                    note: { type: 'string' }
+                  }
+                }
+              }
+            }
+          },
+          responses: { '200': { description: 'Withdrawal requested' }, '403': { description: 'Manager role required' } }
+        }
+      },
+      '/collections/withdrawals': {
+        get: {
+          tags: ['Collections'],
+          summary: 'Get withdrawal history (Manager)',
+          security: [{ bearerAuth: [] }],
+          responses: { '200': { description: 'Withdrawal list' }, '403': { description: 'Manager role required' } }
+        }
+      },
+      '/kuda/estate-wallet/balance': {
+        get: {
+          tags: ['Kuda'],
+          summary: 'Get estate virtual wallet balance (Manager)',
+          description: 'Returns the Kuda-powered estate wallet balance. Returns 503 when `KUDA_API_KEY` is not configured.',
+          security: [{ bearerAuth: [] }],
+          responses: {
+            '200': { description: 'Estate wallet balance', content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'object', properties: { balance: { type: 'number', example: 150000 }, currency: { type: 'string', example: 'NGN' }, kuda_account_number: { type: 'string', nullable: true } } } } } } } },
+            '401': { description: 'Unauthorized' },
+            '403': { description: 'Manager role required' },
+            '503': { description: 'Kuda integration not configured' }
+          }
+        }
+      },
+      '/kuda/estate-wallet/provision': {
+        post: {
+          tags: ['Kuda'],
+          summary: 'Provision a Kuda virtual account for the estate (Manager)',
+          description: 'Creates a Kuda Business virtual sub-account linked to the estate. Idempotent — returns existing account if already provisioned.',
+          security: [{ bearerAuth: [] }],
+          responses: {
+            '200': { description: 'Virtual account provisioned or already exists', content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'object', properties: { kuda_account_number: { type: 'string' }, kuda_account_name: { type: 'string' }, kuda_tracking_reference: { type: 'string' } } } } } } } },
+            '403': { description: 'Manager role required' },
+            '503': { description: 'Kuda integration not configured' }
+          }
+        }
+      },
+      '/kuda/estate-wallet/transactions': {
+        get: {
+          tags: ['Kuda'],
+          summary: 'Get estate wallet transaction history (Manager)',
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'limit', in: 'query', schema: { type: 'integer', default: 20 } },
+            { name: 'offset', in: 'query', schema: { type: 'integer', default: 0 } }
+          ],
+          responses: { '200': { description: 'Estate wallet transactions' }, '403': { description: 'Manager role required' } }
+        }
+      },
+      '/kuda/webhook': {
+        post: {
+          tags: ['Kuda'],
+          summary: 'Kuda webhook receiver',
+          description: 'Receives inbound Kuda Business API webhooks (credit alerts for estate virtual accounts). No bearer auth — verified by Kuda signature.',
+          responses: { '200': { description: 'Webhook processed' } }
+        }
+      },
+      '/electricity/validate-meter': {
+        post: {
+          tags: ['Electricity'],
+          summary: 'Validate a meter number',
+          description: 'Validate a meter number against electricity distribution companies using multi-provider failover.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { type: 'object', required: ['meterNumber', 'disco', 'meterType'], properties: { meterNumber: { type: 'string', example: '12345678901' }, disco: { type: 'string', enum: ['EKEDC', 'IKEDC', 'JED', 'AEDC', 'PHED', 'EEDC', 'KEDCO', 'BEDC', 'KAEDCO', 'IBEDC'], example: 'EKEDC' }, meterType: { type: 'string', enum: ['prepaid', 'postpaid'], example: 'prepaid' } } } } }
+          },
+          responses: {
+            '200': { description: 'Meter validation result', content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' }, data: { type: 'object', properties: { valid: { type: 'boolean' }, customerName: { type: 'string', example: 'John Doe' }, customerAddress: { type: 'string' }, meterNumber: { type: 'string' }, disco: { type: 'string' }, minimumAmount: { type: 'number' } } } } } } } },
+            '400': { description: 'Invalid input', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            '401': { description: 'Unauthorized' },
+            '500': { description: 'Internal server error' }
+          }
+        }
+      },
+      '/electricity/meters': {
+        post: {
+          tags: ['Electricity'],
+          summary: 'Register a smart meter',
+          description: 'Register and validate a smart meter for the authenticated resident. The meter is validated with providers before saving.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { type: 'object', required: ['meterNumber', 'disco', 'meterType'], properties: { meterNumber: { type: 'string', example: '12345678901' }, disco: { type: 'string', enum: ['EKEDC', 'IKEDC', 'JED', 'AEDC', 'PHED', 'EEDC', 'KEDCO', 'BEDC', 'KAEDCO', 'IBEDC'], example: 'EKEDC' }, meterType: { type: 'string', enum: ['prepaid', 'postpaid'], example: 'prepaid' } } } } }
+          },
+          responses: {
+            '201': { description: 'Meter registered successfully' },
+            '400': { description: 'Validation failed or meter already registered' },
+            '401': { description: 'Unauthorized' }
+          }
+        },
+        get: {
+          tags: ['Electricity'],
+          summary: 'Get my registered meters',
+          description: 'Returns all smart meters registered by the authenticated user.',
+          security: [{ bearerAuth: [] }],
+          responses: {
+            '200': { description: 'List of registered meters', content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' }, data: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, meter_number: { type: 'string' }, disco: { type: 'string' }, meter_type: { type: 'string' }, customer_name: { type: 'string' }, auto_load_enabled: { type: 'boolean' }, is_verified: { type: 'boolean' } } } } } } } } },
+            '401': { description: 'Unauthorized' }
+          }
+        }
+      },
+      '/electricity/meters/{meterId}/auto-load': {
+        patch: {
+          tags: ['Electricity'],
+          summary: 'Toggle auto-load for a meter',
+          description: 'Enable or disable automatic token loading for a registered smart meter. Meter must be verified.',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'meterId', in: 'path', required: true, schema: { type: 'string' }, description: 'Smart meter UUID' }],
+          responses: {
+            '200': { description: 'Auto-load toggled', content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' }, data: { type: 'object', properties: { auto_load_enabled: { type: 'boolean' } } } } } } } },
+            '400': { description: 'Meter not verified' },
+            '401': { description: 'Unauthorized' },
+            '404': { description: 'Meter not found' }
+          }
+        },
+        post: {
+          tags: ['Electricity'],
+          summary: 'Auto-load electricity token',
+          description: 'Vend electricity using a registered smart meter with auto-load enabled. Token is delivered automatically and receipt sent via email.',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'meterId', in: 'path', required: true, schema: { type: 'string' }, description: 'Smart meter UUID' }],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { type: 'object', required: ['amount'], properties: { amount: { type: 'number', example: 5000, description: 'Amount in Naira (minimum 500)' } } } } }
+          },
+          responses: {
+            '200': { description: 'Token vended successfully', content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' }, data: { type: 'object', properties: { token: { type: 'string', example: '1234-5678-9012-3456-7890' }, units: { type: 'string', example: '50.5' }, reference: { type: 'string' }, provider: { type: 'string' }, status: { type: 'string' }, auto_loaded: { type: 'boolean', example: true } } } } } } } },
+            '400': { description: 'Auto-load not enabled or amount too low' },
+            '401': { description: 'Unauthorized' },
+            '404': { description: 'Meter not found' },
+            '502': { description: 'All providers failed' }
+          }
+        }
+      },
+      '/electricity/meters/{meterId}': {
+        delete: {
+          tags: ['Electricity'],
+          summary: 'Delete a registered meter',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'meterId', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: {
+            '200': { description: 'Meter removed' },
+            '401': { description: 'Unauthorized' },
+            '404': { description: 'Meter not found' }
+          }
+        }
+      },
+      '/electricity/vend': {
+        post: {
+          tags: ['Electricity'],
+          summary: 'Vend electricity token (manual)',
+          description: 'Purchase electricity token for any meter number. Uses multi-provider failover (VTPass → BuyPower → Baxi). Receipt sent via email on success.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { type: 'object', required: ['meterNumber', 'disco', 'meterType', 'amount'], properties: { meterNumber: { type: 'string', example: '12345678901' }, disco: { type: 'string', enum: ['EKEDC', 'IKEDC', 'JED', 'AEDC', 'PHED', 'EEDC', 'KEDCO', 'BEDC', 'KAEDCO', 'IBEDC'], example: 'EKEDC' }, meterType: { type: 'string', enum: ['prepaid', 'postpaid'], example: 'prepaid' }, amount: { type: 'number', example: 5000, description: 'Amount in Naira (minimum 500)' } } } } }
+          },
+          responses: {
+            '200': { description: 'Token vended successfully', content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' }, data: { type: 'object', properties: { token: { type: 'string', example: '1234-5678-9012-3456-7890' }, units: { type: 'string', example: '50.5' }, reference: { type: 'string' }, provider: { type: 'string', example: 'vtpass' }, status: { type: 'string', example: 'successful' } } } } } } } },
+            '400': { description: 'Invalid input or amount below minimum' },
+            '401': { description: 'Unauthorized' },
+            '502': { description: 'All providers failed' }
+          }
+        }
+      },
+      '/electricity/requery': {
+        post: {
+          tags: ['Electricity'],
+          summary: 'Requery a pending transaction',
+          description: 'Check the status of a pending electricity transaction. Tries the original provider first, then falls back to others.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { type: 'object', required: ['reference'], properties: { reference: { type: 'string', example: 'LW_ELEC_xxxxxxxxxxxx_vtpass' }, provider: { type: 'string', example: 'vtpass', description: 'Original provider name (optional, improves lookup speed)' } } } } }
+          },
+          responses: {
+            '200': { description: 'Requery result', content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' }, data: { type: 'object', properties: { status: { type: 'string', enum: ['successful', 'pending', 'failed'] }, token: { type: 'string' }, units: { type: 'string' }, reference: { type: 'string' } } } } } } } },
+            '400': { description: 'Reference required' },
+            '401': { description: 'Unauthorized' }
+          }
+        }
+      },
+      '/electricity/transactions': {
+        get: {
+          tags: ['Electricity'],
+          summary: 'Get transaction history',
+          description: 'Returns paginated electricity transaction history for the authenticated user.',
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'limit', in: 'query', schema: { type: 'integer', default: 20, maximum: 100 }, description: 'Number of records per page' },
+            { name: 'offset', in: 'query', schema: { type: 'integer', default: 0 }, description: 'Number of records to skip' }
+          ],
+          responses: {
+            '200': { description: 'Transaction history', content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' }, data: { type: 'object', properties: { transactions: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, meter_number: { type: 'string' }, disco: { type: 'string' }, amount: { type: 'number' }, token: { type: 'string' }, units: { type: 'string' }, status: { type: 'string' }, provider: { type: 'string' }, auto_loaded: { type: 'boolean' }, created_at: { type: 'string', format: 'date-time' } } } }, total: { type: 'integer' } } } } } } } },
+            '401': { description: 'Unauthorized' }
+          }
+        }
+      },
+      '/wallet/balance': {
+        get: {
+          tags: ['Wallet'],
+          summary: 'Get wallet balance',
+          description: 'Returns the current wallet balance for the authenticated user. Creates a wallet automatically if one does not exist.',
+          security: [{ bearerAuth: [] }],
+          responses: {
+            '200': { description: 'Wallet balance', content: { 'application/json': { schema: { type: 'object', properties: { status: { type: 'string', example: 'success' }, data: { type: 'object', properties: { balance: { type: 'number', example: 15000.50 }, currency: { type: 'string', example: 'NGN' } } } } } } } },
+            '401': { description: 'Unauthorized' },
+            '500': { description: 'Internal server error' }
+          }
+        }
+      },
+      '/wallet/fund': {
+        post: {
+          tags: ['Wallet'],
+          summary: 'Fund wallet',
+          description: 'Initiate a Paystack payment to fund the wallet. Returns an authorization URL to complete payment.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { type: 'object', required: ['amount'], properties: { amount: { type: 'number', example: 5000, description: 'Amount in Naira (minimum ₦100)' } } } } }
+          },
+          responses: {
+            '200': { description: 'Payment initialized', content: { 'application/json': { schema: { type: 'object', properties: { status: { type: 'string', example: 'success' }, data: { type: 'object', properties: { authorization_url: { type: 'string', example: 'https://checkout.paystack.com/abc123' }, reference: { type: 'string', example: 'wlt_1234567890_abc123' } } } } } } } },
+            '400': { description: 'Amount below minimum (₦100)' },
+            '401': { description: 'Unauthorized' },
+            '500': { description: 'Internal server error' }
+          }
+        }
+      },
+      '/wallet/verify': {
+        post: {
+          tags: ['Wallet'],
+          summary: 'Verify wallet funding',
+          description: 'Verify a Paystack payment and credit the wallet. Call this after the user completes payment on Paystack checkout.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { type: 'object', required: ['reference'], properties: { reference: { type: 'string', example: 'wlt_1234567890_abc123', description: 'Paystack payment reference from the fund endpoint' } } } } }
+          },
+          responses: {
+            '200': { description: 'Wallet credited', content: { 'application/json': { schema: { type: 'object', properties: { status: { type: 'string', example: 'success' }, data: { type: 'object', properties: { balance: { type: 'number', example: 20000.50 }, amount: { type: 'number', example: 5000 }, reference: { type: 'string' } } } } } } } },
+            '400': { description: 'Reference missing or payment not successful' },
+            '401': { description: 'Unauthorized' },
+            '404': { description: 'Wallet not found' },
+            '500': { description: 'Internal server error' }
+          }
+        }
+      },
+      '/wallet/transactions': {
+        get: {
+          tags: ['Wallet'],
+          summary: 'Get wallet transactions',
+          description: 'Returns paginated wallet transaction history (credits, debits, refunds) for the authenticated user.',
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'limit', in: 'query', schema: { type: 'integer', default: 20 }, description: 'Number of records per page' },
+            { name: 'offset', in: 'query', schema: { type: 'integer', default: 0 }, description: 'Number of records to skip' }
+          ],
+          responses: {
+            '200': { description: 'Transaction history', content: { 'application/json': { schema: { type: 'object', properties: { status: { type: 'string', example: 'success' }, data: { type: 'object', properties: { transactions: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, type: { type: 'string', enum: ['credit', 'debit'] }, amount: { type: 'number', example: 5000 }, balance_before: { type: 'number' }, balance_after: { type: 'number' }, description: { type: 'string', example: 'Wallet funding via Paystack' }, category: { type: 'string', enum: ['funding', 'bill_payment', 'refund', 'transfer'] }, reference: { type: 'string' }, status: { type: 'string', enum: ['pending', 'success', 'failed'] }, created_at: { type: 'string', format: 'date-time' } } } }, total: { type: 'integer' } } } } } } } },
+            '401': { description: 'Unauthorized' },
+            '500': { description: 'Internal server error' }
+          }
+        }
+      },
+      '/bills/providers': {
+        get: {
+          tags: ['Bills'],
+          summary: 'Get all bill providers',
+          description: 'Returns all supported providers grouped by category (electricity, airtime, data, TV). No authentication required.',
+          responses: {
+            '200': { description: 'Provider list', content: { 'application/json': { schema: { type: 'object', properties: { status: { type: 'string', example: 'success' }, data: { type: 'object', properties: { electricity: { type: 'object', example: { 'ikeja-electric': 'IKEDC - Ikeja Electric', 'eko-electric': 'EKEDC - Eko Electric' } }, airtime: { type: 'object', example: { 'mtn': 'MTN', 'glo': 'GLO', 'airtel': 'Airtel', 'etisalat': '9mobile' } }, data: { type: 'object', example: { 'mtn-data': 'MTN Data', 'glo-data': 'GLO Data' } }, tv: { type: 'object', example: { 'dstv': 'DSTV', 'gotv': 'GOtv', 'startimes': 'Startimes' } } } } } } } } }
+          }
+        }
+      },
+      '/bills/airtime/pay': {
+        post: {
+          tags: ['Bills'],
+          summary: 'Purchase airtime',
+          description: 'Buy airtime for any Nigerian network. Debits wallet if useWallet is true.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { type: 'object', required: ['serviceID', 'phone', 'amount'], properties: { serviceID: { type: 'string', enum: ['mtn', 'glo', 'airtel', 'etisalat'], example: 'mtn' }, phone: { type: 'string', example: '08012345678' }, amount: { type: 'number', example: 1000, description: 'Amount in Naira (minimum ₦50)' }, useWallet: { type: 'boolean', example: true, description: 'Debit from wallet balance' } } } } }
+          },
+          responses: {
+            '201': { description: 'Airtime purchased successfully' },
+            '400': { description: 'Invalid input, insufficient balance, or amount below minimum' },
+            '401': { description: 'Unauthorized' },
+            '500': { description: 'Provider error' }
+          }
+        }
+      },
+      '/bills/data/plans/{serviceID}': {
+        get: {
+          tags: ['Bills'],
+          summary: 'Get data plans',
+          description: 'Returns available data plans for a network provider.',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'serviceID', in: 'path', required: true, schema: { type: 'string', enum: ['mtn-data', 'glo-data', 'airtel-data', 'etisalat-data'] }, description: 'Data provider service ID' }],
+          responses: {
+            '200': { description: 'Data plans list', content: { 'application/json': { schema: { type: 'object', properties: { status: { type: 'string', example: 'success' }, data: { type: 'array', items: { type: 'object', properties: { variation_code: { type: 'string', example: 'mtn-10mb-100' }, name: { type: 'string', example: '10MB - 1 Day' }, variation_amount: { type: 'string', example: '100.00' }, fixedPrice: { type: 'string', example: 'Yes' } } } } } } } } },
+            '400': { description: 'Invalid serviceID' },
+            '401': { description: 'Unauthorized' }
+          }
+        }
+      },
+      '/bills/data/pay': {
+        post: {
+          tags: ['Bills'],
+          summary: 'Purchase data bundle',
+          description: 'Buy a data plan for any Nigerian network. Debits wallet if useWallet is true.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { type: 'object', required: ['serviceID', 'phone', 'variationCode', 'amount'], properties: { serviceID: { type: 'string', enum: ['mtn-data', 'glo-data', 'airtel-data', 'etisalat-data'], example: 'mtn-data' }, phone: { type: 'string', example: '08012345678' }, variationCode: { type: 'string', example: 'mtn-10mb-100', description: 'Plan variation code from /data/plans' }, amount: { type: 'number', example: 100 }, useWallet: { type: 'boolean', example: true } } } } }
+          },
+          responses: {
+            '201': { description: 'Data purchased successfully' },
+            '400': { description: 'Invalid input or insufficient balance' },
+            '401': { description: 'Unauthorized' },
+            '500': { description: 'Provider error' }
+          }
+        }
+      },
+      '/bills/tv/verify': {
+        post: {
+          tags: ['Bills'],
+          summary: 'Verify smartcard number',
+          description: 'Validate a TV smartcard/IUC number and retrieve customer details.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { type: 'object', required: ['serviceID', 'smartcardNumber'], properties: { serviceID: { type: 'string', enum: ['dstv', 'gotv', 'startimes', 'showmax'], example: 'dstv' }, smartcardNumber: { type: 'string', example: '1234567890' } } } } }
+          },
+          responses: {
+            '200': { description: 'Smartcard verified', content: { 'application/json': { schema: { type: 'object', properties: { status: { type: 'string', example: 'success' }, data: { type: 'object', properties: { Customer_Name: { type: 'string', example: 'John Doe' }, Current_Bouquet: { type: 'string', example: 'DStv Padi' }, Due_Date: { type: 'string' }, Renewal_Amount: { type: 'number' } } } } } } } },
+            '400': { description: 'Invalid serviceID or smartcard not found' },
+            '401': { description: 'Unauthorized' }
+          }
+        }
+      },
+      '/bills/tv/plans/{serviceID}': {
+        get: {
+          tags: ['Bills'],
+          summary: 'Get TV subscription plans',
+          description: 'Returns available subscription plans for a TV provider.',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'serviceID', in: 'path', required: true, schema: { type: 'string', enum: ['dstv', 'gotv', 'startimes', 'showmax'] }, description: 'TV provider service ID' }],
+          responses: {
+            '200': { description: 'TV plans list', content: { 'application/json': { schema: { type: 'object', properties: { status: { type: 'string', example: 'success' }, data: { type: 'array', items: { type: 'object', properties: { variation_code: { type: 'string', example: 'dstv-padi' }, name: { type: 'string', example: 'DStv Padi' }, variation_amount: { type: 'string', example: '2150.00' }, fixedPrice: { type: 'string', example: 'Yes' } } } } } } } } },
+            '400': { description: 'Invalid serviceID' },
+            '401': { description: 'Unauthorized' }
+          }
+        }
+      },
+      '/bills/tv/pay': {
+        post: {
+          tags: ['Bills'],
+          summary: 'Purchase TV subscription',
+          description: 'Subscribe or renew a TV plan (DSTV, GOtv, Startimes, Showmax). Debits wallet if useWallet is true.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { type: 'object', required: ['serviceID', 'smartcardNumber', 'variationCode', 'amount', 'phone'], properties: { serviceID: { type: 'string', enum: ['dstv', 'gotv', 'startimes', 'showmax'], example: 'dstv' }, smartcardNumber: { type: 'string', example: '1234567890' }, variationCode: { type: 'string', example: 'dstv-padi', description: 'Plan code from /tv/plans' }, amount: { type: 'number', example: 2150 }, phone: { type: 'string', example: '08012345678' }, subscriptionType: { type: 'string', enum: ['renew', 'change'], example: 'renew', description: 'Renew existing or change bouquet' }, useWallet: { type: 'boolean', example: true } } } } }
+          },
+          responses: {
+            '201': { description: 'TV subscription purchased' },
+            '400': { description: 'Invalid input or insufficient balance' },
+            '401': { description: 'Unauthorized' },
+            '500': { description: 'Provider error' }
+          }
+        }
+      },
+      '/bills/electricity/verify': {
+        post: {
+          tags: ['Bills'],
+          summary: 'Verify electricity meter (Bills)',
+          description: 'Validate a meter number via VTPass before purchasing electricity.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { type: 'object', required: ['serviceID', 'meterNumber', 'type'], properties: { serviceID: { type: 'string', enum: ['ikeja-electric', 'eko-electric', 'kano-electric', 'portharcourt-electric', 'jos-electric', 'ibadan-electric', 'kaduna-electric', 'abuja-electric', 'enugu-electric', 'benin-electric'], example: 'ikeja-electric' }, meterNumber: { type: 'string', example: '12345678901' }, type: { type: 'string', enum: ['prepaid', 'postpaid'], example: 'prepaid' } } } } }
+          },
+          responses: {
+            '200': { description: 'Meter verified', content: { 'application/json': { schema: { type: 'object', properties: { status: { type: 'string', example: 'success' }, data: { type: 'object', properties: { Customer_Name: { type: 'string' }, Meter_Number: { type: 'string' }, Address: { type: 'string' } } } } } } } },
+            '400': { description: 'Invalid input or meter not found' },
+            '401': { description: 'Unauthorized' }
+          }
+        }
+      },
+      '/bills/electricity/pay': {
+        post: {
+          tags: ['Bills'],
+          summary: 'Purchase electricity (Bills)',
+          description: 'Buy electricity token via VTPass. Debits wallet if useWallet is true.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { type: 'object', required: ['serviceID', 'meterNumber', 'type', 'amount', 'phone'], properties: { serviceID: { type: 'string', enum: ['ikeja-electric', 'eko-electric', 'kano-electric', 'portharcourt-electric', 'jos-electric', 'ibadan-electric', 'kaduna-electric', 'abuja-electric', 'enugu-electric', 'benin-electric'], example: 'ikeja-electric' }, meterNumber: { type: 'string', example: '12345678901' }, type: { type: 'string', enum: ['prepaid', 'postpaid'], example: 'prepaid' }, amount: { type: 'number', example: 5000, description: 'Amount in Naira (minimum ₦1,000)' }, phone: { type: 'string', example: '08012345678' }, useWallet: { type: 'boolean', example: true } } } } }
+          },
+          responses: {
+            '201': { description: 'Electricity purchased', content: { 'application/json': { schema: { type: 'object', properties: { status: { type: 'string', example: 'success' }, data: { type: 'object', properties: { token: { type: 'string' }, units: { type: 'string' }, reference: { type: 'string' }, status: { type: 'string' } } } } } } } },
+            '400': { description: 'Invalid input or insufficient balance' },
+            '401': { description: 'Unauthorized' },
+            '500': { description: 'Provider error' }
+          }
+        }
+      },
+      '/bills/requery/{requestId}': {
+        get: {
+          tags: ['Bills'],
+          summary: 'Requery bill transaction',
+          description: 'Check the status of a pending bill transaction.',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'requestId', in: 'path', required: true, schema: { type: 'string' }, description: 'Transaction request ID' }],
+          responses: {
+            '200': { description: 'Transaction status', content: { 'application/json': { schema: { type: 'object', properties: { status: { type: 'string', example: 'success' }, data: { type: 'object', properties: { status: { type: 'string', enum: ['delivered', 'pending', 'failed'] }, purchased_code: { type: 'string' }, amount: { type: 'string' } } } } } } } },
+            '400': { description: 'Transaction not found or not owned by user' },
+            '401': { description: 'Unauthorized' }
+          }
+        }
+      },
+      '/bills/transactions': {
+        get: {
+          tags: ['Bills'],
+          summary: 'Get bill transaction history',
+          description: 'Returns paginated bill payment history for the authenticated user.',
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'limit', in: 'query', schema: { type: 'integer', default: 20 }, description: 'Records per page' },
+            { name: 'offset', in: 'query', schema: { type: 'integer', default: 0 }, description: 'Records to skip' }
+          ],
+          responses: {
+            '200': { description: 'Transaction history', content: { 'application/json': { schema: { type: 'object', properties: { status: { type: 'string', example: 'success' }, data: { type: 'object', properties: { transactions: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, category: { type: 'string', enum: ['airtime', 'data', 'tv', 'electricity'] }, service_id: { type: 'string' }, amount: { type: 'number' }, status: { type: 'string' }, token: { type: 'string' }, created_at: { type: 'string', format: 'date-time' } } } }, total: { type: 'integer' } } } } } } } },
+            '401': { description: 'Unauthorized' }
+          }
+        }
+      },
+      '/bills/webhook/vtpass': {
+        post: {
+          tags: ['Bills'],
+          summary: 'VTPass webhook',
+          description: 'Receives transaction status updates from VTPass. No authentication — verified by payload structure.',
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'object', properties: { request_id: { type: 'string' }, status: { type: 'string' }, amount: { type: 'string' }, purchased_code: { type: 'string' } } } } } } }
+          },
+          responses: {
+            '200': { description: 'Webhook acknowledged' }
+          }
+        }
+      },
       '/estate/residents/resend-invite': {
         post: {
           tags: ['Estates'],
@@ -2306,6 +3094,12 @@ const options = {
       { name: 'Admin', description: 'Administrative operations' },
       { name: 'Upload', description: 'File upload and bulk operations' },
       { name: 'Parking', description: 'Parking and EV charging management' },
+      { name: 'Electricity', description: 'Electricity vending, smart meter management, and token delivery' },
+      { name: 'Wallet', description: 'Resident wallet funding, balance, and transaction history' },
+      { name: 'Bills', description: 'Airtime, data, TV subscription, and electricity bill payments via VTPass' },
+      { name: 'Collections', description: 'Estate fee management, invoice generation, resident payment tracking, and withdrawals' },
+      { name: 'Kuda', description: 'Kuda-powered estate virtual wallet — virtual sub-accounts, balances, and transactions' },
+      { name: 'Emergency', description: 'Emergency alerts, estate contacts, and location-based emergency contact directory' },
       { name: 'Legal', description: 'Legal documents and policies' },
       { name: 'Webhooks', description: 'Webhook endpoints' }
     ],

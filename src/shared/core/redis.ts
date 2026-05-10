@@ -10,7 +10,7 @@ export async function saveToRedis(key: string, value: unknown, expirationInSecon
 }
 
 export async function getFromRedis<T = unknown>(key: string): Promise<T | null> {
-  return redis.get<T>(key);
+  return redis.get(key) as Promise<T | null>;
 }
 
 export async function deleteFromRedis(key: string): Promise<void> {

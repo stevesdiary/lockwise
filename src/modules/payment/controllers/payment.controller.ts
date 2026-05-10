@@ -9,6 +9,7 @@ import { paymentService } from '../../payment/services/payment.service';
 import realTimeNotificationService from '../../communication/services/realtime-notification.service';
 import { asString } from '../../../shared/utils/param.util';
 import subscriptionService from '../services/subscription.service';
+import { Subscription } from '../models/subscription.model';
 import { UserRole } from '../../../shared/constants/permissions';
 
 const subscriptionInitiationSchema = yup.object().shape({
@@ -426,7 +427,34 @@ const paymentController = {
         error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
-  }
+  },
+
+  toggleWalletPayment: async (req: ExpressRequest, res: Response) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ status: 'error', message: 'Authentication required' });
+      }
+
+      const subscriptionId = asString(req.params.subscriptionId);
+      const enabled = req.body?.enabled === true;
+
+      const subscription = await Subscription.findOne({
+        where: { id: subscriptionId, estate_id: req.user.estate_id || '' },
+      });
+      if (!subscription) {
+        return res.status(404).json({ status: 'error', message: 'Subscription not found' });
+      }
+
+      await subscription.update({ wallet_payment_enabled: enabled });
+      return res.json({ status: 'success', data: { wallet_payment_enabled: enabled } });
+    } catch (error) {
+      return res.status(500).json({
+        status: 'error',
+        message: 'Failed to update wallet payment setting',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  },
 
 };
 

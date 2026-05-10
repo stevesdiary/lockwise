@@ -314,6 +314,27 @@ Best regards,
 The Lockwise Team`
   }),
 
+  estateDuesReceipt: (data: any) => ({
+    subject: `Payment Receipt - ${data.fee_name}`,
+    html: baseTemplate(`
+      <div class="content">
+        <h2>Payment Receipt</h2>
+        <p>Hello ${data.name || 'there'},</p>
+        <p>Your estate dues payment was successful.</p>
+        <div class="code-box">
+          <p><strong>Fee:</strong> ${data.fee_name}</p>
+          <p><strong>Amount:</strong> ₦${data.amount}</p>
+          <p><strong>Period:</strong> ${data.billing_period}</p>
+          <p><strong>Reference:</strong> ${data.reference}</p>
+          <p><strong>Date:</strong> ${data.date}</p>
+        </div>
+        <p>Thank you for your prompt payment.</p>
+        <p>Best regards,<br>The Lockwise Team</p>
+      </div>
+    `),
+    text: `Payment Receipt\nFee: ${data.fee_name}\nAmount: ₦${data.amount}\nPeriod: ${data.billing_period}\nRef: ${data.reference}\nDate: ${data.date}`
+  }),
+
   electricityReceipt: (data: any) => ({
     subject: `Electricity Recharge Receipt - ${data.reference}`,
     html: baseTemplate(`

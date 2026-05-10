@@ -53,9 +53,14 @@ import { CommunityPost, CommunityComment } from '../../modules/community/models/
 import { Faq }             from '../../modules/community/models/faq.model';
 
 import { SupportTicket, SupportMessage } from '../../modules/support/models/support.model';
+import { BillTransaction } from '../../modules/bills/models/bill-transaction.model';
+import { Wallet, WalletTransaction } from '../../modules/wallet/models/wallet.model';
+import { EstateWallet, EstateWalletTransaction } from '../../modules/kuda/models/estate-wallet.model';
 
 import { SmartMeter }                    from '../../modules/electricity/models/smart-meter.model';
 import { ElectricityTransactionRecord }  from '../../modules/electricity/models/electricity-transaction.model';
+
+import { EstateFee, EstateInvoice, EstateWithdrawal } from '../../modules/collections/models/collections.model';
 
 type AppEnvironment = 'development' | 'production' | 'test';
 
@@ -176,7 +181,11 @@ const sequelizeOptions: SequelizeOptions = {
     ParkingSlot, ParkingAssignment, GuestParking, EVChargingSession,
     CommunityPost, CommunityComment, Faq,
     SupportTicket, SupportMessage,
+    BillTransaction,
+    Wallet, WalletTransaction,
+    EstateWallet, EstateWalletTransaction,
     SmartMeter, ElectricityTransactionRecord,
+    EstateFee, EstateInvoice, EstateWithdrawal,
   ],
 };
 const sequelize = hasDatabaseUrl

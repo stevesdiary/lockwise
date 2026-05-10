@@ -81,4 +81,13 @@ paymentRouter.delete(
   }
 );
 
+paymentRouter.patch(
+  "/subscription/:subscriptionId/wallet-payment",
+  authenticateToken,
+  requireManager,
+  async (req: ExpressRequest, res: Response) => {
+    await paymentController.toggleWalletPayment(req, res);
+  }
+);
+
 export default paymentRouter;

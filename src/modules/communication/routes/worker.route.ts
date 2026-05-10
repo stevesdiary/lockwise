@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { Receiver } from '@upstash/qstash';
 import NotificationService from '../../communication/services/notification.service';
 import webPushService from '../../communication/services/web-push.service';
+import { runSubscriptionAutoRenewal } from '../../kuda/services/subscription-cron.service';
 
 const workerRouter = Router();
 
@@ -64,6 +65,17 @@ workerRouter.post('/web-push', async (req: Request, res: Response) => {
     res.json({ success: true });
   } catch (error: any) {
     console.error('Web push worker error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+workerRouter.post('/subscription-cron', async (req: Request, res: Response) => {
+  if (!await verifyQStash(req, res)) return;
+  try {
+    const result = await runSubscriptionAutoRenewal();
+    res.json({ success: true, ...result });
+  } catch (error: any) {
+    console.error('Subscription cron worker error:', error.message);
     res.status(500).json({ error: error.message });
   }
 });

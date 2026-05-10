@@ -160,11 +160,11 @@ export const electricityController = {
   // ─── Requery ───
 
   async requery(req: Request, res: Response) {
-    const { reference, provider } = req.body;
+    const { reference } = req.body;
     if (!reference) return res.status(400).json({ error: 'reference is required' });
 
     try {
-      const result = await electricityService.requery(reference, provider);
+      const result = await electricityService.requery(reference);
       res.json({ success: result.status === 'successful', data: result });
     } catch (error) {
       res.status(500).json({ error: 'Requery failed', details: (error as Error).message });

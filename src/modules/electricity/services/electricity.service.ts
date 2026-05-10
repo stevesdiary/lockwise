@@ -1,18 +1,25 @@
 import { nanoid } from 'nanoid';
-import { providerRegistry } from '../providers';
 import { SmartMeter } from '../models/smart-meter.model';
 import { ElectricityTransactionRecord } from '../models/electricity-transaction.model';
 import { User } from '../../auth/models/user.model';
+import billsService from '../../bills/services/bills.service';
 import NotificationService from '../../communication/services/notification.service';
-import {
-  DiscoCode,
-  MeterType,
-  MeterValidationResult,
-  VendResult,
-  RequeryResult,
-  ProviderAttempt,
-  TransactionStatus,
-} from '../types/electricity.types';
+import { DiscoCode, MeterType, MeterValidationResult } from '../types/electricity.types';
+import { ELECTRICITY_PROVIDERS, ElectricityProvider } from '../../bills/types/vtpass.types';
+
+// Map DiscoCode to VTPass serviceID
+const DISCO_TO_SERVICE: Record<DiscoCode, ElectricityProvider> = {
+  EKEDC: 'eko-electric',
+  IKEDC: 'ikeja-electric',
+  JED: 'jos-electric',
+  AEDC: 'abuja-electric',
+  PHED: 'portharcourt-electric',
+  EEDC: 'enugu-electric',
+  KEDCO: 'kaduna-electric',
+  BEDC: 'benin-electric',
+  KAEDCO: 'kano-electric',
+  IBEDC: 'ibadan-electric',
+};
 
 interface VendInput {
   userId: string;
@@ -23,6 +30,7 @@ interface VendInput {
   amount: number;
   smartMeterId?: string;
   autoLoaded?: boolean;
+  useWallet?: boolean;
 }
 
 interface VendOutput {
@@ -35,22 +43,13 @@ class ElectricityService {
   // ─── Meter Registration ───
 
   async registerMeter(userId: string, estateId: string | null, data: {
-    meterNumber: string;
-    disco: DiscoCode;
-    meterType: MeterType;
+    meterNumber: string; disco: DiscoCode; meterType: MeterType;
   }): Promise<SmartMeter> {
-    // Validate meter with providers before saving
     const validation = await this.validateMeter(data.meterNumber, data.disco, data.meterType);
-    if (!validation.valid) {
-      throw new Error('Meter validation failed. Please check the meter number and disco.');
-    }
+    if (!validation.valid) throw new Error('Meter validation failed. Please check the meter number and disco.');
 
-    const existing = await SmartMeter.findOne({
-      where: { meter_number: data.meterNumber, disco: data.disco },
-    });
-    if (existing) {
-      throw new Error('This meter is already registered.');
-    }
+    const existing = await SmartMeter.findOne({ where: { meter_number: data.meterNumber, disco: data.disco } });
+    if (existing) throw new Error('This meter is already registered.');
 
     return SmartMeter.create({
       user_id: userId,
@@ -69,7 +68,6 @@ class ElectricityService {
     const meter = await SmartMeter.findOne({ where: { id: meterId, user_id: userId } });
     if (!meter) throw new Error('Meter not found');
     if (!meter.is_verified) throw new Error('Meter must be verified before enabling auto-load');
-
     meter.auto_load_enabled = !meter.auto_load_enabled;
     await meter.save();
     return meter;
@@ -88,60 +86,51 @@ class ElectricityService {
   // ─── Meter Validation ───
 
   async validateMeter(meterNumber: string, disco: DiscoCode, meterType: MeterType): Promise<MeterValidationResult> {
-    const providers = providerRegistry.getAll();
-    for (const provider of providers) {
-      try {
-        const result = await provider.validateMeter({ meterNumber, disco, meterType });
-        if (result.valid) return result;
-      } catch (err) {
-        console.warn(`[electricity] ${provider.name} meter validation failed:`, (err as Error).message);
-      }
+    const serviceID = DISCO_TO_SERVICE[disco];
+    try {
+      const result = await billsService.verifyMeter(serviceID, meterNumber, meterType);
+      return {
+        valid: true,
+        customerName: result.customerName,
+        customerAddress: result.address,
+        meterNumber,
+        disco,
+      };
+    } catch {
+      return { valid: false, meterNumber, disco };
     }
-    return { valid: false, meterNumber, disco };
   }
 
-  // ─── Vend with failover ───
+  // ─── Vend (delegates to billsService) ───
 
   async vend(input: VendInput): Promise<VendOutput> {
     const requestId = `LW_ELEC_${nanoid(12)}`;
-    const providers = providerRegistry.getAll();
-    const attempts: ProviderAttempt[] = [];
-    let vendResult: VendResult | null = null;
+    const serviceID = DISCO_TO_SERVICE[input.disco];
 
-    for (const provider of providers) {
-      const start = Date.now();
-      try {
-        vendResult = await provider.vend({
-          meterNumber: input.meterNumber,
-          disco: input.disco,
-          meterType: input.meterType,
-          amount: input.amount,
-          requestId: `${requestId}_${provider.name}`,
-        });
-        attempts.push({
-          provider: provider.name,
-          status: 'success',
-          reference: vendResult.reference,
-          attemptedAt: new Date(),
-          durationMs: Date.now() - start,
-        });
-        break;
-      } catch (err) {
-        const isTimeout = (err as any)?.code === 'ECONNABORTED';
-        attempts.push({
-          provider: provider.name,
-          status: isTimeout ? 'timeout' : 'failed',
-          error: (err as Error).message,
-          attemptedAt: new Date(),
-          durationMs: Date.now() - start,
-        });
-        console.warn(`[electricity] ${provider.name} vend failed:`, (err as Error).message);
-      }
+    let token: string | null = null;
+    let provider = 'vtpass';
+    let status: 'successful' | 'failed' | 'pending' = 'failed';
+    let errorMsg: string | undefined;
+
+    try {
+      const result = await billsService.purchaseElectricity({
+        userId: input.userId,
+        estateId: input.estateId || '',
+        serviceID,
+        meterNumber: input.meterNumber,
+        type: input.meterType,
+        amount: input.amount,
+        phone: '00000000000',
+        useWallet: input.useWallet,
+      });
+
+      token = result.token || null;
+      provider = result.provider || 'vtpass';
+      status = result.status === 'success' ? 'successful' : result.status === 'pending' ? 'pending' : 'failed';
+    } catch (err) {
+      errorMsg = (err as Error).message;
     }
 
-    const status: TransactionStatus = vendResult ? 'successful' : 'failed';
-
-    // Persist transaction
     const transaction = await ElectricityTransactionRecord.create({
       user_id: input.userId,
       estate_id: input.estateId || null,
@@ -150,30 +139,26 @@ class ElectricityService {
       disco: input.disco,
       meter_type: input.meterType,
       amount: input.amount,
-      token: vendResult?.token || null,
-      units: vendResult?.units || null,
-      status,
-      provider: vendResult?.provider || null,
-      provider_reference: vendResult?.reference || null,
+      token,
+      units: null,
+      status: status === 'successful' ? 'successful' : status === 'pending' ? 'requires_requery' : 'failed',
+      provider,
+      provider_reference: requestId,
       request_id: requestId,
-      attempts,
+      attempts: [{ provider, status: status === 'successful' ? 'success' : 'failed', attemptedAt: new Date() }],
       auto_loaded: input.autoLoaded || false,
       receipt_sent: false,
     } as any);
 
-    if (!vendResult) {
-      return { success: false, transaction, error: 'All providers failed' };
+    if (status === 'successful') {
+      this.sendReceipt(transaction).catch((e) => console.error('[electricity] receipt failed:', e.message));
+      return { success: true, transaction };
     }
 
-    // Send receipt email asynchronously (queued via notification service)
-    this.sendReceipt(transaction).catch((err) =>
-      console.error('[electricity] receipt send failed:', err.message)
-    );
-
-    return { success: true, transaction };
+    return { success: false, transaction, error: errorMsg || 'Vend failed' };
   }
 
-  // ─── Auto-load: vend using registered smart meter ───
+  // ─── Auto-load ───
 
   async autoLoadMeter(meterId: string, userId: string, amount: number): Promise<VendOutput> {
     const meter = await SmartMeter.findOne({ where: { id: meterId, user_id: userId } });
@@ -190,39 +175,19 @@ class ElectricityService {
       amount,
       smartMeterId: meter.id,
       autoLoaded: true,
+      useWallet: true,
     });
   }
 
   // ─── Requery ───
 
-  async requery(requestId: string, providerName?: string): Promise<RequeryResult> {
-    if (providerName) {
-      const provider = providerRegistry.getByName(providerName);
-      if (provider) {
-        try {
-          const result = await provider.requery(requestId);
-          if (result.status !== 'pending') {
-            await this.updateTransactionFromRequery(requestId, result);
-            return result;
-          }
-        } catch (err) {
-          console.warn(`[electricity] ${providerName} requery failed:`, (err as Error).message);
-        }
-      }
-    }
+  async requery(requestId: string): Promise<{ status: string; token: string | null }> {
+    const txn = await ElectricityTransactionRecord.findOne({ where: { request_id: requestId } });
+    if (!txn) throw new Error('Transaction not found');
 
-    for (const provider of providerRegistry.getAll()) {
-      if (provider.name === providerName) continue;
-      try {
-        const result = await provider.requery(requestId);
-        if (result.status !== 'pending') {
-          await this.updateTransactionFromRequery(requestId, result);
-          return result;
-        }
-      } catch { continue; }
-    }
-
-    return { status: 'pending', reference: requestId };
+    // Bills service requery uses the bills transaction request_id, not ours
+    // For now, return current status from our record
+    return { status: txn.status, token: txn.token };
   }
 
   // ─── Transaction History ───
@@ -236,23 +201,7 @@ class ElectricityService {
     });
   }
 
-  // ─── Private helpers ───
-
-  private async updateTransactionFromRequery(requestId: string, result: RequeryResult): Promise<void> {
-    const txn = await ElectricityTransactionRecord.findOne({ where: { request_id: requestId } });
-    if (!txn) return;
-
-    txn.status = result.status === 'successful' ? 'successful' : 'failed';
-    if (result.token) txn.token = result.token;
-    if (result.units) txn.units = result.units;
-    await txn.save();
-
-    if (result.status === 'successful' && !txn.receipt_sent) {
-      this.sendReceipt(txn).catch((err) =>
-        console.error('[electricity] receipt send failed:', err.message)
-      );
-    }
-  }
+  // ─── Private ───
 
   private async sendReceipt(transaction: ElectricityTransactionRecord): Promise<void> {
     const user = await User.findByPk(transaction.user_id);

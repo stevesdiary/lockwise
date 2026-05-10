@@ -58,6 +58,9 @@ import bulkUploadRouter from "./modules/upload/routes/bulk-upload.route";
 // Electricity Module
 import electricityRouter from "./modules/electricity/routes/electricity.route";
 
+// Collections Module
+import collectionsRouter from "./modules/collections/routes/collections.route";
+
 // Location Module
 import addressRouter from "./modules/location/routes/address.route";
 import estateAddressRouter from "./modules/estate/routes/address.route";
@@ -76,6 +79,15 @@ import userRoleRouter from "./modules/admin/routes/user-role.route";
 // Legal Module
 import legalRouter from "./modules/legal/routes/legal.route";
 import workerRouter from "./modules/communication/routes/worker.route";
+
+// Bills Module
+import billsRouter from "./modules/bills/routes/bills.route";
+
+// Wallet Module
+import walletRouter from "./modules/wallet/routes/wallet.route";
+
+// Kuda Module
+import kudaRouter from "./modules/kuda/routes/kuda.route";
 
 const router = Router();
 
@@ -137,6 +149,9 @@ router.use('/bulk-upload', bulkUploadRouter);
 // Electricity Routes
 router.use('/electricity', electricityRouter);
 
+// Collections Routes
+router.use('/collections', collectionsRouter);
+
 // Location Routes
 router.use('/address', addressRouter);
 router.use('/address', estateAddressRouter);
@@ -154,6 +169,15 @@ router.use('/admin', userRoleRouter);
 
 // Legal Routes
 router.use('/legal', legalRouter);
+
+// Bills Routes
+router.use('/bills', billsRouter);
+
+// Wallet Routes
+router.use('/wallet', walletRouter);
+
+// Kuda Routes
+router.use('/kuda', kudaRouter);
 
 // Worker Routes (QStash delivery endpoints)
 router.use('/workers', workerRouter);

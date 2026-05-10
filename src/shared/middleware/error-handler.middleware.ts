@@ -74,10 +74,10 @@ export const asyncHandler = (fn: Function) => {
   };
 };
 
-export const notFound = (req: Request, res: Response) => {
+export const notFound = (_req: Request, res: Response) => {
   res.status(404).json({
-    status: 'error',
-    message: `Route ${req.originalUrl} not found`
+    success: false,
+    message: 'The meter number could not be validated. Please check the meter number and try again.',
   });
 };
 

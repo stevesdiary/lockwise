@@ -86,4 +86,11 @@ export class Subscription extends Model {
     allowNull: true
   })
   declare last_notification_sent: Date | null;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: false,
+    allowNull: false,
+  })
+  declare wallet_payment_enabled: boolean;
 }
