@@ -2087,6 +2087,77 @@ const options = {
           responses: { '200': { description: 'Onboarding step updated' }, '401': { description: 'Unauthorized' } }
         }
       },
+      '/estate/{estateId}/logo': {
+        patch: {
+          tags: ['Estates'],
+          summary: 'Upload estate logo',
+          description: 'Upload or replace the estate logo image. Requires manager ownership of the estate.',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'estateId', in: 'path', required: true, schema: { type: 'string' }, description: 'Estate UUID' }],
+          requestBody: {
+            required: true,
+            content: {
+              'multipart/form-data': {
+                schema: {
+                  type: 'object',
+                  required: ['logo'],
+                  properties: {
+                    logo: { type: 'string', format: 'binary', description: 'Logo image file (jpg, png, webp)' }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            '200': { description: 'Logo uploaded', content: { 'application/json': { schema: { type: 'object', properties: { logo_url: { type: 'string', example: 'https://cdn.example.com/logos/abc.png' } } } } } },
+            '401': { description: 'Unauthorized' },
+            '403': { description: 'Forbidden — not estate owner or admin' }
+          }
+        }
+      },
+      '/estate/estates/pending-updates': {
+        get: {
+          tags: ['Estates'],
+          summary: 'List estates with pending manager update requests (Admin)',
+          description: 'Returns all estates where a manager has submitted field changes awaiting admin approval.',
+          security: [{ bearerAuth: [] }],
+          responses: {
+            '200': { description: 'List of estates with pending_update_data', content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'array', items: { $ref: '#/components/schemas/Estate' } } } } } } },
+            '401': { description: 'Unauthorized' },
+            '403': { description: 'Admin role required' }
+          }
+        }
+      },
+      '/estate/{estateId}/apply-update': {
+        post: {
+          tags: ['Estates'],
+          summary: 'Approve or reject a pending estate update (Admin)',
+          description: 'Admin approves or rejects staged estate field changes from a manager. On approval the changes are applied immediately; on rejection `pending_update_data` is cleared.',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'estateId', in: 'path', required: true, schema: { type: 'string' } }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['approved'],
+                  properties: {
+                    approved: { type: 'boolean', example: true },
+                    rejection_reason: { type: 'string', example: 'Invalid address format' }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            '200': { description: 'Update applied or rejected' },
+            '401': { description: 'Unauthorized' },
+            '403': { description: 'Admin role required' },
+            '404': { description: 'Estate not found' }
+          }
+        }
+      },
       '/estate/{estateId}/setup-checklist': {
         patch: {
           tags: ['Estates'],
@@ -2215,6 +2286,326 @@ const options = {
           summary: 'Unsubscribe from web push',
           security: [{ bearerAuth: [] }],
           responses: { '200': { description: 'Subscription removed' }, '401': { description: 'Unauthorized' } }
+        }
+      },
+      '/emergency/location-contacts': {
+        get: {
+          tags: ['Emergency'],
+          summary: 'Get location-based emergency contacts',
+          description: 'Returns emergency contacts scoped to the user's country, state, and city — grouped by category and annotated with scope badge (Local/State/National).',
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'countryId', in: 'query', required: true, schema: { type: 'string' }, description: 'Country UUID' },
+            { name: 'stateId', in: 'query', schema: { type: 'string' }, description: 'State UUID (optional)' },
+            { name: 'cityId', in: 'query', schema: { type: 'string' }, description: 'City UUID (optional)' }
+          ],
+          responses: {
+            '200': { description: 'Emergency contacts grouped by category', content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'array', items: { type: 'object', properties: { category: { type: 'string', example: 'Police' }, icon: { type: 'string', example: 'shield-account' }, contacts: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, name: { type: 'string' }, phone_number: { type: 'string' }, scope: { type: 'string', enum: ['Local', 'State', 'National'] } } } } } } } } } } },
+            '401': { description: 'Unauthorized' }
+          }
+        }
+      },
+      '/emergency/location-contacts/countries': {
+        get: {
+          tags: ['Emergency'],
+          summary: 'List countries for emergency contact selectors',
+          security: [{ bearerAuth: [] }],
+          responses: { '200': { description: 'Countries list' } }
+        }
+      },
+      '/emergency/location-contacts/countries/{countryId}/states': {
+        get: {
+          tags: ['Emergency'],
+          summary: 'List states for a country',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'countryId', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { '200': { description: 'States list' } }
+        }
+      },
+      '/emergency/location-contacts/states/{stateId}/cities': {
+        get: {
+          tags: ['Emergency'],
+          summary: 'List cities for a state',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'stateId', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { '200': { description: 'Cities list' } }
+        }
+      },
+      '/emergency/location-contacts/categories': {
+        get: {
+          tags: ['Emergency'],
+          summary: 'List emergency contact categories',
+          security: [{ bearerAuth: [] }],
+          responses: { '200': { description: 'Categories list' } }
+        }
+      },
+      '/emergency/location-contacts/admin': {
+        get: {
+          tags: ['Emergency'],
+          summary: 'Admin — list all location emergency contacts',
+          security: [{ bearerAuth: [] }],
+          responses: { '200': { description: 'All contacts' }, '403': { description: 'Admin role required' } }
+        },
+        post: {
+          tags: ['Emergency'],
+          summary: 'Admin — create a location emergency contact',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['category_id', 'name', 'phone_number', 'country_id'],
+                  properties: {
+                    category_id: { type: 'string' },
+                    name: { type: 'string', example: 'Lagos State Fire Service' },
+                    phone_number: { type: 'string', example: '0800-FIRE' },
+                    alt_phone_number: { type: 'string' },
+                    country_id: { type: 'string' },
+                    state_id: { type: 'string' },
+                    city_id: { type: 'string' },
+                    description: { type: 'string' },
+                    is_active: { type: 'boolean', default: true },
+                    priority: { type: 'integer', default: 100 }
+                  }
+                }
+              }
+            }
+          },
+          responses: { '201': { description: 'Contact created' }, '403': { description: 'Admin role required' } }
+        }
+      },
+      '/emergency/location-contacts/admin/{contactId}': {
+        put: {
+          tags: ['Emergency'],
+          summary: 'Admin — update a location emergency contact',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'contactId', in: 'path', required: true, schema: { type: 'string' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object' } } } },
+          responses: { '200': { description: 'Contact updated' }, '403': { description: 'Admin role required' }, '404': { description: 'Not found' } }
+        },
+        delete: {
+          tags: ['Emergency'],
+          summary: 'Admin — delete a location emergency contact',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'contactId', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { '200': { description: 'Contact deleted' }, '403': { description: 'Admin role required' }, '404': { description: 'Not found' } }
+        }
+      },
+      '/wallet/account': {
+        get: {
+          tags: ['Wallet'],
+          summary: 'Get wallet account details',
+          description: 'Returns the authenticated resident's wallet account info including virtual account number if provisioned.',
+          security: [{ bearerAuth: [] }],
+          responses: {
+            '200': { description: 'Wallet account details', content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'object', properties: { id: { type: 'string' }, balance: { type: 'number', example: 5000 }, currency: { type: 'string', example: 'NGN' }, kuda_account_number: { type: 'string', nullable: true }, kuda_account_name: { type: 'string', nullable: true } } } } } } } },
+            '401': { description: 'Unauthorized' }
+          }
+        }
+      },
+      '/collections/fees': {
+        get: {
+          tags: ['Collections'],
+          summary: 'Get estate fees',
+          description: 'Returns all fees defined for the estate. Any authenticated user in the estate can list fees.',
+          security: [{ bearerAuth: [] }],
+          responses: { '200': { description: 'Fee list', content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'array', items: { type: 'object', properties: { fee_id: { type: 'string' }, name: { type: 'string', example: 'Monthly Service Charge' }, amount: { type: 'number', example: 5000 }, frequency: { type: 'string', enum: ['monthly', 'quarterly', 'annually', 'one_time'] }, is_active: { type: 'boolean' } } } } } } } } },
+            '401': { description: 'Unauthorized' }
+          }
+        },
+        post: {
+          tags: ['Collections'],
+          summary: 'Create a fee (Manager)',
+          description: 'Define a new recurring or one-time fee for residents in the estate.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['name', 'amount', 'frequency'],
+                  properties: {
+                    name: { type: 'string', example: 'Monthly Service Charge' },
+                    amount: { type: 'number', example: 5000 },
+                    frequency: { type: 'string', enum: ['monthly', 'quarterly', 'annually', 'one_time'], example: 'monthly' },
+                    description: { type: 'string' }
+                  }
+                }
+              }
+            }
+          },
+          responses: { '201': { description: 'Fee created' }, '401': { description: 'Unauthorized' }, '403': { description: 'Manager role required' } }
+        }
+      },
+      '/collections/fees/{feeId}': {
+        patch: {
+          tags: ['Collections'],
+          summary: 'Update a fee (Manager)',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'feeId', in: 'path', required: true, schema: { type: 'string' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: { name: { type: 'string' }, amount: { type: 'number' }, is_active: { type: 'boolean' } } } } } },
+          responses: { '200': { description: 'Fee updated' }, '403': { description: 'Manager role required' }, '404': { description: 'Fee not found' } }
+        },
+        delete: {
+          tags: ['Collections'],
+          summary: 'Delete a fee (Manager)',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'feeId', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { '200': { description: 'Fee deleted' }, '403': { description: 'Manager role required' } }
+        }
+      },
+      '/collections/invoices/generate': {
+        post: {
+          tags: ['Collections'],
+          summary: 'Generate invoices for residents (Manager)',
+          description: 'Bulk-generate invoices for all active residents in the estate for a given fee and billing period.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['fee_id', 'due_date'],
+                  properties: {
+                    fee_id: { type: 'string' },
+                    due_date: { type: 'string', format: 'date', example: '2026-06-01' },
+                    resident_ids: { type: 'array', items: { type: 'string' }, description: 'Optional subset of residents; omit to target all' }
+                  }
+                }
+              }
+            }
+          },
+          responses: { '200': { description: 'Invoices generated' }, '403': { description: 'Manager role required' } }
+        }
+      },
+      '/collections/invoices': {
+        get: {
+          tags: ['Collections'],
+          summary: 'Get my invoices (Resident)',
+          description: 'Returns all invoices for the authenticated resident.',
+          security: [{ bearerAuth: [] }],
+          responses: { '200': { description: 'Invoice list' }, '401': { description: 'Unauthorized' } }
+        }
+      },
+      '/collections/invoices/{invoiceId}/pay': {
+        post: {
+          tags: ['Collections'],
+          summary: 'Pay an invoice',
+          description: 'Initiate payment for a specific invoice. Triggers Paystack payment flow.',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'invoiceId', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { '200': { description: 'Payment initiated', content: { 'application/json': { schema: { $ref: '#/components/schemas/PaymentResponse' } } } }, '404': { description: 'Invoice not found' } }
+        }
+      },
+      '/collections/invoices/{invoiceId}/waive': {
+        patch: {
+          tags: ['Collections'],
+          summary: 'Waive an invoice (Manager)',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'invoiceId', in: 'path', required: true, schema: { type: 'string' } }],
+          requestBody: { required: false, content: { 'application/json': { schema: { type: 'object', properties: { reason: { type: 'string' } } } } } },
+          responses: { '200': { description: 'Invoice waived' }, '403': { description: 'Manager role required' } }
+        }
+      },
+      '/collections/summary': {
+        get: {
+          tags: ['Collections'],
+          summary: 'Get collections summary (Manager)',
+          description: 'Returns aggregate collection statistics — total billed, collected, outstanding, and waived — for the estate.',
+          security: [{ bearerAuth: [] }],
+          responses: { '200': { description: 'Collections summary' }, '403': { description: 'Manager role required' } }
+        }
+      },
+      '/collections/residents/{residentId}/status': {
+        get: {
+          tags: ['Collections'],
+          summary: 'Get a resident's payment status (Manager)',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'residentId', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { '200': { description: 'Resident payment status' }, '403': { description: 'Manager role required' } }
+        }
+      },
+      '/collections/withdraw': {
+        post: {
+          tags: ['Collections'],
+          summary: 'Request a withdrawal (Manager)',
+          description: 'Request a payout from the estate's collected funds to a designated bank account.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['amount'],
+                  properties: {
+                    amount: { type: 'number', example: 50000 },
+                    note: { type: 'string' }
+                  }
+                }
+              }
+            }
+          },
+          responses: { '200': { description: 'Withdrawal requested' }, '403': { description: 'Manager role required' } }
+        }
+      },
+      '/collections/withdrawals': {
+        get: {
+          tags: ['Collections'],
+          summary: 'Get withdrawal history (Manager)',
+          security: [{ bearerAuth: [] }],
+          responses: { '200': { description: 'Withdrawal list' }, '403': { description: 'Manager role required' } }
+        }
+      },
+      '/kuda/estate-wallet/balance': {
+        get: {
+          tags: ['Kuda'],
+          summary: 'Get estate virtual wallet balance (Manager)',
+          description: 'Returns the Kuda-powered estate wallet balance. Returns 503 when `KUDA_API_KEY` is not configured.',
+          security: [{ bearerAuth: [] }],
+          responses: {
+            '200': { description: 'Estate wallet balance', content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'object', properties: { balance: { type: 'number', example: 150000 }, currency: { type: 'string', example: 'NGN' }, kuda_account_number: { type: 'string', nullable: true } } } } } } } },
+            '401': { description: 'Unauthorized' },
+            '403': { description: 'Manager role required' },
+            '503': { description: 'Kuda integration not configured' }
+          }
+        }
+      },
+      '/kuda/estate-wallet/provision': {
+        post: {
+          tags: ['Kuda'],
+          summary: 'Provision a Kuda virtual account for the estate (Manager)',
+          description: 'Creates a Kuda Business virtual sub-account linked to the estate. Idempotent — returns existing account if already provisioned.',
+          security: [{ bearerAuth: [] }],
+          responses: {
+            '200': { description: 'Virtual account provisioned or already exists', content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'object', properties: { kuda_account_number: { type: 'string' }, kuda_account_name: { type: 'string' }, kuda_tracking_reference: { type: 'string' } } } } } } } },
+            '403': { description: 'Manager role required' },
+            '503': { description: 'Kuda integration not configured' }
+          }
+        }
+      },
+      '/kuda/estate-wallet/transactions': {
+        get: {
+          tags: ['Kuda'],
+          summary: 'Get estate wallet transaction history (Manager)',
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'limit', in: 'query', schema: { type: 'integer', default: 20 } },
+            { name: 'offset', in: 'query', schema: { type: 'integer', default: 0 } }
+          ],
+          responses: { '200': { description: 'Estate wallet transactions' }, '403': { description: 'Manager role required' } }
+        }
+      },
+      '/kuda/webhook': {
+        post: {
+          tags: ['Kuda'],
+          summary: 'Kuda webhook receiver',
+          description: 'Receives inbound Kuda Business API webhooks (credit alerts for estate virtual accounts). No bearer auth — verified by Kuda signature.',
+          responses: { '200': { description: 'Webhook processed' } }
         }
       },
       '/electricity/validate-meter': {
@@ -2706,6 +3097,9 @@ const options = {
       { name: 'Electricity', description: 'Electricity vending, smart meter management, and token delivery' },
       { name: 'Wallet', description: 'Resident wallet funding, balance, and transaction history' },
       { name: 'Bills', description: 'Airtime, data, TV subscription, and electricity bill payments via VTPass' },
+      { name: 'Collections', description: 'Estate fee management, invoice generation, resident payment tracking, and withdrawals' },
+      { name: 'Kuda', description: 'Kuda-powered estate virtual wallet — virtual sub-accounts, balances, and transactions' },
+      { name: 'Emergency', description: 'Emergency alerts, estate contacts, and location-based emergency contact directory' },
       { name: 'Legal', description: 'Legal documents and policies' },
       { name: 'Webhooks', description: 'Webhook endpoints' }
     ],

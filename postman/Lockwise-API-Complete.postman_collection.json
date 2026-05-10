@@ -5375,6 +5375,1159 @@
           }
         }
       ]
+    },
+    {
+      "name": "Electricity",
+      "item": [
+        {
+          "name": "Validate Meter",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"meterNumber\": \"12345678901\",\n  \"disco\": \"EKEDC\",\n  \"meterType\": \"prepaid\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/electricity/validate-meter",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "electricity",
+                "validate-meter"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Register Smart Meter",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"meterNumber\": \"12345678901\",\n  \"disco\": \"EKEDC\",\n  \"meterType\": \"prepaid\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/electricity/meters",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "electricity",
+                "meters"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get My Meters",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/electricity/meters",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "electricity",
+                "meters"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Toggle Auto-Load",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/electricity/meters/{{meterId}}/auto-load",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "electricity",
+                "meters",
+                "{{meterId}}",
+                "auto-load"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Meter",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/electricity/meters/{{meterId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "electricity",
+                "meters",
+                "{{meterId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Vend Electricity (Manual)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"meterNumber\": \"12345678901\",\n  \"disco\": \"EKEDC\",\n  \"meterType\": \"prepaid\",\n  \"amount\": 5000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/electricity/vend",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "electricity",
+                "vend"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Auto-Load Meter",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 5000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/electricity/meters/{{meterId}}/auto-load",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "electricity",
+                "meters",
+                "{{meterId}}",
+                "auto-load"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Requery Transaction",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reference\": \"LW_ELEC_xxxxxxxxxxxx_vtpass\",\n  \"provider\": \"vtpass\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/electricity/requery",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "electricity",
+                "requery"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Transaction History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/electricity/transactions?limit=20&offset=0",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "electricity",
+                "transactions"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Wallet",
+      "item": [
+        {
+          "name": "Get Balance",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/wallet/balance",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "wallet",
+                "balance"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Fund Wallet",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 5000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wallet/fund",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "wallet",
+                "fund"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Verify Funding",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reference\": \"wlt_1234567890_abc123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wallet/verify",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "wallet",
+                "verify"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Transactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/wallet/transactions?limit=20&offset=0",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "wallet",
+                "transactions"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bills (Airtime, Data, TV)",
+      "item": [
+        {
+          "name": "Get All Providers",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bills/providers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bills",
+                "providers"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Purchase Airtime",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serviceID\": \"mtn\",\n  \"phone\": \"08012345678\",\n  \"amount\": 1000,\n  \"useWallet\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bills/airtime/pay",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bills",
+                "airtime",
+                "pay"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Data Plans",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bills/data/plans/mtn-data",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bills",
+                "data",
+                "plans",
+                "mtn-data"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Purchase Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serviceID\": \"mtn-data\",\n  \"phone\": \"08012345678\",\n  \"variationCode\": \"mtn-10mb-100\",\n  \"amount\": 100,\n  \"useWallet\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bills/data/pay",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bills",
+                "data",
+                "pay"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Verify Smartcard",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serviceID\": \"dstv\",\n  \"smartcardNumber\": \"1234567890\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bills/tv/verify",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bills",
+                "tv",
+                "verify"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get TV Plans",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bills/tv/plans/dstv",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bills",
+                "tv",
+                "plans",
+                "dstv"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Purchase TV Subscription",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serviceID\": \"dstv\",\n  \"smartcardNumber\": \"1234567890\",\n  \"variationCode\": \"dstv-padi\",\n  \"amount\": 2150,\n  \"phone\": \"08012345678\",\n  \"subscriptionType\": \"renew\",\n  \"useWallet\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bills/tv/pay",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bills",
+                "tv",
+                "pay"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Verify Meter (Bills)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serviceID\": \"ikeja-electric\",\n  \"meterNumber\": \"12345678901\",\n  \"type\": \"prepaid\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bills/electricity/verify",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bills",
+                "electricity",
+                "verify"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Purchase Electricity (Bills)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serviceID\": \"ikeja-electric\",\n  \"meterNumber\": \"12345678901\",\n  \"type\": \"prepaid\",\n  \"amount\": 5000,\n  \"phone\": \"08012345678\",\n  \"useWallet\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bills/electricity/pay",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bills",
+                "electricity",
+                "pay"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Requery Transaction",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bills/requery/{{requestId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bills",
+                "requery",
+                "{{requestId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Bill Transactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bills/transactions?limit=20&offset=0",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bills",
+                "transactions"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Web Push",
+      "item": [
+        {
+          "name": "Get VAPID Public Key",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/push/vapid-public-key",
+              "host": ["{{baseUrl}}"],
+              "path": ["push", "vapid-public-key"]
+            }
+          }
+        },
+        {
+          "name": "Subscribe to Web Push",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"endpoint\": \"https://fcm.googleapis.com/fcm/send/...\",\n  \"keys\": {\n    \"p256dh\": \"<p256dh-key>\",\n    \"auth\": \"<auth-secret>\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/push/subscribe",
+              "host": ["{{baseUrl}}"],
+              "path": ["push", "subscribe"]
+            }
+          }
+        },
+        {
+          "name": "Unsubscribe from Web Push",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/push/unsubscribe",
+              "host": ["{{baseUrl}}"],
+              "path": ["push", "unsubscribe"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Estate — Logo & Pending Updates",
+      "item": [
+        {
+          "name": "Upload Estate Logo",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "logo", "type": "file", "src": "/path/to/logo.png", "description": "Estate logo image" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/estate/{{estateId}}/logo",
+              "host": ["{{baseUrl}}"],
+              "path": ["estate", "{{estateId}}", "logo"]
+            }
+          }
+        },
+        {
+          "name": "Get Estates with Pending Updates (Admin)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/estate/estates/pending-updates",
+              "host": ["{{baseUrl}}"],
+              "path": ["estate", "estates", "pending-updates"]
+            }
+          }
+        },
+        {
+          "name": "Apply or Reject Estate Update (Admin)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"approved\": true,\n  \"rejection_reason\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/estate/{{estateId}}/apply-update",
+              "host": ["{{baseUrl}}"],
+              "path": ["estate", "{{estateId}}", "apply-update"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Emergency — Location-Based Contacts",
+      "item": [
+        {
+          "name": "Get Location Emergency Contacts",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/emergency/location-contacts?countryId={{countryId}}&stateId={{stateId}}&cityId={{cityId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["emergency", "location-contacts"],
+              "query": [
+                { "key": "countryId", "value": "{{countryId}}" },
+                { "key": "stateId", "value": "{{stateId}}" },
+                { "key": "cityId", "value": "{{cityId}}" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Countries",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/emergency/location-contacts/countries",
+              "host": ["{{baseUrl}}"],
+              "path": ["emergency", "location-contacts", "countries"]
+            }
+          }
+        },
+        {
+          "name": "Get States for Country",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/emergency/location-contacts/countries/{{countryId}}/states",
+              "host": ["{{baseUrl}}"],
+              "path": ["emergency", "location-contacts", "countries", "{{countryId}}", "states"]
+            }
+          }
+        },
+        {
+          "name": "Get Cities for State",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/emergency/location-contacts/states/{{stateId}}/cities",
+              "host": ["{{baseUrl}}"],
+              "path": ["emergency", "location-contacts", "states", "{{stateId}}", "cities"]
+            }
+          }
+        },
+        {
+          "name": "Get Emergency Contact Categories",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/emergency/location-contacts/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["emergency", "location-contacts", "categories"]
+            }
+          }
+        },
+        {
+          "name": "Admin — List All Location Contacts",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/emergency/location-contacts/admin",
+              "host": ["{{baseUrl}}"],
+              "path": ["emergency", "location-contacts", "admin"]
+            }
+          }
+        },
+        {
+          "name": "Admin — Create Location Contact",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_id\": \"{{categoryId}}\",\n  \"name\": \"Lagos State Police Command\",\n  \"phone_number\": \"07055003700\",\n  \"country_id\": \"{{countryId}}\",\n  \"state_id\": \"{{stateId}}\",\n  \"city_id\": null,\n  \"description\": \"Lagos State Police HQ\",\n  \"is_active\": true,\n  \"priority\": 10\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/emergency/location-contacts/admin",
+              "host": ["{{baseUrl}}"],
+              "path": ["emergency", "location-contacts", "admin"]
+            }
+          }
+        },
+        {
+          "name": "Admin — Update Location Contact",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Contact Name\",\n  \"is_active\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/emergency/location-contacts/admin/{{contactId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["emergency", "location-contacts", "admin", "{{contactId}}"]
+            }
+          }
+        },
+        {
+          "name": "Admin — Delete Location Contact",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/emergency/location-contacts/admin/{{contactId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["emergency", "location-contacts", "admin", "{{contactId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Wallet — Account",
+      "item": [
+        {
+          "name": "Get Wallet Account",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/wallet/account",
+              "host": ["{{baseUrl}}"],
+              "path": ["wallet", "account"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Collections",
+      "item": [
+        {
+          "name": "Get Estate Fees",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/collections/fees",
+              "host": ["{{baseUrl}}"],
+              "path": ["collections", "fees"]
+            }
+          }
+        },
+        {
+          "name": "Create Fee (Manager)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Monthly Service Charge\",\n  \"amount\": 5000,\n  \"frequency\": \"monthly\",\n  \"description\": \"Estate maintenance levy\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/collections/fees",
+              "host": ["{{baseUrl}}"],
+              "path": ["collections", "fees"]
+            }
+          }
+        },
+        {
+          "name": "Update Fee (Manager)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 6000,\n  \"is_active\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/collections/fees/{{feeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["collections", "fees", "{{feeId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Fee (Manager)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/collections/fees/{{feeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["collections", "fees", "{{feeId}}"]
+            }
+          }
+        },
+        {
+          "name": "Generate Invoices (Manager)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fee_id\": \"{{feeId}}\",\n  \"due_date\": \"2026-06-01\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/collections/invoices/generate",
+              "host": ["{{baseUrl}}"],
+              "path": ["collections", "invoices", "generate"]
+            }
+          }
+        },
+        {
+          "name": "Get My Invoices (Resident)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/collections/invoices",
+              "host": ["{{baseUrl}}"],
+              "path": ["collections", "invoices"]
+            }
+          }
+        },
+        {
+          "name": "Pay Invoice",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/collections/invoices/{{invoiceId}}/pay",
+              "host": ["{{baseUrl}}"],
+              "path": ["collections", "invoices", "{{invoiceId}}", "pay"]
+            }
+          }
+        },
+        {
+          "name": "Waive Invoice (Manager)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Resident hardship waiver\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/collections/invoices/{{invoiceId}}/waive",
+              "host": ["{{baseUrl}}"],
+              "path": ["collections", "invoices", "{{invoiceId}}", "waive"]
+            }
+          }
+        },
+        {
+          "name": "Collections Summary (Manager)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/collections/summary",
+              "host": ["{{baseUrl}}"],
+              "path": ["collections", "summary"]
+            }
+          }
+        },
+        {
+          "name": "Get Resident Payment Status (Manager)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/collections/residents/{{residentId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["collections", "residents", "{{residentId}}", "status"]
+            }
+          }
+        },
+        {
+          "name": "Request Withdrawal (Manager)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 50000,\n  \"note\": \"Monthly disbursement\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/collections/withdraw",
+              "host": ["{{baseUrl}}"],
+              "path": ["collections", "withdraw"]
+            }
+          }
+        },
+        {
+          "name": "Get Withdrawal History (Manager)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/collections/withdrawals",
+              "host": ["{{baseUrl}}"],
+              "path": ["collections", "withdrawals"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Kuda — Estate Wallet",
+      "item": [
+        {
+          "name": "Get Estate Wallet Balance",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/kuda/estate-wallet/balance",
+              "host": ["{{baseUrl}}"],
+              "path": ["kuda", "estate-wallet", "balance"]
+            }
+          }
+        },
+        {
+          "name": "Provision Kuda Virtual Account",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/kuda/estate-wallet/provision",
+              "host": ["{{baseUrl}}"],
+              "path": ["kuda", "estate-wallet", "provision"]
+            }
+          }
+        },
+        {
+          "name": "Get Estate Wallet Transactions",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/kuda/estate-wallet/transactions?limit=20&offset=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["kuda", "estate-wallet", "transactions"],
+              "query": [
+                { "key": "limit", "value": "20" },
+                { "key": "offset", "value": "0" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Kuda Webhook",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"transactionType\": \"CREDIT\",\n  \"amount\": 10000,\n  \"trackingReference\": \"{{kudaTrackingRef}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/kuda/webhook",
+              "host": ["{{baseUrl}}"],
+              "path": ["kuda", "webhook"]
+            }
+          }
+        }
+      ]
     }
   ]
 }
