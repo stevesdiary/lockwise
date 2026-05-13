@@ -113,7 +113,8 @@ const bulkUploadController = {
     const result = await bulkUploadService.uploadAddresses(
       req.file.buffer, 
       req.file.originalname, 
-      estateId
+      estateId,
+      req.user?.id || 'unknown'
     );
 
     return res.status(200).json({

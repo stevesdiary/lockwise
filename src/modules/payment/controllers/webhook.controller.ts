@@ -3,6 +3,8 @@ import crypto from 'crypto';
 import { paymentService } from '../../payment/services/payment.service';
 import { Subscription } from '../models/subscription.model';
 import { Payment } from '../models/payment.model';
+import enhancedSubscriptionService from '../services/enhanced-subscription.service';
+import subscriptionEventService from '../services/subscription-event.service';
 import { Op } from 'sequelize';
 
 export const webhookController = {
@@ -50,6 +52,23 @@ export const webhookController = {
 async function handleSuccessfulPayment(data: any) {
   try {
     const reference = data.reference || data.tx_ref;
+    const metadata = data.metadata || {};
+    
+    // Check if this is a subscription payment
+    if (metadata.plan_id && metadata.billing_cycle && metadata.estate_id) {
+      // Activate subscription
+      await enhancedSubscriptionService.activateSubscription({
+        estateId: metadata.estate_id,
+        planId: metadata.plan_id,
+        billingCycle: metadata.billing_cycle,
+        paystackSubscriptionCode: data.subscription_code || null,
+        paystackCustomerCode: data.customer?.customer_code || null,
+      });
+
+      console.log('Subscription activated for estate:', metadata.estate_id);
+    }
+    
+    // Verify payment
     await paymentService.verifyPayment({ reference });
     
     // Send success notification

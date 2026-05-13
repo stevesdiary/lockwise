@@ -146,6 +146,10 @@ class BulkUploadService {
   }
 
   async uploadResidents(buffer: Buffer, filename: string, adminUserId?: string): Promise<BulkUploadResult<any>> {
+    // Store file for audit
+    const fileKey = `bulk-uploads/residents/${Date.now()}-${filename}`;
+    const fileUrl = await cloudStorage.uploadFile(fileKey, buffer, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    
     const rows = this.parseFile(buffer, filename);
     const result: BulkUploadResult<any> = {
       created: [],
@@ -202,6 +206,16 @@ class BulkUploadService {
         }
       }
 
+      // Create bulk upload job record
+      await this.createBulkUploadJob({
+        userId: adminUserId || 'system',
+        uploadType: 'residents',
+        filename,
+        sourceFileKey: fileKey,
+        sourceFileUrl: fileUrl,
+        ...result
+      }, transaction);
+
       await transaction.commit();
 
       // Notify the uploading admin via web push
@@ -218,11 +232,17 @@ class BulkUploadService {
 
     } catch (error) {
       await transaction.rollback();
+      // Clean up uploaded file on failure
+      await cloudStorage.deleteFile(fileKey);
       throw error;
     }
   }
 
-  async uploadAddresses(buffer: Buffer, filename: string, estateId: string): Promise<BulkUploadResult<any>> {
+  async uploadAddresses(buffer: Buffer, filename: string, estateId: string, userId: string): Promise<BulkUploadResult<any>> {
+    // Store file for audit
+    const fileKey = `bulk-uploads/addresses/${Date.now()}-${filename}`;
+    const fileUrl = await cloudStorage.uploadFile(fileKey, buffer, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    
     const rows = this.parseFile(buffer, filename);
     const result: BulkUploadResult<any> = {
       created: [],
@@ -267,11 +287,23 @@ class BulkUploadService {
         }
       }
 
+      // Create bulk upload job record
+      await this.createBulkUploadJob({
+        userId,
+        uploadType: 'addresses',
+        filename,
+        sourceFileKey: fileKey,
+        sourceFileUrl: fileUrl,
+        ...result
+      }, transaction);
+
       await transaction.commit();
       return result;
 
     } catch (error) {
       await transaction.rollback();
+      // Clean up uploaded file on failure
+      await cloudStorage.deleteFile(fileKey);
       throw error;
     }
   }
