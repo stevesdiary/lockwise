@@ -63,6 +63,9 @@ function validateSecretsAreDifferent(): void {
 
 /**
  * Validates encryption key format
+ * Accepts:
+ * - 64 hex characters (32 bytes)
+ * - 44 base64 characters (32 bytes)
  */
 function validateEncryptionKey(): void {
   const encryptionKey = process.env.ENCRYPTION_KEY;
@@ -72,9 +75,15 @@ function validateEncryptionKey(): void {
     return;
   }
 
-  if (encryptionKey.length !== 32) {
+  const isValidHex = encryptionKey.length === 64 && /^[0-9a-fA-F]{64}$/.test(encryptionKey);
+  const isValidBase64 = encryptionKey.length === 44 && /^[A-Za-z0-9+/]{43}=$/.test(encryptionKey);
+
+  if (!isValidHex && !isValidBase64) {
     throw new Error(
-      `ENCRYPTION_KEY must be exactly 32 characters. Current length: ${encryptionKey.length}`
+      `ENCRYPTION_KEY must be 32 bytes encoded as:\n` +
+      `  - 64 hex characters (current: ${encryptionKey.length} chars)\n` +
+      `  - OR 44 base64 characters\n\n` +
+      `Generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
     );
   }
 }
@@ -159,8 +168,9 @@ function validateEnv(): void {
       if (error instanceof Error) {
         console.error('\n❌ Environment Validation Failed:\n');
         console.error(error.message);
-        console.error('\n💡 To generate a secure secret, run:');
-        console.error('node -e "console.log(require(\'crypto\').randomBytes(64).toString(\'base64\').slice(0, 64))"');
+        console.error('\n💡 To generate secure secrets, run:');
+        console.error('JWT secrets: node -e "console.log(require(\'crypto\').randomBytes(64).toString(\'base64\').slice(0, 64))"');
+        console.error('Encryption key: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"');
         console.error('');
       }
       throw error;
