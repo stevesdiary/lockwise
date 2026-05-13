@@ -151,11 +151,13 @@ class SessionService {
   }
 
   private generateSessionId(): string {
-    return `sess_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+    const crypto = require('crypto');
+    return `sess_${Date.now()}_${crypto.randomBytes(16).toString('hex')}`;
   }
 
   private generateRefreshToken(): string {
-    return `ref_${Date.now()}_${Math.random().toString(36).slice(2, 18)}`;
+    const crypto = require('crypto');
+    return `ref_${Date.now()}_${crypto.randomBytes(32).toString('hex')}`;
   }
 }
 

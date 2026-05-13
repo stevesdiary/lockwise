@@ -20,6 +20,7 @@
     "start": "node ./build/src/main.js",
     "dev": "ts-node src/main.ts",
     "dev:watch": "nodemon --watch src --ext ts --exec ts-node src/main.ts",
+    "type-check": "tsc --noEmit",
     "db:diagnose": "tsc && node ./build/src/scripts/db-diagnose.js",
     "migrate": "tsc && node ./build/src/scripts/migrate.js",
     "seed": "npx sequelize-cli db:seed:all",
@@ -45,7 +46,8 @@
     "test:full": "k6 run load-test/tests/full-load-test.js",
     "test:resident": "k6 run --vus 20 --duration 3m load-test/tests/scenarios/resident-journey-standalone.js",
     "test:manager": "k6 run --vus 10 --duration 3m load-test/tests/scenarios/manager-journey-standalone.js",
-    "test:queue": "k6 run --vus 5 --duration 2m load-test/tests/scenarios/queue-backpressure-standalone.js"
+    "test:queue": "k6 run --vus 5 --duration 2m load-test/tests/scenarios/queue-backpressure-standalone.js",
+    "prepare": "husky"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.817.0",
@@ -115,6 +117,11 @@
     "yup": "^1.6.1"
   },
   "devDependencies": {
+    "@secretlint/quick-start": "^13.0.0",
+    "@secretlint/secretlint-rule-aws": "^13.0.0",
+    "@secretlint/secretlint-rule-basicauth": "^13.0.0",
+    "@secretlint/secretlint-rule-preset-recommend": "^13.0.0",
+    "@secretlint/secretlint-rule-privatekey": "^13.0.0",
     "@types/compression": "^1.8.1",
     "@types/express": "^5.0.6",
     "@types/jest": "^29.5.0",
@@ -122,6 +129,7 @@
     "@types/pg": "^8.16.0",
     "@types/sequelize": "^6.12.0",
     "@types/supertest": "^6.0.3",
+    "husky": "^9.1.7",
     "jest": "^29.5.0",
     "nodemon": "^3.1.9",
     "sqlite3": "^5.1.7",
