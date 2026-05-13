@@ -1,20 +1,30 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    // Add resident_cap column
-    await queryInterface.addColumn('plans', 'resident_cap', {
-      type: Sequelize.INTEGER,
-      allowNull: true,
-      after: 'features'
-    });
+    // Add resident_cap column if it doesn't exist
+    const [results] = await queryInterface.sequelize.query(
+      "SELECT column_name FROM information_schema.columns WHERE table_name='plans' AND column_name='resident_cap'"
+    );
+    if (results.length === 0) {
+      await queryInterface.addColumn('plans', 'resident_cap', {
+        type: Sequelize.INTEGER,
+        allowNull: true
+      });
+    }
 
-    // Add plan_tier column to replace category
-    await queryInterface.addColumn('plans', 'plan_tier', {
-      type: Sequelize.ENUM('starter', 'basic', 'growth', 'estate_pro', 'premium', 'enterprise'),
-      allowNull: true,
-      after: 'name'
-    });
+    // Add plan_tier column if it doesn't exist
+    const [tierResults] = await queryInterface.sequelize.query(
+      "SELECT column_name FROM information_schema.columns WHERE table_name='plans' AND column_name='plan_tier'"
+    );
+    if (tierResults.length === 0) {
+      await queryInterface.addColumn('plans', 'plan_tier', {
+        type: Sequelize.ENUM('starter', 'basic', 'growth', 'estate_pro', 'premium', 'enterprise'),
+        allowNull: true
+      });
+    }
 
     // Delete existing plans (testing phase)
+    // First, delete subscriptions that reference plans to avoid FK constraint
+    await queryInterface.sequelize.query('DELETE FROM subscriptions;');
     await queryInterface.sequelize.query('DELETE FROM plans;');
 
     // Insert new pricing plans
@@ -51,7 +61,7 @@ module.exports = {
     ];
 
     const planRecords = plans.map(p => ({
-      id: Sequelize.literal('uuid_generate_v4()'),
+      id: Sequelize.literal('gen_random_uuid()'),
       name: `${p.tier}_${p.cycle}`,
       description: `${p.tier.charAt(0).toUpperCase() + p.tier.slice(1).replace('_', ' ')} plan - ${p.cycle} billing`,
       billing_cycle: p.cycle,
