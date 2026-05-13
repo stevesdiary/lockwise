@@ -1,6 +1,6 @@
 echo "🔍 Scanning for secrets..."
 
-npx secretlint "**/*" --ignore-path .gitignore
+npx secretlint "**/*"
 
 if [ $? -ne 0 ]; then
   echo "❌ Secret detection failed! Commit blocked."
