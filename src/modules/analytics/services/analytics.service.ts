@@ -2,13 +2,42 @@ import sequelize from '../../../shared/core/database';
 import { QueryTypes } from 'sequelize';
 import redis from '../../../shared/core/redis';
 
+/**
+ * Validate and sanitize numeric input
+ */
+function validateDays(days: any): number {
+  const parsed = parseInt(days, 10);
+  if (isNaN(parsed) || parsed < 1 || parsed > 365) {
+    throw new Error('Invalid days parameter. Must be between 1 and 365.');
+  }
+  return parsed;
+}
+
+/**
+ * Validate date string format
+ */
+function validateDateString(date: string): string {
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!dateRegex.test(date)) {
+    throw new Error('Invalid date format. Expected YYYY-MM-DD');
+  }
+  
+  const parsed = new Date(date);
+  if (isNaN(parsed.getTime())) {
+    throw new Error('Invalid date value');
+  }
+  
+  return date;
+}
+
 export const analyticsService = {
   async trackEvent(userId: string, event: string, properties?: any) {
+    // ✅ SECURE - Using parameterized query
     await sequelize.query(`
       INSERT INTO analytics_events (user_id, event_name, properties, created_at)
       VALUES ($1, $2, $3, NOW())
     `, {
-      bind: [userId, event, properties],
+      bind: [userId, event, JSON.stringify(properties)],
       type: QueryTypes.INSERT
     });
 
@@ -19,6 +48,10 @@ export const analyticsService = {
   },
 
   async getUsageStats(startDate: string, endDate: string) {
+    // ✅ SECURE - Validate dates before using
+    const validStartDate = validateDateString(startDate);
+    const validEndDate = validateDateString(endDate);
+
     const [stats] = await sequelize.query(`
       SELECT 
         COUNT(DISTINCT user_id) as active_users,
@@ -28,7 +61,7 @@ export const analyticsService = {
       FROM analytics_events 
       WHERE created_at BETWEEN $1 AND $2
     `, {
-      bind: [startDate, endDate],
+      bind: [validStartDate, validEndDate],
       type: QueryTypes.SELECT
     }) as any[];
 
@@ -40,7 +73,7 @@ export const analyticsService = {
       ORDER BY count DESC 
       LIMIT 10
     `, {
-      bind: [startDate, endDate],
+      bind: [validStartDate, validEndDate],
       type: QueryTypes.SELECT
     });
 
@@ -48,6 +81,7 @@ export const analyticsService = {
   },
 
   async getPerformanceMetrics() {
+    // ✅ SECURE - No user input, using INTERVAL with constant
     const [metrics] = await sequelize.query(`
       SELECT 
         AVG(duration_ms) as avg_response_time,
@@ -71,6 +105,13 @@ export const analyticsService = {
   },
 
   async getUserBehavior(userId: string, days: number = 30) {
+    // ✅ SECURE - Validate days parameter
+    const validDays = validateDays(days);
+
+    // ✅ SECURE - Calculate timestamp in application code
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - validDays);
+
     const [behavior] = await sequelize.query(`
       SELECT 
         COUNT(*) as total_actions,
@@ -79,9 +120,9 @@ export const analyticsService = {
         COUNT(CASE WHEN event_name = 'payment_made' THEN 1 END) as payments_made,
         MAX(created_at) as last_activity
       FROM analytics_events 
-      WHERE user_id = $1 AND created_at > NOW() - INTERVAL '$2 days'
+      WHERE user_id = $1 AND created_at > $2
     `, {
-      bind: [userId, days],
+      bind: [userId, startDate.toISOString()],
       type: QueryTypes.SELECT
     }) as any[];
 
@@ -89,11 +130,11 @@ export const analyticsService = {
       SELECT event_name, COUNT(*) as count, 
              EXTRACT(hour FROM created_at) as hour
       FROM analytics_events 
-      WHERE user_id = $1 AND created_at > NOW() - INTERVAL '$2 days'
+      WHERE user_id = $1 AND created_at > $2
       GROUP BY event_name, EXTRACT(hour FROM created_at)
       ORDER BY count DESC
     `, {
-      bind: [userId, days],
+      bind: [userId, startDate.toISOString()],
       type: QueryTypes.SELECT
     });
 

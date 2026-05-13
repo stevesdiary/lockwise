@@ -1,22 +1,22 @@
 import { Request, Response } from 'express';
-import crypto from 'crypto';
 import { paymentService } from '../../payment/services/payment.service';
 import { Subscription } from '../models/subscription.model';
 import { Payment } from '../models/payment.model';
 import enhancedSubscriptionService from '../services/enhanced-subscription.service';
 import subscriptionEventService from '../services/subscription-event.service';
 import { Op } from 'sequelize';
+import { WebhookSecurity } from '../../../shared/utils/webhook-security.util';
 
 export const webhookController = {
   async paystackWebhook(req: Request, res: Response) {
     try {
-      const hash = crypto
-        .createHmac('sha512', process.env.PAYSTACK_SECRET_KEY!)
-        .update(JSON.stringify(req.body))
-        .digest('hex');
-
-      if (hash !== req.headers['x-paystack-signature']) {
-        return res.status(400).json({ error: 'Invalid signature' });
+      // Verify webhook signature
+      const signature = req.headers['x-paystack-signature'] as string;
+      const verification = WebhookSecurity.verifyPaystackSignature(req.body, signature);
+      
+      if (!verification.valid) {
+        console.warn('Invalid Paystack webhook signature:', verification.error);
+        return res.status(401).json({ error: 'Invalid signature' });
       }
 
       const event = req.body;

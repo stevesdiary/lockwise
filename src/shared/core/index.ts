@@ -1,6 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import helmet from 'helmet';
 import compression from 'compression';
 import { createServer } from 'http';
 import rateLimit from 'express-rate-limit';
@@ -30,8 +29,11 @@ const port = process.env.LOCAL_PORT || 3002;
 // Trust the first hop proxy (Render, Heroku, nginx) so req.ip reflects the real client IP
 server.set('trust proxy', 1);
 
-// Security headers
-server.use(helmet());
+// Enhanced security headers
+import { securityHeaders, detectSuspiciousActivity, validateRequestSize } from '../middleware/security.middleware';
+server.use(securityHeaders);
+server.use(detectSuspiciousActivity);
+server.use(validateRequestSize);
 
 // CORS — whitelist specific origins from env
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
@@ -49,8 +51,11 @@ server.use(cors({
     }
   },
   credentials: true,
+  optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
+  exposedHeaders: ['X-Total-Count', 'X-Page', 'X-Per-Page'],
+  maxAge: 86400 // 24 hours - cache preflight requests
 }));
 
 // Body parsing with size limits; capture raw body for webhook signature verification

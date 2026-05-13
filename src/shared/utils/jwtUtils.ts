@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import crypto from 'crypto';
 import { saveToRedis, getFromRedis, deleteFromRedis } from '../core/redis';
 
@@ -52,22 +52,21 @@ export function createAccessToken(
 ): string {
   const jti = options.includeJti !== false ? generateJti() : undefined;
   
-  const tokenPayload: TokenPayload = {
+  const tokenPayload: any = {
     ...payload,
     ...(jti && { jti })
   };
 
-  const expiresIn = options.expiresIn || process.env.JWT_EXPIRY || '15m';
+  // Ensure expiresIn is the correct type
+  const expiresIn: string | number = options.expiresIn ?? (process.env.JWT_EXPIRY || '15m');
+  
+  const signOptions: SignOptions = {
+    expiresIn: expiresIn as any, // Type assertion needed due to StringValue template literal type
+    issuer: 'lockwise-api',
+    audience: 'lockwise-client'
+  };
 
-  return jwt.sign(
-    tokenPayload,
-    jwtSecret!,
-    {
-      expiresIn: expiresIn as string | number,
-      issuer: 'lockwise-api',
-      audience: 'lockwise-client'
-    }
-  );
+  return jwt.sign(tokenPayload, jwtSecret!, signOptions);
 }
 
 /**
@@ -80,21 +79,19 @@ export function createRefreshToken(
   const jti = generateJti();
   const tokenFamily = options.tokenFamily || generateTokenFamily();
   
-  const tokenPayload: TokenPayload = {
+  const tokenPayload: any = {
     ...payload,
     jti,
     tokenFamily
   };
 
-  const token = jwt.sign(
-    tokenPayload,
-    refreshSecret!,
-    {
-      expiresIn: '30d',
-      issuer: 'lockwise-api',
-      audience: 'lockwise-client'
-    }
-  );
+  const signOptions: SignOptions = {
+    expiresIn: '30d',
+    issuer: 'lockwise-api',
+    audience: 'lockwise-client'
+  };
+
+  const token = jwt.sign(tokenPayload, refreshSecret!, signOptions);
 
   return { token, tokenFamily };
 }
