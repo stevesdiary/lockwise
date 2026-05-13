@@ -10,6 +10,10 @@ interface TokenPayload {
   estate_id?: string;
   jti?: string; // JWT ID for revocation
   tokenFamily?: string; // For refresh token rotation
+  exp?: number; // Expiration timestamp
+  iat?: number; // Issued at timestamp
+  iss?: string; // Issuer
+  aud?: string; // Audience
 }
 
 interface TokenOptions {
@@ -53,11 +57,13 @@ export function createAccessToken(
     ...(jti && { jti })
   };
 
+  const expiresIn = options.expiresIn || process.env.JWT_EXPIRY || '15m';
+
   return jwt.sign(
     tokenPayload,
     jwtSecret!,
     {
-      expiresIn: options.expiresIn || process.env.JWT_EXPIRY || '15m',
+      expiresIn: expiresIn as string | number,
       issuer: 'lockwise-api',
       audience: 'lockwise-client'
     }

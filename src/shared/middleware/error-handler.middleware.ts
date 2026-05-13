@@ -227,3 +227,24 @@ export function authenticationError(message: string = 'Authentication required')
 export function notFoundError(resource: string = 'Resource') {
   return new AppError(`${resource} not found`, 404, 'NOT_FOUND');
 }
+
+/**
+ * Handle controller errors consistently
+ */
+export function handleControllerError(error: any, res: Response) {
+  const { status, message, code } = getSafeErrorMessage(error);
+  
+  secureLogger.error('Controller error', error);
+  
+  return res.status(status).json({
+    statusCode: status,
+    status: 'error',
+    message,
+    ...(code && { code })
+  });
+}
+
+/**
+ * Export notFound as alias for notFoundHandler
+ */
+export const notFound = notFoundHandler;

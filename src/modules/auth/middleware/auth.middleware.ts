@@ -70,7 +70,7 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
     req.user = {
       id: decoded.userId,
       email: decoded.email,
-      role: decoded.role,
+      role: decoded.role as UserRole,
       sessionId: decoded.sessionId,
       estate_id: session.estateId || decoded.estate_id
     };
