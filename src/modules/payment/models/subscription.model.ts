@@ -53,6 +53,68 @@ export class Subscription extends Model {
   declare status: string;
 
   @Column({
+    type: DataType.ENUM('TRIAL', 'ACTIVE', 'GRACE', 'LAPSED'),
+    allowNull: false,
+    defaultValue: 'TRIAL'
+  })
+  declare subscription_state: 'TRIAL' | 'ACTIVE' | 'GRACE' | 'LAPSED';
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true
+  })
+  declare trial_start_date: Date | null;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true
+  })
+  declare trial_end_date: Date | null;
+
+  @Column({
+    type: DataType.ENUM('monthly', 'quarterly', 'annually'),
+    allowNull: true
+  })
+  declare billing_cycle: 'monthly' | 'quarterly' | 'annually' | null;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true
+  })
+  declare next_billing_date: Date | null;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true
+  })
+  declare paystack_subscription_code: string | null;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true
+  })
+  declare paystack_customer_code: string | null;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0
+  })
+  declare resident_count: number;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true
+  })
+  declare resident_cap: number | null;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true
+  })
+  declare lapsed_start_date: Date | null;
+
+  @Column({
     type: DataType.STRING
   })
   declare cancel_reason: string;
