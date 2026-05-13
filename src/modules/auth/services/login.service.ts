@@ -1,4 +1,3 @@
-import jwt, { type SignOptions } from "jsonwebtoken";
 import { Response } from "express";
 import { User } from "../models/user.model";
 import { Role } from "../models/role.model";
@@ -7,39 +6,9 @@ import { Unit } from "../../estate/models/unit.model";
 import { Street } from "../../estate/models/street.model";
 import { Estate } from "../../estate/models/estate.model";
 import sessionService from "./session.service";
+import { createAccessToken, createRefreshToken } from "../../../shared/utils/jwtUtils";
 
 const getBcrypt = async () => (await import('bcryptjs')).default;
-
-type JwtExpiry = SignOptions["expiresIn"];
-type JwtStringExpiry = Extract<JwtExpiry, string>;
-
-const isJwtStringValue = (value: string): value is JwtStringExpiry =>
-  /^-?\d+(\.\d+)?(?:\s?(?:years?|yrs?|y|weeks?|w|days?|d|hours?|hrs?|h|minutes?|mins?|m|seconds?|secs?|s|milliseconds?|msecs?|ms))?$/i.test(value);
-
-const parseJwtExpiry = (value: string | undefined, fallback: JwtExpiry): JwtExpiry => {
-  if (!value) {
-    return fallback;
-  }
-
-  const trimmedValue = value.trim();
-  if (!trimmedValue) {
-    return fallback;
-  }
-
-  if (/^-?\d+(\.\d+)?$/.test(trimmedValue)) {
-    return Number(trimmedValue);
-  }
-
-  if (isJwtStringValue(trimmedValue)) {
-    return trimmedValue;
-  }
-
-  return fallback;
-};
-
-const jwtExpiry = parseJwtExpiry(process.env.JWT_EXPIRY, "1h");
-const jwtSecret: string = process.env.JWT_SECRET || "secret";
-const refreshSecret: string = process.env.REFRESH_TOKEN_SECRET || 'refresh_secret';
 
 export const loginUser = async (email: string, password: string) => {
   try {
@@ -87,17 +56,23 @@ export const loginUser = async (email: string, password: string) => {
       return { statusCode: 429, message: 'Maximum concurrent sessions reached' };
     }
 
-    const token = jwt.sign(
-      {
-        userId: user.id,
-        email: user.email,
-        role: user.role?.role,
-        estate_id: user.estate_id,
-        sessionId: sessionData.sessionId
-      },
-      process.env.JWT_SECRET || jwtSecret,
-      { expiresIn: jwtExpiry }
-    );
+    // Create access token with JTI for revocation support
+    const token = createAccessToken({
+      userId: user.id,
+      email: user.email,
+      role: user.role?.role || 'resident',
+      estate_id: user.estate_id,
+      sessionId: sessionData.sessionId
+    });
+
+    // Create refresh token with token family for rotation detection
+    const { token: refreshToken } = createRefreshToken({
+      userId: user.id,
+      email: user.email,
+      role: user.role?.role || 'resident',
+      estate_id: user.estate_id,
+      sessionId: sessionData.sessionId
+    });
 
     const resident = user.residentProfile;
     const unit = resident?.unit;
@@ -106,7 +81,7 @@ export const loginUser = async (email: string, password: string) => {
       statusCode: 200,
       message: 'Login successful',
       data: {
-        refreshToken: sessionData.refreshToken,
+        refreshToken,
         user: {
           id: user.id,
           email: user.email,
@@ -134,39 +109,37 @@ export const loginUser = async (email: string, password: string) => {
 
 export const refreshAccessToken = async (refreshToken: string) => {
   try {
-    const result = await sessionService.refreshSession(refreshToken);
+    const { rotateRefreshToken } = await import('../../../shared/utils/jwtUtils');
+    
+    const result = await rotateRefreshToken(refreshToken);
+    
     if (!result) {
       return { statusCode: 401, message: 'Invalid or expired refresh token' };
     }
 
-    const session = await sessionService.getSession(result.sessionId);
-    if (!session) {
-      return { statusCode: 401, message: 'Session not found' };
-    }
-
-    const user = await User.findByPk(session.userId, { attributes: ['id', 'email'] });
-    if (!user) {
-      return { statusCode: 401, message: 'User not found' };
-    }
-
-    const token = jwt.sign(
-      {
-        userId: session.userId,
-        email: user.email,
-        role: session.role,
-        estate_id: session.estateId,
-        sessionId: result.sessionId,
-      },
-      process.env.JWT_SECRET || jwtSecret,
-      { expiresIn: jwtExpiry }
-    );
-
     return {
       statusCode: 200,
       message: 'Token refreshed',
-      data: { token, refreshToken: result.newRefreshToken },
+      data: { 
+        token: result.accessToken, 
+        refreshToken: result.refreshToken 
+      },
     };
   } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === 'TOKEN_REUSE_DETECTED') {
+        // Log security event
+        console.error('🚨 SECURITY ALERT: Refresh token reuse detected');
+        return { 
+          statusCode: 401, 
+          message: 'Security violation detected. All sessions have been terminated.',
+          code: 'TOKEN_REUSE_DETECTED'
+        };
+      }
+      if (error.message === 'REFRESH_TOKEN_EXPIRED') {
+        return { statusCode: 401, message: 'Refresh token expired' };
+      }
+    }
     throw error;
   }
 };
