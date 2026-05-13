@@ -21,6 +21,7 @@ import paymentRouter from "./modules/payment/routes/payment.route";
 import planRouter from "./modules/payment/routes/plan.route";
 import referralRouter from "./modules/payment/routes/referral.route";
 import webhookRouter from "./modules/payment/routes/webhook.route";
+import subscriptionRouter from "./modules/payment/routes/subscription.route";
 
 // Amenities Module
 import amenityRouter from "./modules/amenities/routes/amenity.route";
@@ -112,6 +113,7 @@ router.use('/payment', paymentRouter);
 router.use('/plan', planRouter);
 router.use('/referral', referralRouter);
 router.use('/webhooks', webhookRouter);
+router.use('/subscription', subscriptionRouter);
 
 // Amenities Routes
 router.use('/amenities', amenityRouter);
