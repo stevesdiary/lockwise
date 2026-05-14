@@ -136,9 +136,9 @@ const bulkUploadController = {
       return res.status(400).json({ status: 'error', message: 'No file provided' });
     }
 
-    const { estateId } = req.body;
-    if (!estateId) {
-      return res.status(400).json({ status: 'error', message: 'estateId is required' });
+    const { estateCode } = req.body;
+    if (!estateCode) {
+      return res.status(400).json({ status: 'error', message: 'estateCode is required' });
     }
 
     if (!bulkUploadService.validateFileFormat(req.file.originalname)) {
@@ -153,14 +153,23 @@ const bulkUploadController = {
     // Managers can only upload to their own estate; admins/super_admins can upload to any
     const userRole = (req.user!.role as string)?.toLowerCase() || '';
     const isAdmin = ['master', 'super_admin', 'admin'].includes(userRole);
-    if (!isAdmin && req.user!.estate_id !== estateId) {
-      return res.status(403).json({ status: 'error', message: 'You can only upload to your own estate' });
+    
+    // For managers, verify estate_code matches their estate
+    if (!isAdmin && req.user!.estate_id) {
+      const { Estate } = await import('../../estate/models/estate.model');
+      const userEstate = await Estate.findByPk(req.user!.estate_id);
+      if (!userEstate || userEstate.estate_code !== estateCode) {
+        return res.status(403).json({ 
+          status: 'error', 
+          message: 'You can only upload to your own estate' 
+        });
+      }
     }
 
     const result = await bulkUploadService.uploadStreetsUnits(
       req.file.buffer,
       req.file.originalname,
-      estateId,
+      estateCode,
       req.user!.id
     );
 
@@ -168,6 +177,9 @@ const bulkUploadController = {
       status: 'success',
       message: 'Bulk streets/units upload completed',
       data: {
+        estateCode,
+        estateId: result.estateId,
+        estateName: result.estateName,
         totalProcessed: result.totalProcessed,
         successCount: result.successCount,
         streetsCreated: result.streetsCreated,
