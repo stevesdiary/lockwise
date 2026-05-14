@@ -1,0 +1,21 @@
+street_name,unit_identifier,unit_type,block,floor
+Main Street,A101,flat,A,1
+Main Street,A102,flat,A,1
+Main Street,A103,flat,A,1
+Main Street,A201,duplex,A,2
+Main Street,A202,duplex,A,2
+Oak Avenue,B101,apartment,B,1
+Oak Avenue,B102,apartment,B,1
+Oak Avenue,B103,apartment,B,1
+Oak Avenue,B201,apartment,B,2
+Oak Avenue,B202,apartment,B,2
+Park Lane,C1,house,C,
+Park Lane,C2,house,C,
+Park Lane,C3,house,C,
+Garden Road,D1,plot,D,
+Garden Road,D2,plot,D,
+Garden Road,D3,plot,D,
+Sunset Boulevard,E101,chalet,E,1
+Sunset Boulevard,E102,chalet,E,1
+Sunset Boulevard,E201,terrace,E,2
+Sunset Boulevard,E202,terrace,E,2

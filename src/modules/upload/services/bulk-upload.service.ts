@@ -311,7 +311,7 @@ class BulkUploadService {
   async uploadStreetsUnits(
     buffer: Buffer,
     filename: string,
-    estateId: string,
+    estateCode: string,
     userId: string
   ): Promise<{
     totalProcessed: number;
@@ -320,6 +320,8 @@ class BulkUploadService {
     unitsCreated: number;
     skippedCount: number;
     errors: Array<{ row: number; data: any; reason: string }>;
+    estateId: string;
+    estateName: string;
   }> {
     const rows = this.parseFile(buffer, filename);
     const result = {
@@ -329,6 +331,8 @@ class BulkUploadService {
       unitsCreated: 0,
       skippedCount: 0,
       errors: [] as Array<{ row: number; data: any; reason: string }>,
+      estateId: '',
+      estateName: '',
     };
 
     const validUnitTypes = ['flat', 'duplex', 'chalet', 'terrace', 'plot', 'house', 'apartment', 'other'];
@@ -336,6 +340,20 @@ class BulkUploadService {
     const transaction = await sequelize.transaction();
 
     try {
+      // Look up estate by estate_code
+      const { Estate } = await import('../../estate/models/estate.model');
+      const estate = await Estate.findOne({
+        where: { estate_code: estateCode },
+        transaction,
+      });
+
+      if (!estate) {
+        throw new Error(`Estate with code '${estateCode}' not found`);
+      }
+
+      const estateId = estate.estate_id;
+      result.estateId = estateId;
+      result.estateName = estate.name;
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
         try {
@@ -407,7 +425,12 @@ class BulkUploadService {
           filename,
           sourceFileKey: null,
           sourceFileUrl: null,
-          ...result,
+          totalProcessed: result.totalProcessed,
+          successCount: result.successCount,
+          streetsCreated: result.streetsCreated,
+          unitsCreated: result.unitsCreated,
+          skippedCount: result.skippedCount,
+          errors: result.errors,
         },
         transaction
       );
