@@ -99,32 +99,49 @@ export const validateRequestSize = (req: Request, res: Response, next: NextFunct
 
 // Suspicious activity detection
 export const detectSuspiciousActivity = (req: Request, res: Response, next: NextFunction) => {
-  const suspiciousPatterns = [
-    /(\.\.|\/etc\/|\/proc\/|\/sys\/)/i, // Path traversal
-    /(union|select|insert|update|delete|drop|create|alter|exec|script)/i, // SQL injection
-    /(<script|javascript:|onerror=|onload=)/i, // XSS
-    /(\.\.\/|\.\.\\)/g, // Directory traversal
-  ];
+  // Path traversal patterns
+  const pathTraversalPattern = /(\.\.\/|\.\.\\\/etc\/|proc\/|sys\/)/i;
   
-  const checkString = (str: string): boolean => {
-    return suspiciousPatterns.some(pattern => pattern.test(str));
-  };
+  // SQL injection patterns (more precise - look for SQL keywords with context)
+  const sqlInjectionPattern = /('\s*(or|and)\s*'|'\s*=\s*'|;\s*(drop|delete|insert|update|union|select)\s+|--\s*$)/i;
   
-  // Check URL, query params, and body
-  const suspicious = 
-    checkString(req.url) ||
-    Object.values(req.query).some(v => typeof v === 'string' && checkString(v)) ||
-    (req.body && JSON.stringify(req.body).match(/(<script|javascript:|onerror=|onload=)/i));
+  // XSS patterns
+  const xssPattern = /(<script[^>]*>|javascript:|onerror\s*=|onload\s*=|<iframe|<object|<embed)/i;
   
-  if (suspicious) {
-    console.warn('Suspicious activity detected:', {
+  // Check URL path for path traversal
+  if (pathTraversalPattern.test(req.path)) {
+    console.warn('Path traversal attempt detected:', {
       ip: req.ip,
       path: req.path,
       method: req.method,
-      userAgent: req.headers['user-agent'],
     });
-    
     return res.status(400).json({ error: 'Invalid request' });
+  }
+  
+  // Check query params for SQL injection and XSS
+  for (const [key, value] of Object.entries(req.query)) {
+    if (typeof value === 'string') {
+      if (sqlInjectionPattern.test(value) || xssPattern.test(value)) {
+        console.warn('Suspicious query parameter detected:', {
+          ip: req.ip,
+          path: req.path,
+          param: key,
+        });
+        return res.status(400).json({ error: 'Invalid request' });
+      }
+    }
+  }
+  
+  // Check request body for XSS (not SQL - body should use parameterized queries)
+  if (req.body && typeof req.body === 'object') {
+    const bodyStr = JSON.stringify(req.body);
+    if (xssPattern.test(bodyStr)) {
+      console.warn('XSS attempt in request body detected:', {
+        ip: req.ip,
+        path: req.path,
+      });
+      return res.status(400).json({ error: 'Invalid request' });
+    }
   }
   
   next();
