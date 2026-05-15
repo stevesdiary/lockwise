@@ -255,10 +255,26 @@ class EnhancedSubscriptionService {
       });
 
       if (!subscription) {
+        // No subscription found - return default state prompting to subscribe
         return {
-          statusCode: 404,
-          status: 'error',
-          message: 'No subscription found for this estate',
+          statusCode: 200,
+          status: 'success',
+          data: {
+            subscription_state: null,
+            plan_name: null,
+            plan_tier: null,
+            billing_cycle: null,
+            trial_end_date: null,
+            next_billing_date: null,
+            resident_count: await User.count({
+              where: { estate_id: estateId, user_type: 'resident' },
+            }),
+            resident_cap: null,
+            days_remaining: null,
+            show_banner: true,
+            banner_type: 'subscribe_required' as const,
+            banner_message: 'No active subscription. Select a plan to get started.',
+          },
         };
       }
 
@@ -327,18 +343,18 @@ class EnhancedSubscriptionService {
         status: 'success',
         data: {
           subscription_state: subscription.subscription_state,
-          status: subscription.status,
-          plan: subscription.plan,
+          plan_name: subscription.plan?.name || null,
+          plan_tier: subscription.plan?.plan_tier || null,
           billing_cycle: subscription.billing_cycle,
           start_date: subscription.start_date,
           end_date: subscription.end_date,
           trial_end_date: subscription.trial_end_date,
+          next_billing_date: subscription.next_billing_date,
           grace_period_end_date: subscription.grace_period_end_date,
           days_remaining: daysRemaining,
           show_banner: showBanner,
           banner_type: bannerType,
           banner_message: bannerMessage,
-          features: featureFlags,
           resident_count: residentCount,
           resident_cap: subscription.resident_cap,
           auto_renew: subscription.auto_renew,
