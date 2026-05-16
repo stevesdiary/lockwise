@@ -7,6 +7,8 @@ export interface FeatureFlags {
   collections_and_payments: boolean;
   reporting_and_analytics: boolean;
   issue_tracking: boolean;
+  manager_portal_access: boolean;
+  mobile_app_access: boolean;
 }
 
 export type FeatureName = keyof FeatureFlags;
@@ -24,6 +26,8 @@ export const FEATURE_FLAGS_BY_STATE: Record<SubscriptionState, FeatureFlags> = {
     collections_and_payments: true,
     reporting_and_analytics: true,
     issue_tracking: true,
+    manager_portal_access: true,
+    mobile_app_access: true,
   },
   ACTIVE: {
     access_by_code: true,
@@ -34,6 +38,8 @@ export const FEATURE_FLAGS_BY_STATE: Record<SubscriptionState, FeatureFlags> = {
     collections_and_payments: true,
     reporting_and_analytics: true,
     issue_tracking: true,
+    manager_portal_access: true,
+    mobile_app_access: true,
   },
   GRACE: {
     access_by_code: true,
@@ -44,6 +50,8 @@ export const FEATURE_FLAGS_BY_STATE: Record<SubscriptionState, FeatureFlags> = {
     collections_and_payments: true,
     reporting_and_analytics: false,
     issue_tracking: false,
+    manager_portal_access: true,
+    mobile_app_access: true,
   },
   LAPSED: {
     access_by_code: false,
@@ -54,6 +62,8 @@ export const FEATURE_FLAGS_BY_STATE: Record<SubscriptionState, FeatureFlags> = {
     collections_and_payments: true,
     reporting_and_analytics: false,
     issue_tracking: false,
+    manager_portal_access: true,
+    mobile_app_access: true,
   },
 };
 
@@ -78,6 +88,8 @@ export function getFeatureFlagsForLapsedState(daysSinceLapsed: number): FeatureF
       collections_and_payments: true,
       reporting_and_analytics: true,
       issue_tracking: true,
+      manager_portal_access: true,
+      mobile_app_access: true,
     };
   }
 
@@ -92,6 +104,8 @@ export function getFeatureFlagsForLapsedState(daysSinceLapsed: number): FeatureF
       collections_and_payments: true,
       reporting_and_analytics: false,
       issue_tracking: true,
+      manager_portal_access: true,
+      mobile_app_access: true,
     };
   }
 
@@ -106,6 +120,8 @@ export function getFeatureFlagsForLapsedState(daysSinceLapsed: number): FeatureF
       collections_and_payments: true,
       reporting_and_analytics: false,
       issue_tracking: true,
+      manager_portal_access: true,
+      mobile_app_access: true,
     };
   }
 
@@ -120,10 +136,13 @@ export function getFeatureFlagsForLapsedState(daysSinceLapsed: number): FeatureF
       collections_and_payments: true,
       reporting_and_analytics: false,
       issue_tracking: false,
+      manager_portal_access: true,
+      mobile_app_access: true,
     };
   }
 
   // Day 31+: Manager portal locked, only ICE and collections
+  // BUT managers still have mobile app access to subscribe
   return FEATURE_FLAGS_BY_STATE.LAPSED;
 }
 
