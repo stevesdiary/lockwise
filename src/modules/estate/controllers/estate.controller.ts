@@ -43,7 +43,8 @@ class EstateController {
           }
         : undefined;
       
-      const estateCodeAlphabet = customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 8);
+      const estateCodeAlphabet = customAlphabet('ABCDEFGHIJKLMNPQRSTUVWXYZ', 4);
+      const estateCodeDigits = customAlphabet('123456789', 4);
       const estateCreationData = {
         name: validatedData.name,
         type: validatedData.type,
@@ -53,7 +54,7 @@ class EstateController {
         country_code: validatedData.country_code || 'NG',
         timezone: validatedData.timezone || 'Africa/Lagos',
         currency_code: validatedData.currency_code || 'NGN',
-        estate_code: `EST-${estateCodeAlphabet()}`,
+        estate_code: `EST-${estateCodeAlphabet()}-${estateCodeDigits()}`,
         total_number_of_apartments: validatedData.number_of_appartments || 0,
         total_floors: validatedData.total_number_of_floors,
         location_details: {
