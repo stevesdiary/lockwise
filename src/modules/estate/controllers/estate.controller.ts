@@ -471,7 +471,7 @@ class EstateController {
               {
                 model: Street,
                 as: 'street',
-                attributes: ['id', 'name'],
+                attributes: ['street_id', 'name'],
                 where: Object.keys(streetWhere).length ? streetWhere : undefined,
                 required: Object.keys(streetWhere).length > 0,
               },
