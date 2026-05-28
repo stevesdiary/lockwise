@@ -15,12 +15,9 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "prestart": "node ./build/src/scripts/migrate.js",
-    "build": "npm install && tsc",
-    "start": "node ./build/src/main.js",
+    "start": "tsc && node ./build/src/main.js",
     "dev": "ts-node src/main.ts",
     "dev:watch": "nodemon --watch src --ext ts --exec ts-node src/main.ts",
-    "type-check": "tsc --noEmit",
     "db:diagnose": "tsc && node ./build/src/scripts/db-diagnose.js",
     "migrate": "tsc && node ./build/src/scripts/migrate.js",
     "seed": "npx sequelize-cli db:seed:all",
