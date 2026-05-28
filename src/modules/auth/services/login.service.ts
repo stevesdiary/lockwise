@@ -1,5 +1,3 @@
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import { Response } from "express";
 import { User } from "../models/user.model";
 import { Role } from "../models/role.model";
@@ -8,15 +6,13 @@ import { Unit } from "../../estate/models/unit.model";
 import { Street } from "../../estate/models/street.model";
 import { Estate } from "../../estate/models/estate.model";
 import sessionService from "./session.service";
+import { createAccessToken, createRefreshToken } from "../../../shared/utils/jwtUtils";
 
-// Define environment variables with proper types
-const jwtExpiry: string | number = process.env.JWT_EXPIRY || "1h";
-const jwtSecret: string = process.env.JWT_SECRET || "secret";
-const refreshTokenExpiry: string | number = process.env.REFRESH_TOKEN_EXPIRY || '7d';
-const refreshSecret: string = process.env.REFRESH_TOKEN_SECRET || 'refresh_secret';
+const getBcrypt = async () => (await import('bcryptjs')).default;
 
 export const loginUser = async (email: string, password: string) => {
   try {
+    const bcrypt = await getBcrypt();
     const user = await User.findOne({ 
       where: { email },
       include: [
@@ -60,17 +56,23 @@ export const loginUser = async (email: string, password: string) => {
       return { statusCode: 429, message: 'Maximum concurrent sessions reached' };
     }
 
-    const token = jwt.sign(
-      { 
-        userId: user.id, 
-        email: user.email, 
-        role: user.role?.role,
-        estate_id: user.estate_id,
-        sessionId: sessionData.sessionId
-      },
-      process.env.JWT_SECRET || 'default_secret',
-      { expiresIn: '15m' }
-    );
+    // Create access token with JTI for revocation support
+    const token = createAccessToken({
+      userId: user.id,
+      email: user.email,
+      role: user.role?.role || 'resident',
+      estate_id: user.estate_id,
+      sessionId: sessionData.sessionId
+    });
+
+    // Create refresh token with token family for rotation detection
+    const { token: refreshToken } = createRefreshToken({
+      userId: user.id,
+      email: user.email,
+      role: user.role?.role || 'resident',
+      estate_id: user.estate_id,
+      sessionId: sessionData.sessionId
+    });
 
     const resident = user.residentProfile;
     const unit = resident?.unit;
@@ -79,9 +81,11 @@ export const loginUser = async (email: string, password: string) => {
       statusCode: 200,
       message: 'Login successful',
       data: {
+        refreshToken,
         user: {
           id: user.id,
           email: user.email,
+          title: user.title ?? null,
           first_name: user.first_name,
           last_name: user.last_name,
           phone: user.phone,
@@ -99,6 +103,43 @@ export const loginUser = async (email: string, password: string) => {
       }
     };
   } catch (error) {
+    throw error;
+  }
+};
+
+export const refreshAccessToken = async (refreshToken: string) => {
+  try {
+    const { rotateRefreshToken } = await import('../../../shared/utils/jwtUtils');
+    
+    const result = await rotateRefreshToken(refreshToken);
+    
+    if (!result) {
+      return { statusCode: 401, message: 'Invalid or expired refresh token' };
+    }
+
+    return {
+      statusCode: 200,
+      message: 'Token refreshed',
+      data: { 
+        token: result.accessToken, 
+        refreshToken: result.refreshToken 
+      },
+    };
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === 'TOKEN_REUSE_DETECTED') {
+        // Log security event
+        console.error('🚨 SECURITY ALERT: Refresh token reuse detected');
+        return { 
+          statusCode: 401, 
+          message: 'Security violation detected. All sessions have been terminated.',
+          code: 'TOKEN_REUSE_DETECTED'
+        };
+      }
+      if (error.message === 'REFRESH_TOKEN_EXPIRED') {
+        return { statusCode: 401, message: 'Refresh token expired' };
+      }
+    }
     throw error;
   }
 };

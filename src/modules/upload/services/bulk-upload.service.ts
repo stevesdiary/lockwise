@@ -2,6 +2,9 @@ import * as XLSX from 'xlsx';
 import { Buffer } from 'buffer';
 import sequelize from '../../../shared/core/database';
 import { cloudStorage } from './unified-storage.service';
+import NotificationService from '../../communication/services/notification.service';
+import { Street } from '../../estate/models/street.model';
+import { Unit } from '../../estate/models/unit.model';
 
 interface BulkUploadResult<T> {
   created: T[];
@@ -46,6 +49,14 @@ interface AddressData {
   country: string;
   zip_code?: string;
   available: boolean;
+}
+
+interface StreetsUnitsRow {
+  street_name: string;
+  unit_identifier: string;
+  unit_type?: string;
+  block?: string;
+  floor?: number | null;
 }
 
 class BulkUploadService {
@@ -113,6 +124,17 @@ class BulkUploadService {
       }, transaction);
 
       await transaction.commit();
+
+      // Queue web push to admin who triggered the upload (fire-and-forget after commit)
+      if (result.successCount > 0) {
+        NotificationService.queueWebPush([userId], {
+          title: 'Bulk Estate Upload Complete',
+          body: `${result.successCount} estate(s) created, ${result.errors.length} error(s).`,
+          tag: 'bulk-upload-estates',
+          url: '/admin/bulk-uploads',
+        }).catch(() => undefined);
+      }
+
       return result;
 
     } catch (error) {
@@ -123,7 +145,11 @@ class BulkUploadService {
     }
   }
 
-  async uploadResidents(buffer: Buffer, filename: string): Promise<BulkUploadResult<any>> {
+  async uploadResidents(buffer: Buffer, filename: string, adminUserId?: string): Promise<BulkUploadResult<any>> {
+    // Store file for audit
+    const fileKey = `bulk-uploads/residents/${Date.now()}-${filename}`;
+    const fileUrl = await cloudStorage.uploadFile(fileKey, buffer, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    
     const rows = this.parseFile(buffer, filename);
     const result: BulkUploadResult<any> = {
       created: [],
@@ -154,30 +180,69 @@ class BulkUploadService {
           const resident = await this.createResident(residentData, transaction);
           if (resident.isNew) {
             result.created.push(resident);
+
+            // Queue welcome email for each new resident (fire-and-forget, after commit)
+            // resident.email and resident.name will be populated once stubs use real models
+            if (resident.email && resident.name) {
+              NotificationService.sendNotification({
+                type: 'email',
+                to: resident.email,
+                template: 'welcome',
+                data: { name: resident.name },
+                priority: 'normal',
+              }).catch(() => undefined);
+            }
           } else {
             result.skipped.push(resident);
           }
           result.successCount++;
 
         } catch (error) {
-          result.errors.push({ 
-            row: i + 1, 
-            data: row, 
-            reason: error instanceof Error ? error.message : 'Unknown error' 
+          result.errors.push({
+            row: i + 1,
+            data: row,
+            reason: error instanceof Error ? error.message : 'Unknown error'
           });
         }
       }
 
+      // Create bulk upload job record
+      await this.createBulkUploadJob({
+        userId: adminUserId || 'system',
+        uploadType: 'residents',
+        filename,
+        sourceFileKey: fileKey,
+        sourceFileUrl: fileUrl,
+        ...result
+      }, transaction);
+
       await transaction.commit();
+
+      // Notify the uploading admin via web push
+      if (adminUserId && result.successCount > 0) {
+        NotificationService.queueWebPush([adminUserId], {
+          title: 'Bulk Resident Upload Complete',
+          body: `${result.successCount} resident(s) onboarded, ${result.errors.length} error(s).`,
+          tag: 'bulk-upload-residents',
+          url: '/admin/bulk-uploads',
+        }).catch(() => undefined);
+      }
+
       return result;
 
     } catch (error) {
       await transaction.rollback();
+      // Clean up uploaded file on failure
+      await cloudStorage.deleteFile(fileKey);
       throw error;
     }
   }
 
-  async uploadAddresses(buffer: Buffer, filename: string, estateId: string): Promise<BulkUploadResult<any>> {
+  async uploadAddresses(buffer: Buffer, filename: string, estateId: string, userId: string): Promise<BulkUploadResult<any>> {
+    // Store file for audit
+    const fileKey = `bulk-uploads/addresses/${Date.now()}-${filename}`;
+    const fileUrl = await cloudStorage.uploadFile(fileKey, buffer, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    
     const rows = this.parseFile(buffer, filename);
     const result: BulkUploadResult<any> = {
       created: [],
@@ -222,12 +287,159 @@ class BulkUploadService {
         }
       }
 
+      // Create bulk upload job record
+      await this.createBulkUploadJob({
+        userId,
+        uploadType: 'addresses',
+        filename,
+        sourceFileKey: fileKey,
+        sourceFileUrl: fileUrl,
+        ...result
+      }, transaction);
+
       await transaction.commit();
       return result;
 
     } catch (error) {
       await transaction.rollback();
+      // Clean up uploaded file on failure
+      await cloudStorage.deleteFile(fileKey);
       throw error;
+    }
+  }
+
+  async uploadStreetsUnits(
+    buffer: Buffer,
+    filename: string,
+    estateCode: string,
+    userId: string
+  ): Promise<{
+    totalProcessed: number;
+    successCount: number;
+    streetsCreated: number;
+    unitsCreated: number;
+    skippedCount: number;
+    errors: Array<{ row: number; data: any; reason: string }>;
+    estateId: string;
+    estateName: string;
+  }> {
+    const rows = this.parseFile(buffer, filename);
+    const result = {
+      totalProcessed: rows.length,
+      successCount: 0,
+      streetsCreated: 0,
+      unitsCreated: 0,
+      skippedCount: 0,
+      errors: [] as Array<{ row: number; data: any; reason: string }>,
+      estateId: '',
+      estateName: '',
+    };
+
+    const validUnitTypes = ['flat', 'duplex', 'chalet', 'terrace', 'plot', 'house', 'apartment', 'other'];
+
+    const transaction = await sequelize.transaction();
+
+    try {
+      // Look up estate by estate_code
+      const { Estate } = await import('../../estate/models/estate.model');
+      const estate = await Estate.findOne({
+        where: { estate_code: estateCode },
+        transaction,
+      });
+
+      if (!estate) {
+        throw new Error(`Estate with code '${estateCode}' not found`);
+      }
+
+      const estateId = estate.estate_id;
+      result.estateId = estateId;
+      result.estateName = estate.name;
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        try {
+          const streetName: string =
+            row['street_name'] || row['Street Name'] || row['Street'] || '';
+          const unitIdentifier: string =
+            row['unit_identifier'] || row['Unit'] || row['Unit ID'] || row['Unit Identifier'] || '';
+
+          if (!streetName) {
+            result.errors.push({ row: i + 2, data: row, reason: 'street_name is required' });
+            continue;
+          }
+          if (!unitIdentifier) {
+            result.errors.push({ row: i + 2, data: row, reason: 'unit_identifier is required' });
+            continue;
+          }
+
+          // Deduplicate street within this estate
+          const [street, streetCreated] = await Street.findOrCreate({
+            where: { name: streetName, estate_id: estateId },
+            defaults: { name: streetName, estate_id: estateId },
+            transaction,
+          });
+          if (streetCreated) result.streetsCreated++;
+
+          // Resolve unit_type — coerce invalid values to 'flat'
+          const rawType = (row['unit_type'] || row['Type'] || '').toLowerCase();
+          const unitType = validUnitTypes.includes(rawType) ? rawType : 'flat';
+
+          const rawFloor = row['floor'] || row['Floor'];
+          const floor = rawFloor !== undefined && rawFloor !== '' ? parseInt(rawFloor, 10) || null : null;
+
+          const block: string | null = row['block'] || row['Block'] || null;
+
+          // IMPORTANT: deduplicate on (unit_identifier, street_id) — NOT unit_identifier alone.
+          // The unique constraint is now composite (migration 20260418000062).
+          const [, unitCreated] = await Unit.findOrCreate({
+            where: { unit_identifier: unitIdentifier, street_id: street.street_id },
+            defaults: {
+              unit_identifier: unitIdentifier,
+              street_id: street.street_id,
+              unit_type: unitType as any,
+              block: block ?? undefined,
+              floor: floor ?? undefined,
+              status: 'vacant',
+            },
+            transaction,
+          });
+
+          if (unitCreated) {
+            result.unitsCreated++;
+            result.successCount++;
+          } else {
+            result.skippedCount++;
+          }
+        } catch (err) {
+          result.errors.push({
+            row: i + 2,
+            data: row,
+            reason: err instanceof Error ? err.message : 'Unknown error',
+          });
+        }
+      }
+
+      await this.createBulkUploadJob(
+        {
+          userId,
+          uploadType: 'streets_units',
+          filename,
+          sourceFileKey: null,
+          sourceFileUrl: null,
+          totalProcessed: result.totalProcessed,
+          successCount: result.successCount,
+          streetsCreated: result.streetsCreated,
+          unitsCreated: result.unitsCreated,
+          skippedCount: result.skippedCount,
+          errors: result.errors,
+        },
+        transaction
+      );
+
+      await transaction.commit();
+      return result;
+    } catch (err) {
+      await transaction.rollback();
+      throw err;
     }
   }
 

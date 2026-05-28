@@ -27,9 +27,8 @@ module.exports = {
         );
 
     if (!fallbackCreator.length) {
-      throw new Error(
-        'Cannot seed FAQs: no users found for `created_by`. Create at least one user, then rerun seed.'
-      );
+      console.warn('Skipping FAQ seed: no users found. Rerun after creating a user.');
+      return;
     }
 
     const createdBy = fallbackCreator[0].id;

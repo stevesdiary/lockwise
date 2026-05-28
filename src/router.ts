@@ -21,6 +21,7 @@ import paymentRouter from "./modules/payment/routes/payment.route";
 import planRouter from "./modules/payment/routes/plan.route";
 import referralRouter from "./modules/payment/routes/referral.route";
 import webhookRouter from "./modules/payment/routes/webhook.route";
+import subscriptionRouter from "./modules/payment/routes/subscription.route";
 
 // Amenities Module
 import amenityRouter from "./modules/amenities/routes/amenity.route";
@@ -37,6 +38,7 @@ import adminSupportRouter from "./modules/support/routes/admin.support.route";
 // Communication Module
 import notificationRouter from "./modules/communication/routes/notification.route";
 import chatRouter from "./modules/communication/routes/chat.route";
+import webPushRouter from "./modules/communication/routes/web-push.route";
 import emergencyRouter from "./modules/communication/routes/emergency.route";
 import communityRouter from "./modules/communication/routes/community.route";
 
@@ -54,8 +56,15 @@ import monitoringRouter from "./modules/analytics/routes/monitoring.route";
 import uploadRouter from "./modules/upload/routes/upload.route";
 import bulkUploadRouter from "./modules/upload/routes/bulk-upload.route";
 
+// Electricity Module
+import electricityRouter from "./modules/electricity/routes/electricity.route";
+
+// Collections Module
+import collectionsRouter from "./modules/collections/routes/collections.route";
+
 // Location Module
 import addressRouter from "./modules/location/routes/address.route";
+import estateAddressRouter from "./modules/estate/routes/address.route";
 
 // Mobile Module
 import mobileRouter from "./modules/mobile/routes/mobile.route";
@@ -70,6 +79,16 @@ import userRoleRouter from "./modules/admin/routes/user-role.route";
 
 // Legal Module
 import legalRouter from "./modules/legal/routes/legal.route";
+import workerRouter from "./modules/communication/routes/worker.route";
+
+// Bills Module
+import billsRouter from "./modules/bills/routes/bills.route";
+
+// Wallet Module
+import walletRouter from "./modules/wallet/routes/wallet.route";
+
+// Kuda Module
+import kudaRouter from "./modules/kuda/routes/kuda.route";
 
 const router = Router();
 
@@ -94,6 +113,7 @@ router.use('/payment', paymentRouter);
 router.use('/plan', planRouter);
 router.use('/referral', referralRouter);
 router.use('/webhooks', webhookRouter);
+router.use('/subscription', subscriptionRouter);
 
 // Amenities Routes
 router.use('/amenities', amenityRouter);
@@ -109,6 +129,7 @@ router.use('/admin/support', adminSupportRouter);
 
 // Communication Routes
 router.use('/notifications', notificationRouter);
+router.use('/push', webPushRouter);
 router.use('/chat', chatRouter);
 router.use('/emergency', emergencyRouter);
 router.use('/community', communityRouter);
@@ -127,8 +148,15 @@ router.use('/monitoring', monitoringRouter);
 router.use('/upload', uploadRouter);
 router.use('/bulk-upload', bulkUploadRouter);
 
+// Electricity Routes
+router.use('/electricity', electricityRouter);
+
+// Collections Routes
+router.use('/collections', collectionsRouter);
+
 // Location Routes
 router.use('/address', addressRouter);
+router.use('/address', estateAddressRouter);
 
 // Mobile Routes
 router.use('/mobile', mobileRouter);
@@ -143,6 +171,18 @@ router.use('/admin', userRoleRouter);
 
 // Legal Routes
 router.use('/legal', legalRouter);
+
+// Bills Routes
+router.use('/bills', billsRouter);
+
+// Wallet Routes
+router.use('/wallet', walletRouter);
+
+// Kuda Routes
+router.use('/kuda', kudaRouter);
+
+// Worker Routes (QStash delivery endpoints)
+router.use('/workers', workerRouter);
 
 // Legacy route for backward compatibility
 router.use("/log", loginRouter);

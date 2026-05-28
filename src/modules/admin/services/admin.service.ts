@@ -1,12 +1,13 @@
-import bcrypt from 'bcrypt';
 import { User } from '../../auth/models/user.model';
 import { Role } from '../../auth/models/role.model';
 import crypto from 'crypto';
 
 type UserRole = 'resident' | 'admin' | 'manager' | 'security' | 'super_admin' | 'customer_service';
+const getBcrypt = async () => (await import('bcryptjs')).default;
 
 export const adminService = {
   async createAdmin(data: {
+    title?: string;
     first_name: string;
     last_name: string;
     email: string;
@@ -32,6 +33,7 @@ export const adminService = {
     }
 
     // Hash password
+    const bcrypt = await getBcrypt();
     const hashedPassword = await bcrypt.hash(data.password, 12);
 
     // Get or create admin role
@@ -42,6 +44,7 @@ export const adminService = {
 
     // Create admin user
     const admin = await User.create({
+      title: data.title,
       first_name: data.first_name,
       last_name: data.last_name,
       email: data.email,
@@ -87,6 +90,7 @@ export const adminService = {
       };
     }
 
+    const bcrypt = await getBcrypt();
     const hashedPassword = await bcrypt.hash(data.password, 12);
 
     // Get or create customer_service role

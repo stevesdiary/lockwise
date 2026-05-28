@@ -1,6 +1,8 @@
 import AccessLog from '../models/access-log.model';
+import AccessEntry from '../models/access-entry.model';
+import sequelize from '../../../shared/core/database';
 import { getFromRedis, deleteFromRedis } from '../../../shared/core/redis';
-// import entryCountingService from './entry-counting.service';
+import { Gate } from '../../estate/models/gate.model';
 
 export class AccessLogService {
   async logAccess(data: any) {
@@ -12,7 +14,7 @@ export class AccessLogService {
   }
 
   async createAccessRequest(data: any) {
-    return await AccessLog.create({ ...data, status: 'pending' });
+    return await AccessLog.create({ ...data, status: 'active' });
   }
 
   async logEntry(data: any) {
@@ -59,33 +61,87 @@ export class AccessLogService {
     return accessLog;
   }
 
-  async processCodeScan(code: string, gateId?: string, scannedBy?: string) {
-    const accessLog = await AccessLog.findOne({ where: { access_code: code } });
-    
+  async processCodeScan(code: string, gateId?: string, scannedBy?: string, scanType?: 'entry' | 'exit', estateId?: string) {
+    // Scope lookup to a specific estate when known (prevents cross-estate code scanning)
+    const where: any = { access_code: code };
+    if (estateId) where.estate_id = estateId;
+    const accessLog = await AccessLog.findOne({ where });
+
     if (!accessLog) {
       throw new Error('Invalid access code');
     }
 
-    if (accessLog.status !== 'pending' && accessLog.status !== 'approved') {
+    const validStatuses = ['active', 'pending', 'approved'];
+    if (!validStatuses.includes(accessLog.status)) {
       throw new Error(`Access code is ${accessLog.status}`);
     }
 
-    if (accessLog.valid_until && new Date() > new Date(accessLog.valid_until)) {
+    const now = new Date();
+
+    if (accessLog.valid_from && now < new Date(accessLog.valid_from)) {
+      throw new Error('Access code is not yet valid');
+    }
+
+    if (accessLog.valid_until && now > new Date(accessLog.valid_until)) {
       await accessLog.update({ status: 'expired' });
       throw new Error('Access code has expired');
     }
 
-    await accessLog.update({
-      status: 'used',
-      scanned_by: scannedBy,
-      // used_entries: accessLog.used_entries + 1
-    });
+    // Direction enforcement:
+    // 'entry' codes allow both entry and exit (resident should not be trapped).
+    // 'exit'  codes are exit-only — reject at entry gates.
+    // 'both'  codes allow both (explicit alias of 'entry' semantics).
+    const direction = accessLog.access_direction || 'entry';
+    if (scanType === 'entry' && direction === 'exit') {
+      throw new Error('This code is for exit only and cannot be used for entry');
+    }
 
-    return {
-      action: 'entry',
-      accessLog,
-      entry: null
-    };
+    if (accessLog.is_multi_entry) {
+      return await sequelize.transaction(async (t) => {
+        // Atomic increment to prevent race conditions
+        await accessLog.increment('used_entries', { transaction: t });
+        await accessLog.reload({ transaction: t });
+
+        if (accessLog.max_entries !== null && accessLog.max_entries !== undefined) {
+          if (accessLog.used_entries > accessLog.max_entries) {
+            // Undo the increment — all entries exhausted
+            await accessLog.decrement('used_entries', { transaction: t });
+            throw new Error('Maximum entries reached for this access code');
+          }
+          if (accessLog.used_entries >= accessLog.max_entries) {
+            await accessLog.update({ status: 'used', scanned_by: scannedBy }, { transaction: t });
+          }
+        }
+
+        const entry = await AccessEntry.create({
+          access_log_id: accessLog.id,
+          entry_time: now,
+          gate_id: gateId,
+          scanned_by: scannedBy
+        }, { transaction: t });
+
+        return { action: 'entry', accessLog, entry };
+      });
+    }
+
+    // Single-entry: create entry row first, then mark used — wrapped in a
+    // transaction so a failure between the two steps leaves the code retryable
+    return await sequelize.transaction(async (t) => {
+      const entry = await AccessEntry.create({
+        access_log_id: accessLog.id,
+        entry_time: now,
+        gate_id: gateId,
+        scanned_by: scannedBy,
+      }, { transaction: t });
+
+      await accessLog.update({
+        status: 'used',
+        scanned_by: scannedBy,
+        entry_time: now,
+      }, { transaction: t });
+
+      return { action: 'entry', accessLog, entry };
+    });
   }
 
   // async processCodeScan(code: string, gateId?: string, scannedBy?: string) {

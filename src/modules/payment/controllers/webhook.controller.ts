@@ -1,20 +1,22 @@
 import { Request, Response } from 'express';
-import crypto from 'crypto';
 import { paymentService } from '../../payment/services/payment.service';
 import { Subscription } from '../models/subscription.model';
 import { Payment } from '../models/payment.model';
+import enhancedSubscriptionService from '../services/enhanced-subscription.service';
+import subscriptionEventService from '../services/subscription-event.service';
 import { Op } from 'sequelize';
+import { WebhookSecurity } from '../../../shared/utils/webhook-security.util';
 
 export const webhookController = {
   async paystackWebhook(req: Request, res: Response) {
     try {
-      const hash = crypto
-        .createHmac('sha512', process.env.PAYSTACK_SECRET_KEY!)
-        .update(JSON.stringify(req.body))
-        .digest('hex');
-
-      if (hash !== req.headers['x-paystack-signature']) {
-        return res.status(400).json({ error: 'Invalid signature' });
+      // Verify webhook signature
+      const signature = req.headers['x-paystack-signature'] as string;
+      const verification = WebhookSecurity.verifyPaystackSignature(req.body, signature);
+      
+      if (!verification.valid) {
+        console.warn('Invalid Paystack webhook signature:', verification.error);
+        return res.status(401).json({ error: 'Invalid signature' });
       }
 
       const event = req.body;
@@ -44,40 +46,29 @@ export const webhookController = {
     }
   },
 
-  async flutterwaveWebhook(req: Request, res: Response) {
-    try {
-      const secretHash = process.env.FLUTTERWAVE_SECRET_HASH;
-      const signature = req.headers['verif-hash'];
-
-      if (!signature || signature !== secretHash) {
-        return res.status(400).json({ error: 'Invalid signature' });
-      }
-
-      const payload = req.body;
-
-      if (payload.event === 'charge.completed') {
-        if (payload.data.status === 'successful') {
-          await handleSuccessfulPayment(payload.data);
-        } else {
-          await handleFailedPayment(payload.data);
-        }
-      } else {
-        console.log('Unhandled Flutterwave event:', payload.event?.replace(/[\r\n]/g, '') || 'unknown');
-      }
-
-      res.status(200).json({ status: 'success' });
-    } catch (error: any) {
-      const sanitizedError = error?.message?.replace(/[\r\n]/g, '') || 'Unknown error';
-      console.error('Flutterwave webhook error:', sanitizedError);
-      res.status(500).json({ error: 'Webhook processing failed' });
-    }
-  }
 };
 
 // Helper functions
 async function handleSuccessfulPayment(data: any) {
   try {
     const reference = data.reference || data.tx_ref;
+    const metadata = data.metadata || {};
+    
+    // Check if this is a subscription payment
+    if (metadata.plan_id && metadata.billing_cycle && metadata.estate_id) {
+      // Activate subscription
+      await enhancedSubscriptionService.activateSubscription({
+        estateId: metadata.estate_id,
+        planId: metadata.plan_id,
+        billingCycle: metadata.billing_cycle,
+        paystackSubscriptionCode: data.subscription_code || null,
+        paystackCustomerCode: data.customer?.customer_code || null,
+      });
+
+      console.log('Subscription activated for estate:', metadata.estate_id);
+    }
+    
+    // Verify payment
     await paymentService.verifyPayment({ reference });
     
     // Send success notification

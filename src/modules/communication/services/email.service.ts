@@ -270,6 +270,49 @@ class EmailService {
       data,
     });
   }
+
+  async sendEstateSubmittedEmail(
+    to: string,
+    data: { admin_name: string; estate_name: string }
+  ): Promise<boolean> {
+    return this.sendEmail({
+      to,
+      template: 'estateSubmitted',
+      data,
+    });
+  }
+
+  async sendSubscriptionReceiptEmail(
+    to: string,
+    data: {
+      manager_name: string;
+      estate_name: string;
+      plan_name: string;
+      billing_cycle: string;
+      start_date: string;
+      end_date: string;
+      amount: string;
+      currency: string;
+      reference: string;
+    }
+  ): Promise<boolean> {
+    return this.sendEmail({
+      to,
+      template: 'subscriptionReceipt',
+      data,
+    });
+  }
+
+  async sendReferrerWelcomeEmail(
+    to: string,
+    data: { name: string; referral_code: string; referral_link: string; portal_link: string }
+  ): Promise<boolean> {
+    return this.sendEmail({
+      to,
+      template: 'referrerWelcome',
+      data,
+    });
+  }
 }
 
 export default new EmailService();

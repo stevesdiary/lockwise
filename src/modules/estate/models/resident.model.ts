@@ -3,7 +3,7 @@ import { Estate } from '../../estate/models/estate.model';
 import { Unit } from '../../estate/models/unit.model';
 import { User } from '../../auth/models/user.model';
 
-@Table
+@Table({ tableName: 'residents', underscored: true })
 export class Resident extends Model<Resident> {
   @Column({
     type: DataType.UUID,

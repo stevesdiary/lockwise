@@ -4,7 +4,7 @@ import deviceService from '../services/device.service';
 
 async function registerDevice(req: Request, res: Response) {
   try {
-    const user_id = req.user.id;
+    const user_id = req.user!.id;
     const { fcm_token, device_type, device_model, app_version } = req.body;
 
     if (!fcm_token) {
@@ -33,7 +33,7 @@ async function registerDevice(req: Request, res: Response) {
 
 async function updateToken(req: Request, res: Response) {
   try {
-    const user_id = req.user.id;
+    const user_id = req.user!.id;
     const { fcm_token } = req.body;
 
     if (!fcm_token) {

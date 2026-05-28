@@ -12,7 +12,7 @@ interface PushNotificationData {
 class PushNotificationService {
   // Store user's push subscription
   async subscribeToPush(userId: string, subscription: any) {
-    await saveToRedis(`push_subscription:${userId}`, JSON.stringify(subscription), 86400 * 30); // 30 days
+    await saveToRedis(`push_subscription:${userId}`, subscription, 86400 * 30); // 30 days
     return true;
   }
 
@@ -31,15 +31,14 @@ class PushNotificationService {
       });
 
       // Get user's push subscription
-      const subscriptionData = await getFromRedis(`push_subscription:${userId}`);
-      
-      if (subscriptionData) {
-        const subscription = JSON.parse(subscriptionData);
+      const subscription = await getFromRedis(`push_subscription:${userId}`);
+
+      if (subscription) {
         await this.sendWebPush(subscription, notificationData);
       }
 
       // Store in Redis for real-time notifications
-      await saveToRedis(`notification:${userId}:${notification.id}`, JSON.stringify(notification), 86400);
+      await saveToRedis(`notification:${userId}:${notification.id}`, notification, 86400);
 
       return notification;
     } catch (error) {

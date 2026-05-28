@@ -1,3 +1,5 @@
+import vtpassSMSService from './vtpass-sms.service';
+
 interface KudiSMSResponse {
   status: string;
   error_code: string;
@@ -41,14 +43,16 @@ class SMSService {
   private senderId: string;
   private gateway: string;
   private apiUrl = 'https://my.kudisms.net/api/sms';
+  private useVTpass: boolean;
 
   constructor() {
     this.apiToken = process.env.KUDISMS_API_TOKEN || '';
     this.senderId = process.env.KUDISMS_SENDER_ID || 'LOCKWISE';
     this.gateway = process.env.KUDISMS_GATEWAY || '2';
+    this.useVTpass = process.env.SMS_PROVIDER === 'vtpass';
     
-    if (!this.apiToken) {
-      console.warn('KudiSMS API token not configured, SMS service disabled');
+    if (!this.apiToken && !this.useVTpass) {
+      console.warn('No SMS provider configured, SMS service disabled');
     }
   }
 
@@ -66,8 +70,17 @@ class SMSService {
   }
 
   async sendSMS(to: string, message: string): Promise<boolean> {
+    // Try VTpass first if configured
+    if (this.useVTpass) {
+      const vtpassSuccess = await vtpassSMSService.sendSMS(to, message);
+      if (vtpassSuccess) return true;
+      
+      console.warn('VTpass SMS failed, falling back to KudiSMS');
+    }
+
+    // Fallback to KudiSMS
     if (!this.apiToken) {
-      console.warn('KudiSMS API token not configured. SMS not sent.');
+      console.warn('No SMS provider available. SMS not sent.');
       return false;
     }
 
@@ -95,7 +108,7 @@ class SMSService {
       const result: KudiSMSResponse = await response.json();
 
       if (result.status === 'success' && result.error_code === '000') {
-        console.log('SMS sent successfully', { cost: result.cost});
+        console.log('KudiSMS sent successfully', { cost: result.cost});
         return true;
       } else {
         const errorMessage = KUDISMS_ERROR_MESSAGES[result.error_code] || result.msg || 'Unknown error';
@@ -103,7 +116,7 @@ class SMSService {
         return false;
       }
     } catch (error: any) {
-      console.error('Failed to send SMS', { to: formattedPhone, error: error.message });
+      console.error('Failed to send SMS via KudiSMS', { to: formattedPhone, error: error.message });
       return false;
     }
   }

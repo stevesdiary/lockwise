@@ -1,12 +1,22 @@
 import { Request, Response } from 'express';
 import { handleControllerError } from '../../../shared/middleware/error-handler.middleware';
 import accessLogService from '../services/access-log.service';
+import { nullifyShortUrlForLog } from '../../../shared/utils/url-shortener.util';
+import { Gate } from '../../estate/models/gate.model';
 
 // Create access request
 async function createAccessRecord(req: Request, res: Response) {
   try {
-    const user_id = req.user.id;
-    const estate_id = req.user.estate_id;
+    const user_id = req.user!.id;
+    const estate_id = req.user!.estate_id;
+
+    if (!estate_id) {
+      return res.status(403).json({
+        status: 'error',
+        message: "You haven't joined an estate yet. Search for your estate using its estate code and complete your profile setup before generating access codes. Contact your estate manager for estate code.",
+      });
+    }
+
     const { scheduled_entry_date, scheduled_exit_date, vehicle_number, remarks, is_multi_entry, max_entries, access_type, valid_from, valid_until } = req.body;
     
     // For unlimited entry types, set is_multi_entry to true automatically
@@ -92,7 +102,7 @@ async function recordExit(req: Request, res: Response) {
 // Process code scan with entry limit validation
 async function processCodeScan(req: Request, res: Response) {
   try {
-    const { code, gate_id, scanned_by } = req.body;
+    const { code, gate_id, scanned_by, scan_type } = req.body;
 
     if (!code) {
       return res.status(400).json({
@@ -101,10 +111,19 @@ async function processCodeScan(req: Request, res: Response) {
       });
     }
 
+    // Derive the gate's estate so the scan is scoped to that estate only
+    let gateEstateId: string | undefined;
+    if (gate_id) {
+      const gate = await Gate.findByPk(gate_id, { attributes: ['estate_id'] });
+      gateEstateId = (gate as any)?.estate_id ?? undefined;
+    }
+
     const result = await accessLogService.processCodeScan(
       code,
       gate_id,
-      scanned_by || req.user?.id
+      scanned_by || req.user?.id,
+      scan_type,
+      gateEstateId
     );
 
     return res.status(200).json({
@@ -185,7 +204,10 @@ async function revokeAccess(req: Request, res: Response) {
     }
 
     await accessLogService.revokeAccess(accessId, revokedBy);
-    
+
+    // Nullify the shared Maps short URL so the link in the guest's message stops working
+    nullifyShortUrlForLog(accessId).catch(() => {});
+
     return res.status(200).json({
       status: 'success',
       message: 'Access revoked successfully'

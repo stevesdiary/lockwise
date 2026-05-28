@@ -166,5 +166,42 @@ export const adminDashboardService = {
       recent_residents: recentResidents,
       recent_access_codes: recentAccessCodes
     };
-  }
+  },
+
+  async getSuperAdminAnalytics() {
+    const [totalEstates, estatesWithoutActiveSub, revenueRows] = await Promise.all([
+      Estate.count(),
+
+      // Estates that exist but have no subscription with status='active'
+      db.query<{ estate_id: string; name: string; approval_status: string }>(`
+        SELECT e.estate_id, e.name, e.approval_status
+        FROM estates e
+        WHERE e.deleted_at IS NULL
+          AND NOT EXISTS (
+            SELECT 1 FROM subscriptions s
+            WHERE s.estate_id = e.estate_id
+              AND s.status = 'active'
+              AND s.deleted_at IS NULL
+          )
+        ORDER BY e.created_at DESC
+      `, { type: QueryTypes.SELECT }),
+
+      // Total revenue from completed payments
+      db.query<{ total_revenue: string }>(`
+        SELECT COALESCE(SUM(amount), 0) AS total_revenue
+        FROM payments
+        WHERE payment_status = 'completed'
+          AND deleted_at IS NULL
+      `, { type: QueryTypes.SELECT }),
+    ]);
+
+    const totalRevenue = parseFloat((revenueRows[0] as any)?.total_revenue ?? '0');
+
+    return {
+      total_estates: totalEstates,
+      total_revenue: totalRevenue,
+      estates_without_active_subscription: estatesWithoutActiveSub,
+      inactive_count: estatesWithoutActiveSub.length,
+    };
+  },
 };

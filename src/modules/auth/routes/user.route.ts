@@ -96,6 +96,38 @@ userRouter.get(
   }
 );
 
+userRouter.get(
+  "/pending-residents",
+  rateLimiters.api,
+  authenticateToken as any,
+  requireManager as any,
+  async (req: ExpressRequest, res: Response) => {
+    await userController.getPendingResidents(req, res);
+  }
+);
+
+userRouter.post(
+  "/:userId/approve-join",
+  rateLimiters.api,
+  authenticateToken as any,
+  requireManager as any,
+  auditLogger as any,
+  async (req: ExpressRequest, res: Response) => {
+    await userController.approveJoinRequest(req, res);
+  }
+);
+
+userRouter.post(
+  "/:userId/reject-join",
+  rateLimiters.api,
+  authenticateToken as any,
+  requireManager as any,
+  auditLogger as any,
+  async (req: ExpressRequest, res: Response) => {
+    await userController.rejectJoinRequest(req, res);
+  }
+);
+
 userRouter.post(
   "/avatar",
   authenticateToken as any,

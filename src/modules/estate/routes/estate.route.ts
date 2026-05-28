@@ -5,6 +5,7 @@ import { verifyUser } from '../../../shared/middleware/verify-user.middleware';
 import estateInvitationService from '../services/estate-invitation.service';
 import { asString } from '../../../shared/utils/param.util';
 import { User } from '../../auth/models/user.model';
+import fileUploadService from '../../upload/services/file-upload.service';
 
 const estateRouter = Router();
 
@@ -15,30 +16,41 @@ const getManagerEstateId = async (userId?: string): Promise<string | null> => {
 };
 
 // Health check endpoint
-estateRouter.get('/health', (req: ExpressRequest, res: Response) => {
+estateRouter.get('/health', (_req: ExpressRequest, res: Response) => {
   res.status(200).json({ message: "Healthy!" });
 });
 
 // Estate routes - Requires authentication and verification
-// Only Master and Admin can create estates
-estateRouter.post('/register', 
+// Managers (and above) can create estates
+estateRouter.post('/register',
   authenticateToken,
-  requireAdmin,
+  requireManager,
   verifyUser,
   async (req: ExpressRequest, res: Response) => {
     await estateController.createEstate(req, res);
   }
 );
 
-estateRouter.get('/estates', async (req: ExpressRequest, res: Response) => {
-  await estateController.getAllEstates(req, res);
-});
+estateRouter.get('/estates',
+  authenticateToken,
+  async (req: ExpressRequest, res: Response) => {
+    await estateController.getAllEstates(req, res);
+  }
+);
 
-estateRouter.get('/estates/pending', 
+estateRouter.get('/estates/pending',
   authenticateToken,
   requireAdmin,
   async (req: ExpressRequest, res: Response) => {
     await estateController.getPendingEstates(req, res);
+  }
+);
+
+estateRouter.get('/estates/pending-updates',
+  authenticateToken,
+  requireAdmin,
+  async (req: ExpressRequest, res: Response) => {
+    await estateController.getEstatesWithPendingUpdates(req, res);
   }
 );
 
@@ -50,11 +62,24 @@ estateRouter.patch('/estates/:estateId/approve',
   }
 );
 
-estateRouter.get('/one/:estateId', async (req: ExpressRequest, res: Response) => {
+estateRouter.patch('/estates/:estateId/reject',
+  authenticateToken,
+  requireAdmin,
+  async (req: ExpressRequest, res: Response) => {
+    await estateController.rejectEstate(req, res);
+  }
+);
+
+estateRouter.get('/one/:estateId',
+  authenticateToken,
+  // requireManager,
+  async (req: ExpressRequest, res: Response) => {
   await estateController.getEstateById(req, res);
 });
 
-estateRouter.get('/code/:estate_code', async (req: ExpressRequest, res: Response) => {
+estateRouter.get('/code/:estate_code', 
+  authenticateToken,
+  async (req: ExpressRequest, res: Response) => {
   await estateController.getEstateByCode(req, res);
 });
 
@@ -72,7 +97,7 @@ estateRouter.post('/invite/:estateId',
   }
 );
 
-estateRouter.post('/validate-invite', 
+estateRouter.post('/validate-invite',
   async (req: ExpressRequest, res: Response) => {
     try {
       const { token } = req.body;
@@ -84,6 +109,13 @@ estateRouter.post('/validate-invite',
     } catch (error) {
       res.status(500).json({ valid: false, message: 'Failed to validate invitation' });
     }
+  }
+);
+
+estateRouter.post('/join-by-invite',
+  authenticateToken,
+  async (req: ExpressRequest, res: Response) => {
+    await estateController.joinByInvitation(req, res);
   }
 );
 
@@ -144,17 +176,85 @@ estateRouter.get('/search/:estate_code', async (req: ExpressRequest, res: Respon
   await estateController.searchEstate(req, res);
 });
 
-estateRouter.put('/update/:estateId', 
+estateRouter.put('/update/:estateId',
   authenticateToken,
+  requireManager,
   async (req: ExpressRequest, res: Response) => {
     await estateController.updateEstate(req, res);
   }
 );
 
-estateRouter.delete('/delete/:estateId', 
+estateRouter.post('/:estateId/apply-update',
   authenticateToken,
+  requireAdmin,
   async (req: ExpressRequest, res: Response) => {
-    await estateController.deleteEstate(req, res);
+    await estateController.applyEstateUpdate(req as any, res);
+  }
+);
+
+estateRouter.delete('/delete/:estateId',
+  authenticateToken,
+  requireManager,
+  async (req: ExpressRequest, res: Response) => {
+    await estateController.deleteDraftEstate(req, res);
+  }
+);
+
+estateRouter.patch('/:estateId/logo',
+  authenticateToken,
+  requireManager,
+  fileUploadService.uploader.single('logo'),
+  async (req: ExpressRequest, res: Response) => {
+    await estateController.uploadLogo(req as any, res);
+  }
+);
+
+estateRouter.patch('/:estateId/onboarding-step',
+  authenticateToken,
+  requireManager,
+  async (req: ExpressRequest, res: Response) => {
+    await estateController.updateOnboardingStep(req, res);
+  }
+);
+
+estateRouter.patch('/:estateId/setup-checklist',
+  authenticateToken,
+  requireManager,
+  async (req: ExpressRequest, res: Response) => {
+    await estateController.updateSetupChecklist(req, res);
+  }
+);
+
+estateRouter.post('/:estateId/gates',
+  authenticateToken,
+  requireManager,
+  async (req: ExpressRequest, res: Response) => {
+    await estateController.createGate(req, res);
+  }
+);
+
+estateRouter.get('/:estateId/gates',
+  authenticateToken,
+  requireManager,
+  async (req: ExpressRequest, res: Response) => {
+    await estateController.getGates(req, res);
+  }
+);
+
+// Resident management within an estate
+estateRouter.get('/:estateId/residents',
+  authenticateToken,
+  requireManager,
+  async (req: ExpressRequest, res: Response) => {
+    await estateController.getEstateResidents(req, res);
+  }
+);
+
+estateRouter.delete('/:estateId/residents/:residentId',
+  authenticateToken,
+  requireManager,
+  async (req: ExpressRequest, res: Response) => {
+    await estateController.removeResidentFromEstate(req, res);
   }
 );
 

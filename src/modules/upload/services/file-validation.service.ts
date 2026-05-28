@@ -124,8 +124,8 @@ class FileValidationService {
     }
     
     const content = buffer.toString('utf8', 0, Math.min(buffer.length, 1024));
-    
-    // Check for suspicious patterns
+
+    // Check for suspicious patterns (XSS + CSV formula injection)
     const suspiciousPatterns = [
       /<script/i,
       /javascript:/i,
@@ -136,7 +136,12 @@ class FileValidationService {
       /document\.write/i,
       /<iframe/i,
       /<embed/i,
-      /<object/i
+      /<object/i,
+      // CSV formula injection: cells starting with =, +, -, @ are interpreted as formulas by Excel/Sheets
+      /(?:^|,|\n)[=+\-@]/,
+      // DDE (Dynamic Data Exchange) attack pattern
+      /\bDDE\b/i,
+      /\bCMD\b\|/i,
     ];
 
     for (const pattern of suspiciousPatterns) {

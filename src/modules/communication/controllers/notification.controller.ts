@@ -4,6 +4,17 @@ import NotificationService from '../../communication/services/notification.servi
 import EmailService from '../../communication/services/email.service';
 import SMSService from '../../communication/services/sms.service';
 import { AuthRequest } from '../../auth/middleware/auth.middleware';
+import { saveToRedis, getFromRedis } from '../../../shared/core/redis';
+
+const DEFAULT_PREFERENCES = {
+  push_notifications: true,
+  email_notifications: true,
+  sms_notifications: true,
+  guest_entrance: true,
+  emergency_alerts: true,
+  system_updates: true,
+  payment_reminders: true,
+};
 
 export const notificationController = {
   async getUserNotifications(req: AuthRequest, res: Response) {
@@ -134,6 +145,30 @@ export const notificationController = {
         status: 'error',
         message: error.message
       });
+    }
+  },
+
+  async getPreferences(req: AuthRequest, res: Response) {
+    try {
+      const stored = await getFromRedis<typeof DEFAULT_PREFERENCES>(
+        `notification_prefs:${req.user!.id}`
+      );
+      res.json({ status: 'success', data: stored ?? DEFAULT_PREFERENCES });
+    } catch (error: any) {
+      res.status(500).json({ status: 'error', message: error.message });
+    }
+  },
+
+  async updatePreferences(req: AuthRequest, res: Response) {
+    try {
+      const current = await getFromRedis<typeof DEFAULT_PREFERENCES>(
+        `notification_prefs:${req.user!.id}`
+      ) ?? DEFAULT_PREFERENCES;
+      const updated = { ...current, ...req.body };
+      await saveToRedis(`notification_prefs:${req.user!.id}`, updated, 86400 * 90);
+      res.json({ status: 'success', data: updated });
+    } catch (error: any) {
+      res.status(500).json({ status: 'error', message: error.message });
     }
   },
 

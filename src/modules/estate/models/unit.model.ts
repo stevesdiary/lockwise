@@ -8,7 +8,7 @@ interface UnitAttributes {
   unit_identifier: string;
   block?: string;
   floor?: number;
-  unit_type?: 'flat' | 'duplex' | 'chalet' | 'terrace' | 'plot' | 'house' | 'apartment' | 'other';
+  unit_type?: string;
   unit_details?: {
     plot_number?: string;
     house_number?: string;
@@ -48,8 +48,7 @@ export class Unit extends Model<UnitAttributes, UnitCreationAttributes> {
   @Column({
     type: DataType.STRING,
     allowNull: false,
-    unique: true
-  }) 
+  })
   declare unit_identifier: string;
 
   @Column({
@@ -77,11 +76,11 @@ export class Unit extends Model<UnitAttributes, UnitCreationAttributes> {
   declare floor?: number;
 
   @Column({
-    type: DataType.ENUM('flat', 'duplex', 'chalet', 'terrace', 'plot', 'house', 'apartment', 'other'),
+    type: DataType.STRING,
     allowNull: true,
     defaultValue: 'flat'
   })
-  declare unit_type?: 'flat' | 'duplex' | 'chalet' | 'terrace' | 'plot' | 'house' | 'apartment' | 'other';
+  declare unit_type?: 'flat' | 'duplex' | 'chalet' | 'terrace' | 'plot' | 'house' | 'apartment' | 'villa' | 'studio' | 'other' | string;
 
   @Column({
     type: DataType.ENUM('occupied', 'vacant', 'under_construction', 'reserved'),

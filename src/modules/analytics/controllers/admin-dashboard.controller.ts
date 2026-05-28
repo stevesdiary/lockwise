@@ -54,5 +54,14 @@ export const adminDashboardController = {
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch referrer statistics' });
     }
-  }
+  },
+
+  async getSuperAdminAnalytics(req: AuthRequest, res: Response) {
+    try {
+      const analytics = await adminDashboardService.getSuperAdminAnalytics();
+      res.json({ success: true, data: analytics });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch super-admin analytics' });
+    }
+  },
 };

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { loginUser, logoutUser } from '../../auth/services/login.service';
+import { loginUser, logoutUser, refreshAccessToken } from '../../auth/services/login.service';
 import { loginSchema } from '../../../shared/utils/validator';
 import { AuthRequest } from '../../auth/middleware/auth.middleware';
 
@@ -28,6 +28,21 @@ export const login = async (req: Request, res: Response) => {
     }
     
     return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+};
+
+export const refresh = async (req: Request, res: Response) => {
+  try {
+    const { refreshToken } = req.body;
+    if (!refreshToken) {
+      return res.status(400).json({ success: false, message: 'Refresh token required' });
+    }
+    const result = await refreshAccessToken(refreshToken);
+    return res.status(result.statusCode).json(result);
+  } catch (error: any) {
+    const sanitizedError = error?.message?.replace(/[\r\n]/g, '') || 'Unknown error';
+    console.error('Refresh token controller error:', sanitizedError);
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 

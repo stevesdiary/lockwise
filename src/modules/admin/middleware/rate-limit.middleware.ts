@@ -1,5 +1,7 @@
 import rateLimit from 'express-rate-limit';
 
+const isDev = process.env.NODE_ENV === 'development';
+
 const createRateLimiter = (windowMs: number, max: number, message: string) => {
   return rateLimit({
     windowMs,
@@ -7,6 +9,7 @@ const createRateLimiter = (windowMs: number, max: number, message: string) => {
     message: { error: message },
     standardHeaders: true,
     legacyHeaders: false,
+    skip: () => isDev,
   });
 };
 

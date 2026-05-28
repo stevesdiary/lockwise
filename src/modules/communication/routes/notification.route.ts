@@ -6,9 +6,13 @@ const router = Router();
 
 // User notification endpoints
 router.get('/', authenticateToken, notificationController.getUserNotifications);
-router.patch('/:id', authenticateToken, notificationController.markAsRead);
 router.patch('/mark-all-read', authenticateToken, notificationController.markAllAsRead);
 router.delete('/clear-all', authenticateToken, notificationController.clearAll);
+router.patch('/:id', authenticateToken, notificationController.markAsRead);
+
+// Notification preferences
+router.get('/preferences', authenticateToken, notificationController.getPreferences);
+router.put('/preferences', authenticateToken, notificationController.updatePreferences);
 
 // Test endpoints
 router.post('/test/sms', authenticateToken, notificationController.sendTestSMS);

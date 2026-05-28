@@ -5,9 +5,10 @@ import { AuthRequest } from '../../auth/middleware/auth.middleware';
 export const adminController = {
   async registerAdmin(req: AuthRequest, res: Response) {
     try {
-      const { first_name, last_name, email, phone, password, admin_secret } = req.body;
+      const { title, first_name, last_name, email, phone, password, admin_secret } = req.body;
 
       const result = await adminService.createAdmin({
+        title: title,
         first_name,
         last_name,
         email,

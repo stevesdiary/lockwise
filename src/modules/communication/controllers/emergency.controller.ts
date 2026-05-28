@@ -4,12 +4,14 @@ import emergencyService from '../services/emergency.service';
 import emergencyNotificationService from '../services/emergency.notification.service';
 import defaultEmergencyContactsService from '../services/default.emergency.contacts.service';
 import { asString } from '../../../shared/utils/param.util';
+import locationEmergencyService from '../services/location-emergency.service';
+import { Estate } from '../../estate/models/estate.model';
 
 class EmergencyController {
   async createAlert(req: Request, res: Response) {
     try {
       const userId = req.user?.id;
-      const estateId = req.user?.estateId;
+      const estateId = req.user?.estate_id;
       const { type, description, location } = req.body;
 
       if (!userId || !estateId) {
@@ -41,7 +43,7 @@ class EmergencyController {
 
   async getAlerts(req: Request, res: Response) {
     try {
-      const estateId = req.user?.estateId;
+      const estateId = req.user?.estate_id;
       const { status } = req.query;
 
       if (!estateId) {
@@ -84,7 +86,7 @@ class EmergencyController {
       }
 
       // Send status update notification
-      const estateId = req.user?.estateId;
+      const estateId = req.user?.estate_id;
       if (estateId) {
         await emergencyNotificationService.sendAlertUpdate(alertId, estateId, 'resolved');
       }
@@ -100,7 +102,7 @@ class EmergencyController {
 
   async getEmergencyContacts(req: Request, res: Response) {
     try {
-      const estateId = req.user?.estateId;
+      const estateId = req.user?.estate_id;
 
       if (!estateId) {
         return res.status(400).json({
@@ -122,7 +124,7 @@ class EmergencyController {
 
   async createEmergencyContact(req: Request, res: Response) {
     try {
-      const estateId = req.user?.estateId;
+      const estateId = req.user?.estate_id;
       const { name, type, phone, email, address } = req.body;
 
       if (!estateId) {
@@ -152,7 +154,7 @@ class EmergencyController {
 
   async setupDefaultContacts(req: Request, res: Response) {
     try {
-      const estateId = req.user?.estateId;
+      const estateId = req.user?.estate_id;
 
       if (!estateId) {
         return res.status(400).json({
@@ -167,6 +169,126 @@ class EmergencyController {
         status: 'success',
         message: `${contactsCreated} default emergency contacts created`
       });
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  }
+
+  async getLocationContacts(req: Request, res: Response) {
+    try {
+      const user = req.user!;
+      const { country_id, state_id, city_id } = req.query as any;
+
+      let countryId = country_id as string | undefined;
+      let stateId = (state_id as string) || null;
+      let cityId = (city_id as string) || null;
+
+      // If no country_id provided, try to get default Nigeria country
+      if (!countryId) {
+        const nigeriaCountry = await locationEmergencyService.getCountryByCode('NG');
+        countryId = nigeriaCountry?.id;
+      }
+
+      if (!countryId) {
+        return res.status(400).json({ success: false, message: 'Could not determine location. Please provide country_id.' });
+      }
+
+      const contacts = await locationEmergencyService.getContactsForLocation({
+        countryId,
+        stateId,
+        cityId,
+      });
+
+      return res.status(200).json({ success: true, data: contacts });
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  }
+
+  async getCountries(req: Request, res: Response) {
+    try {
+      const data = await locationEmergencyService.getCountries();
+      return res.status(200).json({ success: true, data });
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  }
+
+  async getStates(req: Request, res: Response) {
+    try {
+      const countryId = req.params.countryId as string;
+      const data = await locationEmergencyService.getStates(countryId);
+      return res.status(200).json({ success: true, data });
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  }
+
+  async getCities(req: Request, res: Response) {
+    try {
+      const stateId = req.params.stateId as string;
+      const data = await locationEmergencyService.getCities(stateId);
+      return res.status(200).json({ success: true, data });
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  }
+
+  async getCategories(req: Request, res: Response) {
+    try {
+      const data = await locationEmergencyService.getCategories();
+      return res.status(200).json({ success: true, data });
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  }
+
+  async adminListContacts(req: Request, res: Response) {
+    try {
+      const { country_id, state_id, category_id } = req.query as any;
+      const data = await locationEmergencyService.getAllContacts({
+        countryId: country_id,
+        stateId: state_id,
+        categoryId: category_id,
+      });
+      return res.status(200).json({ success: true, data });
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  }
+
+  async adminCreateContact(req: Request, res: Response) {
+    try {
+      const { category_id, name, phone_number, alt_phone_number, country_id, state_id, city_id, description, priority } = req.body;
+      if (!category_id || !name || !phone_number || !country_id) {
+        return res.status(400).json({ success: false, message: 'category_id, name, phone_number, country_id are required' });
+      }
+      const contact = await locationEmergencyService.createContact({
+        category_id, name, phone_number, alt_phone_number, country_id, state_id, city_id, description, priority,
+      });
+      return res.status(201).json({ success: true, data: contact });
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  }
+
+  async adminUpdateContact(req: Request, res: Response) {
+    try {
+      const contactId = req.params.contactId as string;
+      const updated = await locationEmergencyService.updateContact(contactId, req.body);
+      if (!updated) return res.status(404).json({ success: false, message: 'Contact not found' });
+      return res.status(200).json({ success: true, message: 'Contact updated' });
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  }
+
+  async adminDeleteContact(req: Request, res: Response) {
+    try {
+      const contactId = req.params.contactId as string;
+      const deleted = await locationEmergencyService.deleteContact(contactId);
+      if (!deleted) return res.status(404).json({ success: false, message: 'Contact not found' });
+      return res.status(200).json({ success: true, message: 'Contact deleted' });
     } catch (error) {
       return handleControllerError(error, res);
     }

@@ -25,6 +25,12 @@ export class Plan extends Model {
   declare name: string;
 
   @Column({
+    type: DataType.ENUM('starter', 'basic', 'growth', 'estate_pro', 'premium', 'enterprise'),
+    allowNull: true
+  })
+  declare plan_tier: 'starter' | 'basic' | 'growth' | 'estate_pro' | 'premium' | 'enterprise' | null;
+
+  @Column({
     type: DataType.TEXT,
     allowNull: true
   })
@@ -54,6 +60,12 @@ export class Plan extends Model {
     }
   })
   declare features: PlanFeatures;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true
+  })
+  declare resident_cap: number | null;
 
 
   @Column({

@@ -17,27 +17,31 @@ class FileUploadService {
   
   private storage = multer.memoryStorage();
   
+  private fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+    const allowedTypes = [
+      'image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif',
+      'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'text/plain', 'text/csv'
+    ];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('File type not allowed'));
+    }
+  };
+
   public uploader = multer({
     storage: this.storage,
-    limits: {
-      fileSize: 10 * 1024 * 1024, // 10MB max
-      files: 5 // Max 5 files per request
-    },
-    fileFilter: (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-      // Basic MIME type check (detailed validation happens later)
-      const allowedTypes = [
-        'image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif',
-        'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'text/plain', 'text/csv'
-      ];
-      
-      if (allowedTypes.includes(file.mimetype)) {
-        cb(null, true);
-      } else {
-        cb(new Error('File type not allowed'));
-      }
-    }
+    limits: { fileSize: 10 * 1024 * 1024, files: 5 },
+    fileFilter: this.fileFilter,
+  });
+
+  // Stricter uploader for chat attachments — 5 MB, max 3 files
+  public chatUploader = multer({
+    storage: this.storage,
+    limits: { fileSize: 5 * 1024 * 1024, files: 3 },
+    fileFilter: this.fileFilter,
   });
 
   async uploadFile(file: Express.Multer.File, folder: string = 'general'): Promise<UploadResult> {

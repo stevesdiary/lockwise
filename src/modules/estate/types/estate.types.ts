@@ -34,12 +34,16 @@ export interface EstateAttributes {
   total_floors?: number;
   total_parking_spaces?: number;
   number_of_staff?: number;
-  status?: string;
+  status?: 'active' | 'inactive' | 'under_maintenance' | 'suspended' | 'pending' | 'draft';
+  onboarding_step?: number;
+  setup_checklist?: { gates_configured: boolean; residents_invited: boolean };
   contact_info?: {
     phone?: string;
     email?: string;
     address?: string;
   };
+  logo_url?: string | null;
+  pending_update_data?: Record<string, any> | null;
   approval_status?: string;
   approved_on?: Date;
   approved_by?: string;

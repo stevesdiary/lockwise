@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import { verifyAccessToken, isTokenRevoked, areUserTokensRevoked } from '../../../shared/utils/jwtUtils';
 import sessionService from '../../auth/services/session.service';
 import { UserRole } from '../../auth/types/user.types';
 
@@ -28,12 +28,27 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
       return res.status(500).json({ error: 'Server configuration error' });
     }
     
-    const decoded = jwt.verify(token, process.env.JWT_SECRET) as any;
+    // Verify and decode token
+    const decoded = verifyAccessToken(token);
+    
+    if (!decoded) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
     
     // Validate decoded token structure
     if (!decoded.userId || !decoded.email || !decoded.role || !decoded.sessionId) {
-      console.log('Token validation failed. Decoded token:', decoded);
+      console.log('Token validation failed. Missing required fields');
       return res.status(401).json({ error: 'Invalid token structure' });
+    }
+    
+    // Check if token is revoked
+    if (decoded.jti && await isTokenRevoked(token)) {
+      return res.status(401).json({ error: 'Token has been revoked' });
+    }
+    
+    // Check if all user tokens are revoked (logout from all devices)
+    if (await areUserTokensRevoked(decoded.userId)) {
+      return res.status(401).json({ error: 'All sessions have been terminated. Please login again.' });
     }
     
     // Verify session exists and is valid
@@ -44,25 +59,33 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
     
     // Verify session belongs to the user
     if (session.userId !== decoded.userId) {
+      console.error('🚨 SECURITY ALERT: Session mismatch detected', {
+        tokenUserId: decoded.userId,
+        sessionUserId: session.userId,
+        ip: req.ip
+      });
       return res.status(401).json({ error: 'Session mismatch' });
     }
 
     req.user = {
       id: decoded.userId,
       email: decoded.email,
-      role: decoded.role,
+      role: decoded.role as UserRole,
       sessionId: decoded.sessionId,
-      estate_id: decoded.estate_id
+      estate_id: session.estateId || decoded.estate_id
     };
 
     next();
   } catch (error) {
-    if (error instanceof jwt.TokenExpiredError) {
-      return res.status(401).json({ error: 'Token expired' });
+    if (error instanceof Error) {
+      if (error.message === 'TOKEN_EXPIRED') {
+        return res.status(401).json({ error: 'Token expired', code: 'TOKEN_EXPIRED' });
+      }
+      if (error.message === 'INVALID_TOKEN') {
+        return res.status(403).json({ error: 'Invalid token', code: 'INVALID_TOKEN' });
+      }
     }
-    if (error instanceof jwt.JsonWebTokenError) {
-      return res.status(403).json({ error: 'Invalid token' });
-    }
+    console.error('Authentication error:', error);
     return res.status(403).json({ error: 'Authentication failed' });
   }
 };

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { passwordResetController } from '../controllers/password-reset.controller';
+import { authenticateToken } from '../middleware/auth.middleware';
 
 const router = Router();
 
@@ -8,5 +9,6 @@ const router = Router();
 // JWT tokens in custom headers inherently protect against CSRF attacks
 router.post('/request', passwordResetController.requestReset);
 router.post('/reset', passwordResetController.resetPassword);
+router.post('/change', authenticateToken, passwordResetController.changePassword);
 
 export default router;

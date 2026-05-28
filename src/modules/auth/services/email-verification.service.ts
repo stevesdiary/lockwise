@@ -1,5 +1,7 @@
 import { User } from '../models/user.model';
+import { Estate } from '../../estate/models/estate.model';
 import emailService from '../../communication/services/email.service';
+import { formatDisplayName } from '../../../shared/utils/user.util';
 import jwt from 'jsonwebtoken';
 import { saveToRedis, getFromRedis, deleteFromRedis } from '../../../shared/core/redis';
 
@@ -21,7 +23,7 @@ class EmailVerificationService {
       }
 
       const rateLimitKey = `email_rate_limit:${email}`;
-      const existingRateLimit = await getFromRedis(rateLimitKey);
+      const existingRateLimit = await getFromRedis<string>(rateLimitKey);
       
       if (existingRateLimit) {
         return { success: false, message: 'Please wait before requesting another code' };
@@ -32,7 +34,7 @@ class EmailVerificationService {
       
       await saveToRedis(redisKey, code, 600); // 10 minutes
       await saveToRedis(rateLimitKey, '1', 60); // 1 minute rate limit
-      await emailService.sendVerificationEmail(email, user.first_name, code);
+      await emailService.sendVerificationEmail(email, formatDisplayName(user), code);
       
       return { success: true, message: 'Verification code sent' };
     } catch (error: any) {
@@ -54,22 +56,33 @@ class EmailVerificationService {
       }
 
       const redisKey = `email_verification:${email}`;
-      const storedCode = await getFromRedis(redisKey);
+      const storedCode = await getFromRedis<string>(redisKey);
 
       if (!storedCode) {
         return { success: false, message: 'Verification code expired or not found' };
       }
 
-      if (storedCode !== code) {
+      if (String(storedCode) !== code) {
         return { success: false, message: 'Invalid verification code' };
       }
 
       await deleteFromRedis(redisKey);
 
+      // Users with an estate_id stay 'pending' — they need manager approval
+      // Users without an estate go straight to 'active'
+      const newStatus = (user as any).estate_id ? 'pending' : 'active';
       await user.update({
         verified: true,
-        status: 'active'
+        status: newStatus
       });
+
+      const estateId = (user as any).estate_id;
+      (estateId
+        ? Estate.findByPk(estateId).then((estate) =>
+            emailService.sendWelcomeEmail(user.email, formatDisplayName(user), estate?.name ?? undefined)
+          )
+        : emailService.sendWelcomeEmail(user.email, formatDisplayName(user))
+      ).catch(() => {});
 
       const token = jwt.sign(
         { id: user.id, email: user.email, user_type: user.user_type },

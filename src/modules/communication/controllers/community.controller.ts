@@ -3,7 +3,7 @@ import { CommunityMessage } from '../models/community-message.model';
 import { MessageReaction } from '../models/message-reaction.model';
 import { User } from '../../auth/models/user.model';
 import { uploadService } from '../../upload/services/upload.service';
-import sequelize from '../../../shared/core/database';
+import pushNotificationService from '../services/push.notification.service';
 
 export const communityController = {
   async getMessages(req: Request, res: Response) {
@@ -45,6 +45,7 @@ export const communityController = {
             user_id: msg.user_id,
             user_name: `${(msg.user as any).first_name} ${(msg.user as any).last_name}`,
             message: msg.message,
+            title: msg.title,
             file_url: msg.file_url,
             file_name: msg.file_name,
             file_type: msg.file_type,
@@ -64,54 +65,29 @@ export const communityController = {
 
   async sendMessage(req: Request, res: Response) {
     try {
-      const user = (req as any).user;
-      const { message } = req.body;
-
-      if (!message || !message.trim()) {
-        return res.status(400).json({ success: false, error: 'Message is required' });
-      }
-
-      const newMessage = await CommunityMessage.create({
-        estate_id: user.estate_id,
-        user_id: user.id,
-        message: message.trim(),
-        is_announcement: false,
-      });
-
+      const newMessage = await createCommunityMessage(req);
       res.json({ success: true, data: newMessage });
     } catch (error) {
       console.error('Send message error:', error);
-      res.status(500).json({ success: false, error: 'Failed to send message' });
+      const statusCode = (error as any)?.statusCode || 500;
+      res.status(statusCode).json({
+        success: false,
+        error: statusCode === 400 ? (error as Error).message : 'Failed to send message',
+      });
     }
   },
 
   async sendMessageWithFile(req: Request, res: Response) {
     try {
-      const user = (req as any).user;
-      const { message } = req.body;
-      const file = req.file;
-
-      if (!file) {
-        return res.status(400).json({ success: false, error: 'File is required' });
-      }
-
-      const uploadResult = await uploadService.uploadFile(file, user.estate_id, 'community');
-
-      const newMessage = await CommunityMessage.create({
-        estate_id: user.estate_id,
-        user_id: user.id,
-        message: message?.trim() || '',
-        file_url: uploadResult.url,
-        file_name: file.originalname,
-        file_type: file.mimetype,
-        file_size: file.size,
-        is_announcement: false,
-      });
-
+      const newMessage = await createCommunityMessage(req);
       res.json({ success: true, data: newMessage });
     } catch (error) {
       console.error('Send message with file error:', error);
-      res.status(500).json({ success: false, error: 'Failed to send message' });
+      const statusCode = (error as any)?.statusCode || 500;
+      res.status(statusCode).json({
+        success: false,
+        error: statusCode === 400 ? (error as Error).message : 'Failed to send message',
+      });
     }
   },
 
@@ -126,12 +102,16 @@ export const communityController = {
       }
 
       const existingReaction = await MessageReaction.findOne({
-        where: { message_id: messageId, user_id: user.id, emoji },
+        where: { message_id: messageId, user_id: user.id },
       });
 
       if (existingReaction) {
-        await existingReaction.destroy();
-        return res.json({ success: true, message: 'Reaction removed' });
+        if (existingReaction.emoji === emoji) {
+          await existingReaction.destroy();
+          return res.json({ success: true, message: 'Reaction removed' });
+        }
+        await existingReaction.update({ emoji });
+        return res.json({ success: true, message: 'Reaction updated' });
       }
 
       await MessageReaction.create({
@@ -147,10 +127,31 @@ export const communityController = {
     }
   },
 
+  async removeReaction(req: Request, res: Response) {
+    try {
+      const user = (req as any).user;
+      const { messageId, emoji } = req.params;
+
+      const reaction = await MessageReaction.findOne({
+        where: { message_id: messageId, user_id: user.id, emoji: decodeURIComponent(String(emoji)) },
+      });
+
+      if (!reaction) {
+        return res.status(404).json({ success: false, error: 'Reaction not found' });
+      }
+
+      await reaction.destroy();
+      res.json({ success: true, message: 'Reaction removed' });
+    } catch (error) {
+      console.error('Remove reaction error:', error);
+      res.status(500).json({ success: false, error: 'Failed to remove reaction' });
+    }
+  },
+
   async sendAnnouncement(req: Request, res: Response) {
     try {
       const user = (req as any).user;
-      const { message } = req.body;
+      const { message, title } = req.body;
 
       if (user.role !== 'admin' && user.role !== 'manager') {
         return res.status(403).json({ success: false, error: 'Unauthorized' });
@@ -161,7 +162,15 @@ export const communityController = {
         user_id: user.id,
         message: message.trim(),
         is_announcement: true,
+        title: title?.trim() || null,
       });
+
+      pushNotificationService.sendToEstate(user.estate_id, {
+        title: `📢 ${title?.trim() || 'New Announcement'}`,
+        message: message.trim(),
+        type: 'system_alert',
+        data: { message_id: announcement.id, is_announcement: true },
+      }).catch(() => {});
 
       res.json({ success: true, data: announcement });
     } catch (error) {
@@ -170,3 +179,39 @@ export const communityController = {
     }
   },
 };
+
+async function createCommunityMessage(req: Request) {
+  const user = (req as any).user;
+  const file = req.file;
+  const message = typeof req.body?.message === 'string' ? req.body.message.trim() : '';
+
+  let fileUrl = req.body?.file_url || null;
+  let fileName = req.body?.file_name || null;
+  let fileType = req.body?.file_type || null;
+  let fileSize = req.body?.file_size || null;
+
+  if (file) {
+    const uploadResult = await uploadService.uploadFile(file, user.estate_id, 'community');
+    fileUrl = uploadResult.url;
+    fileName = file.originalname;
+    fileType = file.mimetype;
+    fileSize = file.size;
+  }
+
+  if (!message && !fileUrl) {
+    const error = new Error('Message or file attachment is required');
+    (error as any).statusCode = 400;
+    throw error;
+  }
+
+  return CommunityMessage.create({
+    estate_id: user.estate_id,
+    user_id: user.id,
+    message,
+    file_url: fileUrl,
+    file_name: fileName,
+    file_type: fileType,
+    file_size: fileSize,
+    is_announcement: false,
+  });
+}

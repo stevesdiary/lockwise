@@ -11,15 +11,14 @@ interface SessionData {
 }
 
 class SessionService {
-  private readonly ACCESS_TOKEN_TIMEOUT = 15 * 60; // 15 minutes
   private readonly REFRESH_TOKEN_TIMEOUT = 30 * 24 * 60 * 60; // 30 days
   private readonly SESSION_TIMEOUT = 30 * 24 * 60 * 60; // 30 days
   private readonly MAX_CONCURRENT_SESSIONS = {
-    resident: 3,
-    manager: 2,
-    admin: 5,
-    security: 5,
-    super_admin: 3
+    resident: parseInt(process.env.MAX_SESSIONS_RESIDENT || '3', 10),
+    manager: parseInt(process.env.MAX_SESSIONS_MANAGER || '2', 10),
+    admin: parseInt(process.env.MAX_SESSIONS_ADMIN || '5', 10),
+    security: parseInt(process.env.MAX_SESSIONS_SECURITY || '2', 10),
+    super_admin: parseInt(process.env.MAX_SESSIONS_SUPER_ADMIN || '3', 10),
   };
 
   async createSession(userId: string, sessionData: Omit<SessionData, 'loginTime' | 'lastActivity' | 'refreshToken'>): Promise<{ sessionId: string; refreshToken: string }> {
@@ -38,7 +37,7 @@ class SessionService {
     await this.enforceSessionLimit(userId, sessionData.role);
     
     // Store session and refresh token
-    await saveToRedis(`session:${sessionId}`, JSON.stringify(session), this.SESSION_TIMEOUT);
+    await saveToRedis(`session:${sessionId}`, session, this.SESSION_TIMEOUT);
     await saveToRedis(`refresh:${refreshToken}`, sessionId, this.REFRESH_TOKEN_TIMEOUT);
     await this.addUserSession(userId, sessionId);
 
@@ -46,15 +45,13 @@ class SessionService {
   }
 
   async validateSession(sessionId: string): Promise<SessionData | null> {
-    const sessionData = await getFromRedis(`session:${sessionId}`);
-    if (!sessionData) return null;
+    const session = await getFromRedis<SessionData>(`session:${sessionId}`);
+    if (!session) return null;
 
-    const session: SessionData = JSON.parse(sessionData);
-    
     session.lastActivity = Date.now();
-    await saveToRedis(`session:${sessionId}`, JSON.stringify(session), this.SESSION_TIMEOUT);
+    await saveToRedis(`session:${sessionId}`, session, this.SESSION_TIMEOUT);
 
-    return session;
+    return session as SessionData;
   }
 
   async getSession(sessionId: string): Promise<SessionData | null> {
@@ -62,9 +59,8 @@ class SessionService {
   }
 
   async destroySession(sessionId: string): Promise<void> {
-    const sessionData = await getFromRedis(`session:${sessionId}`);
-    if (sessionData) {
-      const session: SessionData = JSON.parse(sessionData);
+    const session = await getFromRedis<SessionData>(`session:${sessionId}`);
+    if (session) {
       await this.removeUserSession(session.userId, sessionId);
     }
     await deleteFromRedis(`session:${sessionId}`);
@@ -75,12 +71,10 @@ class SessionService {
   }
 
   private async enforceSessionLimit(userId: string, role: string = 'resident'): Promise<void> {
-    const userSessionsData = await getFromRedis(`user_sessions:${userId}`);
-    if (!userSessionsData) return;
-
-    const sessions: string[] = JSON.parse(userSessionsData);
+    const sessions = await getFromRedis<string[]>(`user_sessions:${userId}`);
+    if (!sessions) return;
     const maxSessions = this.MAX_CONCURRENT_SESSIONS[role as keyof typeof this.MAX_CONCURRENT_SESSIONS] || 3;
-    
+
     if (sessions.length >= maxSessions) {
       // Remove oldest session
       const oldestSession = sessions.shift();
@@ -91,46 +85,58 @@ class SessionService {
   }
 
   private async addUserSession(userId: string, sessionId: string): Promise<void> {
-    const userSessionsData = await getFromRedis(`user_sessions:${userId}`);
-    const sessions: string[] = userSessionsData ? JSON.parse(userSessionsData) : [];
-    
+    const existing = await getFromRedis<string[]>(`user_sessions:${userId}`);
+    const sessions: string[] = existing ?? [];
+
     sessions.push(sessionId);
-    await saveToRedis(`user_sessions:${userId}`, JSON.stringify(sessions), this.SESSION_TIMEOUT);
+    await saveToRedis(`user_sessions:${userId}`, sessions, this.SESSION_TIMEOUT);
   }
 
   private async removeUserSession(userId: string, sessionId: string): Promise<void> {
-    const userSessionsData = await getFromRedis(`user_sessions:${userId}`);
-    if (!userSessionsData) return;
+    const sessions = await getFromRedis<string[]>(`user_sessions:${userId}`);
+    if (!sessions) return;
 
-    const sessions: string[] = JSON.parse(userSessionsData);
     const filteredSessions = sessions.filter(s => s !== sessionId);
-    
+
     if (filteredSessions.length > 0) {
-      await saveToRedis(`user_sessions:${userId}`, JSON.stringify(filteredSessions), this.SESSION_TIMEOUT);
+      await saveToRedis(`user_sessions:${userId}`, filteredSessions, this.SESSION_TIMEOUT);
     } else {
       await deleteFromRedis(`user_sessions:${userId}`);
     }
   }
 
+  async updateEstateIdForUser(userId: string, estateId: string): Promise<void> {
+    const sessionIds = await getFromRedis<string[]>(`user_sessions:${userId}`);
+    if (!sessionIds?.length) return;
+
+    await Promise.all(
+      sessionIds.map(async (sessionId) => {
+        const session = await getFromRedis<SessionData>(`session:${sessionId}`);
+        if (session) {
+          session.estateId = estateId;
+          await saveToRedis(`session:${sessionId}`, session, this.SESSION_TIMEOUT);
+        }
+      })
+    );
+  }
+
   async refreshSession(refreshToken: string): Promise<{ sessionId: string; newRefreshToken: string } | null> {
-    const sessionId = await getFromRedis(`refresh:${refreshToken}`);
+    const sessionId = await getFromRedis<string>(`refresh:${refreshToken}`);
     if (!sessionId) return null;
 
-    const sessionData = await getFromRedis(`session:${sessionId}`);
-    if (!sessionData) return null;
+    const session = await getFromRedis<SessionData>(`session:${sessionId}`);
+    if (!session) return null;
 
-    const session: SessionData = JSON.parse(sessionData);
-    
     // Generate new tokens
     const newSessionId = this.generateSessionId();
     const newRefreshToken = this.generateRefreshToken();
-    
+
     // Update session
     session.lastActivity = Date.now();
     session.refreshToken = newRefreshToken;
-    
+
     // Store new session and refresh token
-    await saveToRedis(`session:${newSessionId}`, JSON.stringify(session), this.SESSION_TIMEOUT);
+    await saveToRedis(`session:${newSessionId}`, session, this.SESSION_TIMEOUT);
     await saveToRedis(`refresh:${newRefreshToken}`, newSessionId, this.REFRESH_TOKEN_TIMEOUT);
     
     // Clean up old tokens
@@ -145,11 +151,13 @@ class SessionService {
   }
 
   private generateSessionId(): string {
-    return `sess_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const crypto = require('crypto');
+    return `sess_${Date.now()}_${crypto.randomBytes(16).toString('hex')}`;
   }
 
   private generateRefreshToken(): string {
-    return `ref_${Date.now()}_${Math.random().toString(36).substr(2, 16)}`;
+    const crypto = require('crypto');
+    return `ref_${Date.now()}_${crypto.randomBytes(32).toString('hex')}`;
   }
 }
 

@@ -102,6 +102,11 @@ export const loginSchema = yup.object().shape({
   password: yup.string().required('Password is required'),
 });
 
+export const referrerPortalLoginSchema = yup.object().shape({
+  email: yup.string().trim().email('Invalid email format').required('Email is required'),
+  referral_code: yup.string().trim().required('Referral code is required'),
+});
+
 export const userVerificationSchema = yup.object().shape({
   email: yup
     .string()
