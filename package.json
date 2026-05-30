@@ -44,7 +44,8 @@
     "test:resident": "k6 run --vus 20 --duration 3m load-test/tests/scenarios/resident-journey-standalone.js",
     "test:manager": "k6 run --vus 10 --duration 3m load-test/tests/scenarios/manager-journey-standalone.js",
     "test:queue": "k6 run --vus 5 --duration 2m load-test/tests/scenarios/queue-backpressure-standalone.js",
-    "prepare": "husky"
+    "prepare": "husky",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.817.0",
