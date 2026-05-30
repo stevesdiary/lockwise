@@ -8,7 +8,12 @@ import {
   electricityPaths,
   billsPaths,
   walletPaths,
-  collectionsPaths
+  collectionsPaths,
+  accessPaths,
+  accessCodePaths,
+  notificationPaths,
+  supportPaths,
+  communityPaths
 } from './paths';
 
 const options = {
@@ -48,6 +53,11 @@ const options = {
       ...estatePaths,
       ...paymentPaths,
       ...electricityPaths,
+      ...accessPaths,
+      ...accessCodePaths,
+      ...notificationPaths,
+      ...supportPaths,
+      ...communityPaths,
       ...billsPaths,
       ...walletPaths,
       ...collectionsPaths
