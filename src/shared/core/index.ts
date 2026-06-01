@@ -1,3 +1,5 @@
+import '../observability/tracing';
+
 import express from 'express';
 import cors from 'cors';
 import compression from 'compression';
@@ -16,6 +18,7 @@ import { startSubscriptionExpiryJob } from '../jobs/subscription-expiry.job';
 import { startSafetyNotificationJob } from '../jobs/safety-notification.job';
 import { startCollectionsCronJobs } from '../jobs/collections.job';
 import { resolveShortUrl } from '../utils/url-shortener.util';
+import { httpMetricsMiddleware, getMetrics } from '../observability/index';
 
 const server = express();
 const httpServer = createServer(server);
@@ -71,6 +74,7 @@ server.use(express.urlencoded({ extended: true, limit: '10mb' }));
 server.use(compression());
 
 server.use(monitoringService.middleware());
+server.use(httpMetricsMiddleware);
 
 const limiter = rateLimit({
   windowMs: 10 * 60 * 1000,
@@ -91,6 +95,18 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
   message: 'Too many authentication attempts, try again after 15 minutes',
   skip: () => process.env.NODE_ENV === 'development',
+});
+
+// Prometheus scrape endpoint — gated by METRICS_SECRET bearer token
+server.get('/metrics', async (req, res) => {
+  const auth = (req.headers['authorization'] as string) ?? '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  if (!process.env.METRICS_SECRET || token !== process.env.METRICS_SECRET) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+  const { registry } = getMetrics();
+  res.set('Content-Type', registry.contentType);
+  res.send(await registry.metrics());
 });
 
 // Health check — exempt from rate limiting, used by load balancers

@@ -61,6 +61,7 @@ import { SmartMeter }                    from '../../modules/electricity/models/
 import { ElectricityTransactionRecord }  from '../../modules/electricity/models/electricity-transaction.model';
 
 import { EstateFee, EstateInvoice, EstateWithdrawal } from '../../modules/collections/models/collections.model';
+import { attachSequelizeObservability } from '../observability/sequelize-hooks';
 
 type AppEnvironment = 'development' | 'production' | 'test';
 
@@ -198,6 +199,8 @@ const sequelize = hasDatabaseUrl
       username: dbUser,
       password: dbPassword,
     });
+
+attachSequelizeObservability(sequelize);
 
 // ── Programmatic migration runner (same connection as the app) ────────────────
 export const runMigrations = async (): Promise<void> => {
