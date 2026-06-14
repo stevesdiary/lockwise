@@ -1,0 +1,14 @@
+street_name,unit_identifier,unit_type,block,floor
+Admiralty Way,A101,flat,A,1
+Admiralty Way,A102,flat,A,1
+Admiralty Way,A201,flat,A,2
+Admiralty Way,A202,flat,A,2
+Lekki Phase 1,B101,duplex,B,1
+Lekki Phase 1,B102,duplex,B,1
+Lekki Phase 1,B201,duplex,B,2
+Victoria Island,C101,apartment,C,1
+Victoria Island,C102,apartment,C,1
+Ikoyi Crescent,D101,terrace,D,1
+Ikoyi Crescent,D102,terrace,D,1
+Banana Island,E101,house,,
+Banana Island,E102,house,,
