@@ -62,7 +62,7 @@ NODE_ENV=test npx jest --config tests/setup/jest.config.ts --no-coverage
 ## Key Conventions
 
 **Migrations** (`migrations/`):
-- Naming: `YYYYMMDDHHMMSS-<action>-<entity>.js`; active baseline uses `20260319XXXXXX` timestamps (60 migrations, 001–060); post-baseline additions: 061–068 (`20260418XXXXXX`–`20260425XXXXXX`)
+- Naming: `YYYYMMDDHHMMSS-<action>-<entity>.js`; active baseline uses `20260319XXXXXX` timestamps (65 migrations, 001–065); post-baseline additions: 066–079 spanning `20260425XXXXXX`–`20260524XXXXXX`
 - No `{ ifNotExists: true }` guards in main branch migrations
 - Deferred FK pattern for circular deps (e.g., `estates.created_by → users.id` added in migration 051)
 - Security profile seed in migration 053 (`20260330000053`): inserts one `security` user per estate; email `security@<estate_code>.lockwise.local`; default password `Security@1234` (bcrypt, salt 10); uses `ON CONFLICT DO NOTHING`
@@ -81,6 +81,7 @@ NODE_ENV=test npx jest --config tests/setup/jest.config.ts --no-coverage
 - Migration 066 (`20260425000066`): adds `title` STRING(120) nullable (default null) to `community_messages`
 - Migration 067 (`20260425000067`): creates 5 new tables — `emergency_contact_categories` (id UUID, name, icon, priority INTEGER default 100), `countries` (id UUID, name, iso_code CHAR(2) unique, phone_prefix), `states` (id UUID, country_id FK→countries CASCADE, name, code), `cities` (id UUID, state_id FK→states CASCADE, name), `location_emergency_contacts` (id UUID, category_id FK→categories CASCADE, name, phone_number, alt_phone_number, country_id FK, state_id FK nullable, city_id FK nullable, description, is_active BOOLEAN default true, priority; indexed on country_id/state_id/city_id and category_id)
 - Migration 068 (`20260425000068`): seeds Nigeria (NG, +234), 4 states (Lagos LA, FCT FC, Rivers RI, Oyo OY), cities per state, 6 emergency contact categories (Police 10, Fire Service 20, Ambulance 30, Hospital 40, Rapid Response 50, Utility Emergency 60) with `location_emergency_contacts` entries at national/state scope; uses `ignoreDuplicates: true`
+- Migration 079 (`20260524000079`): creates `maintenance_requests` (UUID PK, estate_id FK CASCADE, unit_id FK SET NULL nullable, submitted_by FK RESTRICT, title, description TEXT, category ENUM plumbing/electrical/structural/common_area/security/other, priority ENUM low/medium/high/urgent default 'medium', status ENUM open/in_progress/resolved/closed default 'open', photo_urls JSONB nullable, resolved_at DATE nullable, paranoid) and `maintenance_comments` (UUID PK, request_id FK CASCADE, author_id FK RESTRICT, message TEXT, is_status_change BOOLEAN default false, new_status STRING nullable); indexes on estate_id/submitted_by/status and request_id
 
 **Middleware** (`shared/middleware/`):
 - `authenticateToken` — verifies JWT, attaches `req.user`
@@ -112,7 +113,7 @@ if (!isAdmin) {
 
 **Estate status flow:** `draft → pending → approved / declined → pending (resubmit)`
 
-**Estate code:** `estate_code` auto-generated in `estate.controller.ts` as `EST-${customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 8)()}` — never supplied by the mobile client.
+**Estate code:** `estate_code` auto-generated in `estate.controller.ts` as `EST-${customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 8)()}-${customAlphabet('0123456789', 6)()}` (format: `EST-XXXXXXXX-NNNNNN`) — never supplied by the mobile client.
 
 **Estate service — Sequelize plain objects:** `getEstateByCode` calls `.toJSON()` before returning, then spreads `id: plain.estate_id` into the response data. Always do this for any service that returns a single Sequelize instance to mobile — raw instances expose `estate_id` but not `id`, causing undefined reads on the client.
 
@@ -153,6 +154,19 @@ if (!isAdmin) {
 - `GET /chat/history/:chatId` — retrieves chat history; `validateChatAccess` middleware
 
 **Email:** Uses Brevo (formerly Sendinblue) via `emailService`. Templates in `shared/templates/email.templates.ts`.
+
+**Maintenance module** (`src/modules/maintenance/`):
+- `maintenance.model.ts` — `MaintenanceRequest` + `MaintenanceComment` sequelize-typescript models; status lifecycle: `open → in_progress → resolved → closed`; each status change auto-creates a `MaintenanceComment` row with `is_status_change: true`
+- `maintenance.service.ts` — access scoping: residents/security see own submissions; managers/admin see all in estate; master/super_admin cross-estate read
+- Routes mounted at `/api/v1/maintenance`: `POST /maintenance` (submit); `GET /maintenance` (list); `GET /maintenance/:id` (detail + comments); `PATCH /maintenance/:id/status` (`requireManager`; auto-creates audit comment + notifies reporter); `POST /maintenance/:id/comments` (all authenticated); `POST /maintenance/photos` (multipart, up to 3 files field `photos`; returns `{ photo_urls: string[] }`); `DELETE /maintenance/:id` (`requireManager`, soft delete)
+- Photo upload uses `fileUploadService` (same B2/AWS backend as headshot upload); mobile calls `POST /maintenance/photos` before final submit, embeds returned URLs in `photo_urls` payload field
+
+**Observability** (`src/shared/observability/`):
+- `metrics.ts` — `getMetrics(serviceName?)` singleton; returns `MetricsBundle` (prom-client `Registry` + Histograms/Counters/Gauge); metrics: `http_request_duration_seconds` (buckets 0.05–5s), `http_requests_total`, `db_query_duration_seconds` (buckets 0.01–10s), `db_query_errors_total`, `active_connections_total`; `resetMetricsForTest()` clears singleton for test isolation
+- `http-metrics.middleware.ts` — `httpMetricsMiddleware`: records duration + total count per request with method/route/status_code labels
+- `sequelize-hooks.ts` — `attachSequelizeObservability(sequelize)`: hooks `beforeQuery`/`afterQuery`/`queryError` on the Sequelize instance to record DB metrics
+- `tracing.ts` — OpenTelemetry tracing; **side-effect module — import as first line of `src/shared/core/index.ts`** (before all other imports); NOT exported via barrel to enforce import order
+- `index.ts` — barrel: exports `getMetrics`, `resetMetricsForTest`, `httpMetricsMiddleware`, `attachSequelizeObservability`
 
 **Web Push** (`communication/services/web-push.service.ts`, routes at `/push`):
 - VAPID-based browser push via `web-push` package; subscriptions stored in Redis key `push_sub:<userId>` with 90-day TTL
