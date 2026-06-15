@@ -7,6 +7,7 @@ import { Plan } from '../../payment/models/plan.model';
 import { Estate } from '../../estate/models/estate.model';
 import { User } from '../../auth/models/user.model';
 import { formatDisplayName } from '../../../shared/utils/user.util';
+import { notifySlackPaymentFailed } from '../../../shared/utils/slack.service';
 
 interface WebhookResult {
   success: boolean;
@@ -74,6 +75,23 @@ export const webhookService = {
         });
 
         return { success: true, message: 'Webhook processed successfully', statusCode: 200 };
+      }
+
+      if (event === 'charge.failed') {
+        const payment = data.reference
+          ? await Payment.findOne({ where: { reference: data.reference } })
+          : null;
+        const estate = payment?.estate_id ? await Estate.findByPk(payment.estate_id) : null;
+
+        notifySlackPaymentFailed({
+          reference: data.reference ?? 'unknown',
+          amount: data.amount ?? 0,
+          estateName: (estate as any)?.name ?? 'Unknown Estate',
+          estateId: payment?.estate_id ?? '',
+          reason: data.gateway_response,
+        });
+
+        return { success: true, message: 'Event acknowledged', statusCode: 200 };
       }
 
       return { success: true, message: 'Event not handled', statusCode: 200 };
