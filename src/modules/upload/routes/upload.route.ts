@@ -16,9 +16,7 @@ router.post(
   upload.single("file"),
   uploadController.uploadFile
 );
-router.post("/test-upload", upload.single("file"), uploadController.uploadFile); // Test endpoint without auth
 router.get("/files", authenticateToken, uploadController.getFiles);
-router.get("/test-files", uploadController.getFiles); // Test endpoint without auth
 router.get("/file/:folder/:filename", serveFile);
 
 export default router;
