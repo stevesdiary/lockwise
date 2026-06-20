@@ -58,6 +58,7 @@ export function notifySlackError(payload: SlackErrorPayload): void {
 
   const { method, path, statusCode, errorMessage, stack, userId } = payload;
   const env = process.env.NODE_ENV ?? 'unknown';
+  const appName = process.env.APP_NAME ?? 'Lockwise';
   const stackSnippet = stack
     ? stack.split('\n').slice(0, 5).join('\n')
     : 'No stack trace';
@@ -73,11 +74,11 @@ export function notifySlackError(payload: SlackErrorPayload): void {
   }
 
   post(webhookUrl, {
-    text: `🚨 [${env.toUpperCase()}] ${method} ${path} → ${statusCode}: ${errorMessage}`,
+    text: `🚨 [${appName}] [${env.toUpperCase()}] ${method} ${path} → ${statusCode}: ${errorMessage}`,
     blocks: [
       {
         type: 'header',
-        text: { type: 'plain_text', text: `🚨 API Error — ${env.toUpperCase()}`, emoji: true },
+        text: { type: 'plain_text', text: `🚨 ${appName} — API Error [${env.toUpperCase()}]`, emoji: true },
       },
       { type: 'section', fields },
       {
