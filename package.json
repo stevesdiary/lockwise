@@ -16,7 +16,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "start": "tsc && node ./build/src/main.js",
+    "start": "node ./build/src/main.js",
     "dev": "ts-node src/main.ts",
     "dev:watch": "nodemon --watch src --ext ts --exec ts-node src/main.ts",
     "db:diagnose": "tsc && node ./build/src/scripts/db-diagnose.js",
