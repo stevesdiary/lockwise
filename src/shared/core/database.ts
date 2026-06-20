@@ -61,6 +61,7 @@ import { SmartMeter }                    from '../../modules/electricity/models/
 import { ElectricityTransactionRecord }  from '../../modules/electricity/models/electricity-transaction.model';
 
 import { EstateFee, EstateInvoice, EstateWithdrawal } from '../../modules/collections/models/collections.model';
+import { FileUpload } from '../../modules/upload/models/file-upload.model';
 import { attachSequelizeObservability } from '../observability/sequelize-hooks';
 
 type AppEnvironment = 'development' | 'production' | 'test';
@@ -187,6 +188,7 @@ const sequelizeOptions: SequelizeOptions = {
     EstateWallet, EstateWalletTransaction,
     SmartMeter, ElectricityTransactionRecord,
     EstateFee, EstateInvoice, EstateWithdrawal,
+    FileUpload,
   ],
 };
 const sequelize = hasDatabaseUrl
