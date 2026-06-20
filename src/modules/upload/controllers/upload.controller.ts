@@ -17,7 +17,7 @@ export const uploadController = {
         tenantName = estate?.name || '';
       }
 
-      const result = await uploadService.uploadFile(req.file, tenantId, tenantName);
+      const result = await uploadService.uploadFile(req.file, tenantId, tenantName, req.user?.id);
       res.json({
         success: true,
         data: {

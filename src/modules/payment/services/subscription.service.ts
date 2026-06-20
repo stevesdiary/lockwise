@@ -6,6 +6,7 @@ import { Estate } from '../../estate/models/estate.model';
 import { Payment } from '../../payment/models/payment.model';
 import PaystackService from './paystack.service';
 import { nanoid } from 'nanoid';
+import { notifySlackSubscriptionCancelled } from '../../../shared/utils/slack.service';
 
 function applySubscriptionDiscount(amount: number, billingCycle: string): number {
   let discountPercent = 0;
@@ -121,7 +122,8 @@ class SubscriptionService {
         where: {
           id: subscriptionId,
           estate_id: estateId,
-        }
+        },
+        include: [Plan, Estate],
       });
 
       if (!subscription) {
@@ -131,6 +133,14 @@ class SubscriptionService {
       await subscription.update({
         status: 'cancelled',
         cancel_reason: 'User requested cancellation',
+      });
+
+      notifySlackSubscriptionCancelled({
+        estateId,
+        estateName: (subscription as any).estate?.name ?? 'Unknown Estate',
+        planName: (subscription as any).plan?.name ?? 'Unknown Plan',
+        status: 'cancelled',
+        cancelledAt: new Date(),
       });
 
       return {
@@ -365,11 +375,20 @@ class SubscriptionService {
             [Op.lt]: now,
           },
         },
+        include: [Plan, Estate],
       });
 
       for (const subscription of graceExpired) {
         await subscription.update({ status: 'expired' });
         console.log(`Subscription ${subscription.id} expired`);
+
+        notifySlackSubscriptionCancelled({
+          estateId: subscription.estate_id,
+          estateName: (subscription as any).estate?.name ?? 'Unknown Estate',
+          planName: (subscription as any).plan?.name ?? 'Unknown Plan',
+          status: 'expired',
+          cancelledAt: new Date(),
+        });
       }
 
       return activeExpired.length + graceExpired.length;

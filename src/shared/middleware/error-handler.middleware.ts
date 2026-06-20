@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { secureLogger } from '../utils/secure-logger';
+import { notifySlackError } from '../utils/slack.service';
 
 /**
  * Custom error class with safe public messages
@@ -127,7 +128,7 @@ export function errorHandler(
   err: Error | AppError,
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ) {
   // Log full error details server-side
   secureLogger.error('Error occurred', err, {
@@ -139,6 +140,18 @@ export function errorHandler(
 
   // Get safe error message for client
   const { status, message, code } = getSafeErrorMessage(err);
+
+  // Notify Slack for server errors (5xx only — 4xx are client errors)
+  if (status >= 500) {
+    notifySlackError({
+      method: req.method,
+      path: req.path,
+      statusCode: status,
+      errorMessage: err.message,
+      stack: err.stack,
+      // userId: (req as any).user?.id,
+    });
+  }
 
   // Build response
   const response: any = {
@@ -233,9 +246,21 @@ export function notFoundError(resource: string = 'Resource') {
  */
 export function handleControllerError(error: any, res: Response) {
   const { status, message, code } = getSafeErrorMessage(error);
-  
+
   secureLogger.error('Controller error', error);
-  
+
+  if (status >= 500) {
+    const req = (res as any).req as Request | undefined;
+    notifySlackError({
+      method: req?.method ?? 'UNKNOWN',
+      path: req?.path ?? 'unknown',
+      statusCode: status,
+      errorMessage: error?.message ?? message,
+      stack: error?.stack,
+      userId: (req as any)?.user?.id,
+    });
+  }
+
   return res.status(status).json({
     statusCode: status,
     status: 'error',
