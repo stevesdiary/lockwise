@@ -15,6 +15,7 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
+    "build": "tsc",
     "start": "tsc && node ./build/src/main.js",
     "dev": "ts-node src/main.ts",
     "dev:watch": "nodemon --watch src --ext ts --exec ts-node src/main.ts",
