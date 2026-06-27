@@ -3,6 +3,7 @@ import express, { Router } from "express";
 // Auth Module
 import userRouter from "./modules/auth/routes/user.route";
 import loginRouter from "./modules/auth/routes/login.route";
+import twoFactorRouter from "./modules/auth/routes/two-factor.route";
 import googleAuthRouter from "./modules/auth/routes/google-auth.route";
 import passwordResetRouter from "./modules/auth/routes/password-reset.route";
 import phoneVerificationRouter from "./modules/auth/routes/phone-verification.route";
@@ -99,6 +100,7 @@ router.use('/auth/google', googleAuthRouter);
 router.use('/auth/password', passwordResetRouter);
 router.use('/auth/phone', phoneVerificationRouter);
 router.use('/auth/email', emailVerificationRouter);
+router.use('/auth/2fa', twoFactorRouter);
 
 // Estate Routes
 router.use('/estate', estateRouter);
