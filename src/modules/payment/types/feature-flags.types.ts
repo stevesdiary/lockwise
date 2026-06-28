@@ -146,15 +146,24 @@ export function getFeatureFlagsForLapsedState(daysSinceLapsed: number): FeatureF
   return FEATURE_FLAGS_BY_STATE.LAPSED;
 }
 
+// All features unlocked for all plans until tiered enforcement is enabled
+const ALL_FEATURES_ENABLED: FeatureFlags = {
+  access_by_code: true,
+  visitor_management: true,
+  domestic_staff_management: true,
+  community_chat: true,
+  ice_emergency_alerts: true,
+  collections_and_payments: true,
+  reporting_and_analytics: true,
+  issue_tracking: true,
+  manager_portal_access: true,
+  mobile_app_access: true,
+};
+
 // Get feature flags for an estate based on subscription state
 export function getFeatureFlags(
-  subscriptionState: SubscriptionState,
-  lapsedStartDate: Date | null = null
+  _subscriptionState: SubscriptionState,
+  _lapsedStartDate: Date | null = null
 ): FeatureFlags {
-  if (subscriptionState === 'LAPSED' && lapsedStartDate) {
-    const daysSinceLapsed = getDaysSinceLapsed(lapsedStartDate);
-    return getFeatureFlagsForLapsedState(daysSinceLapsed);
-  }
-
-  return FEATURE_FLAGS_BY_STATE[subscriptionState];
+  return ALL_FEATURES_ENABLED;
 }
