@@ -22,3 +22,4 @@ logs/
 tests
 K6_USAGE.md
 .env.loadtest
+scripts/subscribe-cedarpark.ts

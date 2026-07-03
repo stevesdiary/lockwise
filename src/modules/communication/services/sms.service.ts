@@ -49,9 +49,9 @@ class SMSService {
     this.apiToken = process.env.KUDISMS_API_TOKEN || '';
     this.senderId = process.env.KUDISMS_SENDER_ID || 'LOCKWISE';
     this.gateway = process.env.KUDISMS_GATEWAY || '2';
-    this.useVTpass = process.env.SMS_PROVIDER === 'vtpass';
-    
-    if (!this.apiToken && !this.useVTpass) {
+    this.useVTpass = !!(process.env.VTPASS_API_KEY && process.env.VTPASS_SECRET_KEY);
+
+    if (!this.useVTpass && !this.apiToken) {
       console.warn('No SMS provider configured, SMS service disabled');
     }
   }
