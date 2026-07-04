@@ -1,0 +1,13 @@
+node_modules
+build
+.env*
+!.env.example
+tests
+load-test
+docs
+postman
+*.log
+.git
+.gitignore
+.husky
+coverage

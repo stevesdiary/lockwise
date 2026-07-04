@@ -189,7 +189,11 @@ PAYSTACK_SECRET_KEY                                                    # payment
 REFERRAL_BONUS_PERCENTAGE                                             # referral bonus % (e.g. 10)
 BIANNUAL_DISCOUNT_PERCENT / ANNUAL_DISCOUNT_PERCENT                   # subscription billing discounts (e.g. 5 / 15)
 BREVO_API_KEY                                                         # email
-TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN / TWILIO_PHONE_NUMBER         # SMS
+VTPASS_API_KEY / VTPASS_SECRET_KEY                                    # SMS primary (VTPass); service auto-enables when both are set
+VTPASS_ENV                                                            # 'live' for production; omit or set to anything else for sandbox
+KUDISMS_API_TOKEN                                                     # SMS fallback (KudiSMS); used when VTPass is not configured
+KUDISMS_SENDER_ID                                                     # KudiSMS sender name (default: LOCKWISE)
+KUDISMS_GATEWAY                                                       # KudiSMS gateway ID (default: 2)
 VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY / VAPID_SUBJECT                 # web push (VAPID_SUBJECT defaults to mailto:admin@lockwise.app)
 QSTASH_TOKEN / QSTASH_CURRENT_SIGNING_KEY / QSTASH_NEXT_SIGNING_KEY # async job queue (QStash)
 WORKER_BASE_URL                                                       # base URL for QStash worker callbacks (default: http://localhost:3002/api/v1)
