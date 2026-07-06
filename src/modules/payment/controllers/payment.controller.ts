@@ -6,7 +6,7 @@ import {
   paymentVerificationSchema 
 } from '../../../shared/utils/validator';
 import { paymentService } from '../../payment/services/payment.service';
-import realTimeNotificationService from '../../communication/services/realtime-notification.service';
+import realTimeNotificationService from '../../analytics/services/realtime-notification.service';
 import { asString } from '../../../shared/utils/param.util';
 import subscriptionService from '../services/subscription.service';
 import { Subscription } from '../models/subscription.model';
@@ -63,10 +63,13 @@ const paymentController = {
       }
       
       // Send real-time notification
-      await realTimeNotificationService.sendNotification(
-        req.user.id,
-        `Payment of ${paymentData.amount} ${paymentData.currency} initiated` // message
-      );
+      await realTimeNotificationService.sendNotification({
+        id: Date.now().toString(),
+        title: 'Payment Initiated',
+        message: `Payment of ${paymentData.amount} ${paymentData.currency} initiated`,
+        type: 'info',
+        userId: req.user.id,
+      });
       
       return res.status(paymentResult.statusCode).json(paymentResult);
     } catch (error) {

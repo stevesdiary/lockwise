@@ -3,7 +3,7 @@ import { QueryTypes } from 'sequelize';
 import { Estate } from '../../estate/models/estate.model';
 import { User } from '../../auth/models/user.model';
 import { Referrer } from '../../payment/models/referrer.model';
-import AccessCode from '../../access/models/access-code.model';
+import AccessLog from '../../access/models/access-log.model';
 
 export const adminDashboardService = {
   async getDashboardStats() {
@@ -11,7 +11,7 @@ export const adminDashboardService = {
       Estate.count(),
       User.count({ where: { role: 'resident' } }),
       Referrer.count(),
-      AccessCode.count()
+      AccessLog.count()
     ]);
 
     return {
@@ -155,10 +155,10 @@ export const adminDashboardService = {
       attributes: ['id', 'first_name', 'last_name', 'email', 'created_at']
     });
 
-    const recentAccessCodes = await AccessCode.findAll({
+    const recentAccessCodes = await AccessLog.findAll({
       limit: 5,
       order: [['created_at', 'DESC']],
-      attributes: ['id', 'guest_name', 'code', 'created_at']
+      attributes: ['id', 'guest_name', 'access_code', 'created_at']
     });
 
     return {

@@ -1,6 +1,6 @@
 import { EmergencyAlert, EmergencyContact } from '../models/emergency.model';
 import { User } from '../../auth/models/user.model';
-import pushNotificationService from './push.notification.service';
+import { pushNotificationService } from './push-notification.service';
 
 class EmergencyService {
   async createAlert(data: {
@@ -69,12 +69,10 @@ class EmergencyService {
 
   private async notifyEmergencyAlert(alert: EmergencyAlert) {
     // Send push notification to all estate residents
-    await pushNotificationService.sendToEstate(alert.estate_id, {
-      title: `🚨 EMERGENCY ALERT - ${alert.type.toUpperCase()}`,
-      message: `${alert.description} at ${alert.location}`,
-      type: 'system_alert',
-      data: { alert_id: alert.id, emergency_type: alert.type }
-    });
+    await pushNotificationService.sendEmergencyAlert(
+      alert.estate_id,
+      `🚨 EMERGENCY ALERT - ${alert.type.toUpperCase()}: ${alert.description} at ${alert.location}`
+    );
   }
 }
 
