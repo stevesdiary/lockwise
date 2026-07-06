@@ -61,6 +61,40 @@ export const getResidentFullAddress = async (userId: string): Promise<string> =>
   }
 };
 
+// Precise GPS coordinates for a resident's unit, when configured. Used to give
+// a guest turn-by-turn directions to the exact home (only after gate check-in).
+export const getResidentUnitCoordinates = async (
+  userId: string
+): Promise<{ lat: number; lng: number } | null> => {
+  try {
+    const user = await User.findByPk(userId, {
+      include: [{
+        model: Resident,
+        as: 'residentProfile',
+        include: [{ model: Unit, as: 'unit' }],
+      }],
+    });
+
+    const unit = (user?.residentProfile as any)?.unit;
+    const coords = unit?.unit_details?.coordinates;
+    if (coords && typeof coords.lat === 'number' && typeof coords.lng === 'number') {
+      return { lat: coords.lat, lng: coords.lng };
+    }
+    return null;
+  } catch (error) {
+    console.error('Error getting resident unit coordinates:', error);
+    return null;
+  }
+};
+
+// "lat,lng" string when both are valid numbers, else empty string.
+export const coordsToString = (coords?: { lat?: number; lng?: number } | null): string => {
+  if (coords && typeof coords.lat === 'number' && typeof coords.lng === 'number') {
+    return `${coords.lat},${coords.lng}`;
+  }
+  return '';
+};
+
 export const buildGoogleMapsSearchUrl = (address: string): string => {
   if (!address?.trim()) {
     return '';
@@ -68,6 +102,16 @@ export const buildGoogleMapsSearchUrl = (address: string): string => {
 
   const encodedAddress = encodeURIComponent(address.trim());
   return `https://maps.google.com/?q=${encodedAddress}`;
+};
+
+// Turn-by-turn directions URL. `dest` is either a "lat,lng" pair or a text address.
+export const buildGoogleMapsDirectionsUrl = (dest: string): string => {
+  if (!dest?.trim()) {
+    return '';
+  }
+
+  const encodedDest = encodeURIComponent(dest.trim());
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodedDest}`;
 };
 
 export const formatAccessCodeMessage = (
@@ -90,7 +134,7 @@ export const formatAccessCodeMessage = (
   };
 
   const addressBlock = address?.trim()
-    ? `Destination: ${address}\n${mapsUrl ? `Open in Maps: ${mapsUrl}\n` : ''}`
+    ? `Destination: ${address}\n${mapsUrl ? `Navigate: ${mapsUrl}\n` : ''}`
     : '';
 
   return `Hi ${guestName},

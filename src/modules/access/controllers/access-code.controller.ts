@@ -6,12 +6,27 @@ import accessCodeService from '../services/access-code.service';
 import AccessLog from '../models/access-log.model';
 import { User } from '../../auth/models/user.model';
 import logger from '../../../shared/utils/logger';
-import { formatAccessCodeMessage, buildGoogleMapsSearchUrl } from '../../../shared/utils/address.util';
+import {
+  formatAccessCodeMessage,
+  buildGoogleMapsSearchUrl,
+  buildGoogleMapsDirectionsUrl,
+  coordsToString,
+  getResidentFullAddress,
+  getResidentUnitCoordinates,
+} from '../../../shared/utils/address.util';
 import { getOrCreateShortUrl, nullifyShortUrlForLog } from '../../../shared/utils/url-shortener.util';
 import { Estate } from '../../estate/models/estate.model';
+import { Gate } from '../../estate/models/gate.model';
 import notificationService from '../../../shared/services/notification.service';
 import { pushNotificationService } from '../../communication/services/push-notification.service';
 import { UserRole } from '../../../shared/constants/permissions';
+
+// The guest-facing "visit pass" page lives on the web portal. The link is keyed by the
+// AccessLog UUID (unguessable) rather than the 6-digit code so it can't be enumerated.
+const buildNavUrl = (logId: string): string | null => {
+  const base = process.env.WEB_PORTAL_URL?.replace(/\/$/, '');
+  return base ? `${base}/nav/${logId}` : null;
+};
 
 export const accessCodeController = {
   async getAccessCodes(req: AuthRequest, res: Response) {
@@ -123,6 +138,7 @@ export const accessCodeController = {
           accessLogId: codeJson.id,
           estateAddress,
           destinationAddress: estateAddress || null,
+          navUrl: buildNavUrl(codeJson.id),
           shareMessage
         }
       });
@@ -329,13 +345,17 @@ export const accessCodeController = {
 
       const estate = await Estate.findByPk(accessLog.estate_id, { attributes: ['name', 'city', 'state'] });
       const estateAddress = [estate?.name, estate?.city, estate?.state].filter(Boolean).join(', ');
-      const longMapsUrl = buildGoogleMapsSearchUrl(estateAddress);
 
-      let shortUrl = longMapsUrl;
+      // Share the guest visit-pass page (which routes to the estate gate, then to the exact
+      // residence once the guest is checked in) rather than a static Maps link. Fall back to a
+      // plain estate Maps search if the portal URL isn't configured.
+      const longUrl = buildNavUrl(logId) || buildGoogleMapsSearchUrl(estateAddress);
+
+      let shortUrl = longUrl;
       try {
-        shortUrl = await getOrCreateShortUrl(longMapsUrl, logId);
+        shortUrl = await getOrCreateShortUrl(longUrl, logId);
       } catch {
-        shortUrl = longMapsUrl;
+        shortUrl = longUrl;
       }
 
       const shareMessage = formatAccessCodeMessage(
@@ -453,6 +473,103 @@ export const accessCodeController = {
     } catch (error: any) {
       logger.error('Reject access error:', error);
       return res.status(500).json({ success: false, message: 'Failed to reject access' });
+    }
+  },
+
+  // Public (unauthenticated) endpoint powering the guest "visit pass" page. It returns directions
+  // to the estate gate; the resident's EXACT address is included ONLY once the guest has been
+  // checked in at the gate — never before. This reveal gate is enforced here, server-side, so the
+  // exact address is not merely hidden in the UI.
+  async getGuestNav(req: AuthRequest, res: Response) {
+    try {
+      const { token } = req.params;
+
+      const accessLog = await AccessLog.findByPk(token);
+      if (!accessLog) {
+        return res.status(404).json({
+          success: false,
+          message: 'This visit pass could not be found. Please ask your host to resend the link.',
+        });
+      }
+
+      const estate = await Estate.findByPk(accessLog.estate_id, {
+        attributes: ['name', 'city', 'state', 'location_details'],
+      });
+      const estateName = estate?.name || null;
+
+      // Effective status: an unused code past its validity window is treated as expired.
+      const now = new Date();
+      const hasEntered =
+        (accessLog as any).entry_time != null ||
+        accessLog.status === 'approved' ||
+        accessLog.status === 'used';
+      let status = accessLog.status;
+      if (
+        !hasEntered &&
+        status === 'active' &&
+        accessLog.valid_until &&
+        now > new Date(accessLog.valid_until)
+      ) {
+        status = 'expired';
+      }
+
+      const terminal = ['expired', 'revoked', 'rejected'].includes(status);
+      const revealed = hasEntered && !terminal;
+
+      // Gate directions — shown for any non-terminal pass. Prefer the main gate's GPS, then the
+      // estate centroid, then the estate's text address.
+      let gate: { label: string; maps_url: string } | null = null;
+      if (!terminal) {
+        const mainGate = await Gate.findOne({
+          where: { estate_id: accessLog.estate_id, gate_type: 'main', is_active: true },
+        });
+        const estateAddress = [estate?.name, estate?.city, estate?.state].filter(Boolean).join(', ');
+        const gateDest =
+          coordsToString(mainGate?.coordinates) ||
+          coordsToString(estate?.location_details?.coordinates) ||
+          estateAddress;
+        if (gateDest) {
+          gate = {
+            label: estateName ? `${estateName} — main gate` : 'Estate gate',
+            maps_url: buildGoogleMapsDirectionsUrl(gateDest),
+          };
+        }
+      }
+
+      // Residence directions — ONLY once the guest is checked in. Prefer the unit's GPS, else the
+      // composed text address.
+      let residence: { label: string; maps_url: string } | null = null;
+      if (revealed && accessLog.user_id) {
+        const [coords, addressText] = await Promise.all([
+          getResidentUnitCoordinates(accessLog.user_id),
+          getResidentFullAddress(accessLog.user_id),
+        ]);
+        const residenceDest = coordsToString(coords) || addressText;
+        if (residenceDest) {
+          residence = {
+            label: addressText || 'Residence',
+            maps_url: buildGoogleMapsDirectionsUrl(residenceDest),
+          };
+        }
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          guest_name: accessLog.guest_name || 'Guest',
+          estate_name: estateName,
+          code: accessLog.access_code || '',
+          status,
+          valid_from: accessLog.valid_from ?? null,
+          valid_until: accessLog.valid_until ?? null,
+          revealed,
+          gate,
+          residence,
+        },
+      });
+    } catch (error: any) {
+      logger.error('Guest nav lookup error:', error);
+      return res.status(500).json({ success: false, message: 'Failed to load visit pass' });
     }
   }
 };
