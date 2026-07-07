@@ -91,6 +91,9 @@ import walletRouter from "./modules/wallet/routes/wallet.route";
 // Kuda Module
 import kudaRouter from "./modules/kuda/routes/kuda.route";
 
+// Internal Module (periscope service-to-service)
+import internalRouter from "./modules/internal/routes/internal.route";
+
 const router = Router();
 
 // Auth Routes
@@ -185,6 +188,9 @@ router.use('/kuda', kudaRouter);
 
 // Worker Routes (QStash delivery endpoints)
 router.use('/workers', workerRouter);
+
+// Internal routes (periscope gateway — service-token auth, not user auth)
+router.use('/internal', internalRouter);
 
 // Legacy route for backward compatibility
 router.use("/log", loginRouter);
