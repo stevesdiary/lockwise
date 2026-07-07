@@ -5,6 +5,7 @@ import { User } from '../../auth/models/user.model';
 import { Subscription } from '../../payment/models/subscription.model';
 import { Plan } from '../../payment/models/plan.model';
 import { Payment } from '../../payment/models/payment.model';
+import { Role } from '../../auth/models/role.model';
 import monitoringService from '../../../shared/middleware/monitoring';
 
 export const internalService = {
@@ -107,6 +108,80 @@ export const internalService = {
       renewsAt: s.end_date?.toISOString() ?? null,
       cancelledAt: s.status === 'cancelled' ? (s.updated_at?.toISOString() ?? null) : null,
       createdAt: s.created_at?.toISOString() ?? new Date().toISOString(),
+    }));
+  },
+
+  async getRevenue() {
+    const [[todayRow], [mtdRow], [ytdRow], [todayTxRow], [mtdTxRow], [refundRow], [outstandingRow]] =
+      await Promise.all([
+        sequelize.query<{ total: string }>(
+          `SELECT COALESCE(SUM(amount), 0) as total FROM payments WHERE payment_status = 'completed' AND payment_date >= CURRENT_DATE AND deleted_at IS NULL`,
+          { type: QueryTypes.SELECT },
+        ),
+        sequelize.query<{ total: string }>(
+          `SELECT COALESCE(SUM(amount), 0) as total FROM payments WHERE payment_status = 'completed' AND payment_date >= date_trunc('month', CURRENT_DATE) AND deleted_at IS NULL`,
+          { type: QueryTypes.SELECT },
+        ),
+        sequelize.query<{ total: string }>(
+          `SELECT COALESCE(SUM(amount), 0) as total FROM payments WHERE payment_status = 'completed' AND payment_date >= date_trunc('year', CURRENT_DATE) AND deleted_at IS NULL`,
+          { type: QueryTypes.SELECT },
+        ),
+        sequelize.query<{ count: string }>(
+          `SELECT COUNT(*) as count FROM payments WHERE payment_status = 'completed' AND payment_date >= CURRENT_DATE AND deleted_at IS NULL`,
+          { type: QueryTypes.SELECT },
+        ),
+        sequelize.query<{ count: string }>(
+          `SELECT COUNT(*) as count FROM payments WHERE payment_status = 'completed' AND payment_date >= date_trunc('month', CURRENT_DATE) AND deleted_at IS NULL`,
+          { type: QueryTypes.SELECT },
+        ),
+        sequelize.query<{ total: string }>(
+          `SELECT COALESCE(SUM(COALESCE(refund_amount, 0)), 0) as total FROM payments WHERE payment_status = 'refunded' AND deleted_at IS NULL`,
+          { type: QueryTypes.SELECT },
+        ),
+        sequelize.query<{ total: string }>(
+          `SELECT COALESCE(SUM(amount), 0) as total FROM payments WHERE payment_status = 'pending' AND deleted_at IS NULL`,
+          { type: QueryTypes.SELECT },
+        ),
+      ]);
+
+    const mtdRevenue = parseFloat(mtdRow?.total ?? '0');
+
+    return [{
+      appKey: 'estate',
+      todayRevenue: parseFloat(todayRow?.total ?? '0'),
+      mtdRevenue,
+      ytdRevenue: parseFloat(ytdRow?.total ?? '0'),
+      todayTransactions: parseInt(todayTxRow?.count ?? '0', 10),
+      mtdTransactions: parseInt(mtdTxRow?.count ?? '0', 10),
+      commission: Math.round(mtdRevenue * 0.05 * 100) / 100, // 5% platform commission
+      refunds: parseFloat(refundRow?.total ?? '0'),
+      outstanding: parseFloat(outstandingRow?.total ?? '0'),
+      currency: 'NGN',
+    }];
+  },
+
+  async getUsers() {
+    const users = await User.findAll({
+      attributes: ['id', 'email', 'first_name', 'last_name', 'user_type', 'status', 'estate_id', 'created_at'],
+      include: [
+        { model: Estate, attributes: ['estate_id', 'name'] },
+      ],
+      order: [['created_at', 'DESC']],
+      limit: 500,
+    });
+
+    const statusMap: Record<string, string> = { active: 'active', inactive: 'inactive', suspended: 'suspended', pending: 'inactive' };
+
+    return users.map((u: any) => ({
+      id: u.id,
+      email: u.email,
+      name: `${u.first_name} ${u.last_name}`.trim(),
+      role: u.user_type ?? 'resident',
+      status: statusMap[u.status] ?? 'inactive',
+      businessId: u.estate?.estate_id ?? u.estate_id ?? null,
+      businessName: u.estate?.name ?? null,
+      lastLoginAt: null,
+      createdAt: u.created_at?.toISOString() ?? new Date().toISOString(),
     }));
   },
 };

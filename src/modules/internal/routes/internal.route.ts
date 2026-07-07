@@ -36,4 +36,24 @@ router.get('/subscriptions', async (_req: Request, res: Response) => {
   }
 });
 
+router.get('/revenue', async (_req: Request, res: Response) => {
+  try {
+    const data = await internalService.getRevenue();
+    res.json(data);
+  } catch (err: any) {
+    console.error('[internal/revenue]', err);
+    res.status(500).json({ error: 'Internal aggregation failed' });
+  }
+});
+
+router.get('/users', async (_req: Request, res: Response) => {
+  try {
+    const data = await internalService.getUsers();
+    res.json(data);
+  } catch (err: any) {
+    console.error('[internal/users]', err);
+    res.status(500).json({ error: 'Internal aggregation failed' });
+  }
+});
+
 export default router;
