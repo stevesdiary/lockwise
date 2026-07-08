@@ -3,7 +3,7 @@ import { CommunityMessage } from '../models/community-message.model';
 import { MessageReaction } from '../models/message-reaction.model';
 import { User } from '../../auth/models/user.model';
 import { uploadService } from '../../upload/services/upload.service';
-import pushNotificationService from '../services/push.notification.service';
+import { pushNotificationService } from '../services/push-notification.service';
 
 export const communityController = {
   async getMessages(req: Request, res: Response) {
@@ -165,12 +165,10 @@ export const communityController = {
         title: title?.trim() || null,
       });
 
-      pushNotificationService.sendToEstate(user.estate_id, {
-        title: `📢 ${title?.trim() || 'New Announcement'}`,
-        message: message.trim(),
-        type: 'system_alert',
-        data: { message_id: announcement.id, is_announcement: true },
-      }).catch(() => {});
+      pushNotificationService.sendEmergencyAlert(
+        user.estate_id,
+        `📢 ${title?.trim() || 'New Announcement'}: ${message.trim()}`
+      ).catch(() => {});
 
       res.json({ success: true, data: announcement });
     } catch (error) {

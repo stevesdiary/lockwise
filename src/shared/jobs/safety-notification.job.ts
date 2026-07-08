@@ -1,7 +1,7 @@
 import cron from 'node-cron';
 import { QueryTypes } from 'sequelize';
 import sequelize from '../core/database';
-import pushNotificationService from '../../modules/communication/services/push.notification.service';
+import { pushNotificationService } from '../../modules/communication/services/push-notification.service';
 import { getFromRedis, saveToRedis } from '../core/redis';
 import logger from '../utils/logger';
 
@@ -69,13 +69,8 @@ async function sendSafetyNotifications() {
     let totalSent = 0;
     for (const estate of estates) {
       try {
-        const notifications = await pushNotificationService.sendToEstate(estate.id, {
-          title,
-          message,
-          type: 'system_alert',
-          data: { safety_type: nextType, category: 'periodic_safety' },
-        });
-        totalSent += notifications.length;
+        await pushNotificationService.sendEmergencyAlert(estate.id, `${title}: ${message}`);
+        totalSent += 1;
       } catch (err) {
         logger.error(`Safety notification failed for estate ${estate.id}:`, err);
       }

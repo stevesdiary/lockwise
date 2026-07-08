@@ -49,8 +49,8 @@ import faqRouter from "./modules/community/routes/faq.route";
 
 // Analytics Module
 import analyticsRouter from "./modules/analytics/routes/analytics.route";
-import dashboardRouter from "./modules/analytics/routes/dashboard.routes";
 import adminDashboardRouter from "./modules/analytics/routes/admin-dashboard.route";
+import managerDashboardRouter from "./modules/analytics/routes/manager-dashboard.route";
 import monitoringRouter from "./modules/analytics/routes/monitoring.route";
 
 // Upload Module
@@ -90,6 +90,9 @@ import walletRouter from "./modules/wallet/routes/wallet.route";
 
 // Kuda Module
 import kudaRouter from "./modules/kuda/routes/kuda.route";
+
+// Internal Module (periscope service-to-service)
+import internalRouter from "./modules/internal/routes/internal.route";
 
 const router = Router();
 
@@ -142,8 +145,8 @@ router.use('/faqs', faqRouter);
 
 // Analytics Routes
 router.use('/analytics', analyticsRouter);
-router.use('/dashboard', dashboardRouter);
 router.use('/admin/dashboard', adminDashboardRouter);
+router.use('/manager/dashboard', managerDashboardRouter);
 router.use('/monitoring', monitoringRouter);
 
 // Upload Routes
@@ -185,6 +188,9 @@ router.use('/kuda', kudaRouter);
 
 // Worker Routes (QStash delivery endpoints)
 router.use('/workers', workerRouter);
+
+// Internal routes (periscope gateway — service-token auth, not user auth)
+router.use('/internal', internalRouter);
 
 // Legacy route for backward compatibility
 router.use("/log", loginRouter);
