@@ -194,5 +194,15 @@ export const shutdown = (signal: string) => {
   }, 10_000);
 };
 
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled promise rejection:', reason);
+  process.exit(1);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception:', err);
+  process.exit(1);
+});
+
 export default startServer;
 export { webSocketService, server, httpServer };
