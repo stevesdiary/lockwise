@@ -11,9 +11,6 @@ build/
 uploads/
 .DS_Store
 docs/SECURITY_AUDIT.md
-.env
-.env.development
-.env.production
 coverage/
 lockwise-mobile/
 logs/
