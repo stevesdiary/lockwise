@@ -6,6 +6,7 @@ import { User } from '../../auth/models/user.model';
 import walletService from '../../wallet/services/wallet.service';
 import { estateWalletService } from '../../kuda/services/estate-wallet.service';
 import NotificationService from '../../communication/services/notification.service';
+import logger from '../../../shared/utils/logger';
 
 class CollectionsService {
   // ─── Fee CRUD ───

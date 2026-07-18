@@ -10,7 +10,6 @@ build/
 .qoder
 uploads/
 .DS_Store
-docs/SECURITY_AUDIT.md
 coverage/
 lockwise-mobile/
 logs/
