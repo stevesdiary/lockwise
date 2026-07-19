@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import fileUploadService from '../../upload/services/file-upload.service';
-import { AuthRequest } from '../../auth/middleware/auth.middleware';
+import { AuthRequest } from '../../../shared/middleware/auth.middleware';
 // import { webSocketService } from '../../../shared/core';
 
 interface ChatAttachment {

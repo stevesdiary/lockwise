@@ -3,7 +3,7 @@ import { CommunityMessage } from '../models/community-message.model';
 import { MessageReaction } from '../models/message-reaction.model';
 import { User } from '../../auth/models/user.model';
 import { uploadService } from '../../upload/services/upload.service';
-import { pushNotificationService } from '../services/push-notification.service';
+import pushNotificationService from '../../communication/services/push.notification.service';
 
 export const communityController = {
   async getMessages(req: Request, res: Response) {

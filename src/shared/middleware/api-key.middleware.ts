@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
-import sequelize from '../../../shared/core/database';
+import sequelize from '../core/database';
 import { QueryTypes } from 'sequelize';
 
 interface ApiKeyRequest extends Request {

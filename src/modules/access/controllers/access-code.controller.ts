@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { Op } from 'sequelize';
-import { AuthRequest } from '../../auth/middleware/auth.middleware';
+import { AuthRequest } from '../../../shared/middleware/auth.middleware';
+import sequelize from '../../../shared/core/database';
 import accessCodeService from '../services/access-code.service';
 import AccessLog from '../models/access-log.model';
 import { User } from '../../auth/models/user.model';
@@ -17,7 +18,7 @@ import { getOrCreateShortUrl, nullifyShortUrlForLog } from '../../../shared/util
 import { Estate } from '../../estate/models/estate.model';
 import { Gate } from '../../estate/models/gate.model';
 import notificationService from '../../../shared/services/notification.service';
-import { pushNotificationService } from '../../communication/services/push-notification.service';
+import pushNotificationService from '../../communication/services/push.notification.service';
 import { UserRole } from '../../../shared/constants/permissions';
 
 const buildNavUrl = (logId: string): string | null => {
@@ -159,7 +160,13 @@ export const accessCodeController = {
         return res.status(403).json({ success: false, message: 'This access code was not generated for your estate.' });
       }
 
-      if (accessLog.valid_until && new Date() > new Date(accessLog.valid_until)) {
+      const now = new Date();
+
+      if (accessLog.valid_from && now < new Date(accessLog.valid_from)) {
+        return res.status(400).json({ success: false, message: 'Access code is not yet valid' });
+      }
+
+      if (accessLog.valid_until && now > new Date(accessLog.valid_until)) {
         return res.status(400).json({ success: false, message: 'Access code expired' });
       }
 

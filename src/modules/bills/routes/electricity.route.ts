@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { authenticateToken } from '../../auth/middleware/auth.middleware';
+import { authenticateToken } from '../../../shared/middleware/auth.middleware';
 import billsService from '../services/bills.service';
 import { ElectricityProvider, ELECTRICITY_PROVIDERS } from '../types/vtpass.types';
 

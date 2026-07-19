@@ -12,7 +12,7 @@ import monitoringService from '../middleware/monitoring';
 import { swaggerUi, specs } from '../config/swagger';
 import WebSocketService from '../../modules/communication/services/websocket.service';
 import { errorHandler, notFound } from '../middleware/error-handler.middleware';
-import realTimeNotificationService from '../../modules/analytics/services/realtime-notification.service';
+import realTimeNotificationService from '../../modules/communication/services/realtime-notification.service';
 import { startAccessCodeExpiryJob } from '../jobs/access-code-expiry.job';
 import { startSubscriptionExpiryJob } from '../jobs/subscription-expiry.job';
 import { startSafetyNotificationJob } from '../jobs/safety-notification.job';

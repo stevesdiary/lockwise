@@ -6,7 +6,7 @@ import { Unit } from "../../estate/models/unit.model";
 import { Street } from "../../estate/models/street.model";
 import { Estate } from "../../estate/models/estate.model";
 import sessionService from "./session.service";
-import { createAccessToken, createRefreshToken } from "../../../shared/utils/jwtUtils";
+import { createAccessToken, createRefreshToken } from "../../../shared/utils/jwt-utils";
 import jwt from 'jsonwebtoken';
 
 const TWO_FA_ROLES = ['admin', 'support', 'super_admin', 'manager'];
@@ -136,7 +136,7 @@ export const loginUser = async (email: string, password: string) => {
 
 export const refreshAccessToken = async (refreshToken: string) => {
   try {
-    const { rotateRefreshToken } = await import('../../../shared/utils/jwtUtils');
+    const { rotateRefreshToken } = await import('../../../shared/utils/jwt-utils');
     
     const result = await rotateRefreshToken(refreshToken);
     

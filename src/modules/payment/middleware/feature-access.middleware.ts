@@ -1,5 +1,5 @@
 import { Response, NextFunction } from 'express';
-import { AuthRequest } from '../../auth/middleware/auth.middleware';
+import { AuthRequest } from '../../../shared/middleware/auth.middleware';
 import { Subscription } from '../models/subscription.model';
 import { FeatureName, getFeatureFlags } from '../types/feature-flags.types';
 

@@ -1,6 +1,6 @@
-import express, { Router } from "express";
+import { Router } from "express";
 
-// Auth Module
+// Auth Module — individual route imports
 import userRouter from "./modules/auth/routes/user.route";
 import loginRouter from "./modules/auth/routes/login.route";
 import twoFactorRouter from "./modules/auth/routes/two-factor.route";
@@ -9,89 +9,30 @@ import passwordResetRouter from "./modules/auth/routes/password-reset.route";
 import phoneVerificationRouter from "./modules/auth/routes/phone-verification.route";
 import emailVerificationRouter from "./modules/auth/routes/email-verification.route";
 
-// Estate Module
-import estateRouter from "./modules/estate/routes/estate.route";
+// Feature Modules — barrel imports
+import { estateRouter, estateAddressRouter } from "./modules/estate";
+import { accessRouter, accessCodeRouter, nfcRouter } from "./modules/access";
+import { paymentRouter, planRouter, referralRouter, webhookRouter, subscriptionRouter } from "./modules/payment";
+import { amenityRouter, reservationRouter } from "./modules/amenities";
+import { parkingRouter, evChargingRouter } from "./modules/parking";
+import { supportRouter, adminSupportRouter } from "./modules/support";
+import { notificationRouter, chatRouter, emergencyRouter, webPushRouter } from "./modules/communication";
+import { communityRouter, communityBoardRouter, faqRouter } from "./modules/community";
+import { analyticsRouter, adminDashboardRouter, monitoringRouter } from "./modules/analytics";
+import { uploadRouter, bulkUploadRouter } from "./modules/upload";
+import { addressRouter } from "./modules/location";
+import { mobileRouter } from "./modules/mobile";
+import { adminRouter, roleRouter, permissionRouter, apiKeyRouter, configRouter, userRoleRouter } from "./modules/admin";
+import { legalRouter } from "./modules/legal";
+import { billsRouter } from "./modules/bills";
+import { collectionsRouter } from "./modules/collections";
+import { electricityRouter } from "./modules/electricity";
+import { kudaRouter } from "./modules/kuda";
+import { walletRouter } from "./modules/wallet";
 
-// Access Module
-import accessRouter from "./modules/access/routes/access.route";
-import accessCodeRouter from "./modules/access/routes/access-code.route";
-import nfcRouter from "./modules/access/routes/nfc.route";
-
-// Payment Module
-import paymentRouter from "./modules/payment/routes/payment.route";
-import planRouter from "./modules/payment/routes/plan.route";
-import referralRouter from "./modules/payment/routes/referral.route";
-import webhookRouter from "./modules/payment/routes/webhook.route";
-import subscriptionRouter from "./modules/payment/routes/subscription.route";
-
-// Amenities Module
-import amenityRouter from "./modules/amenities/routes/amenity.route";
-import reservationRouter from "./modules/amenities/routes/reservation.route";
-
-// Parking Module
-import parkingRouter from "./modules/parking/routes/parking.route";
-import evChargingRouter from "./modules/parking/routes/ev-charging.route";
-
-// Support Module
-import supportRouter from "./modules/support/routes/support.route";
-import adminSupportRouter from "./modules/support/routes/admin.support.route";
-
-// Communication Module
-import notificationRouter from "./modules/communication/routes/notification.route";
-import chatRouter from "./modules/communication/routes/chat.route";
-import webPushRouter from "./modules/communication/routes/web-push.route";
-import emergencyRouter from "./modules/communication/routes/emergency.route";
-import communityRouter from "./modules/communication/routes/community.route";
-
-// Community Module
-import communityBoardRouter from "./modules/community/routes/community.board.route";
-import faqRouter from "./modules/community/routes/faq.route";
-
-// Analytics Module
-import analyticsRouter from "./modules/analytics/routes/analytics.route";
-import adminDashboardRouter from "./modules/analytics/routes/admin-dashboard.route";
+// Non-barrel imports (single-use or new modules)
 import managerDashboardRouter from "./modules/analytics/routes/manager-dashboard.route";
-import monitoringRouter from "./modules/analytics/routes/monitoring.route";
-
-// Upload Module
-import uploadRouter from "./modules/upload/routes/upload.route";
-import bulkUploadRouter from "./modules/upload/routes/bulk-upload.route";
-
-// Electricity Module
-import electricityRouter from "./modules/electricity/routes/electricity.route";
-
-// Collections Module
-import collectionsRouter from "./modules/collections/routes/collections.route";
-
-// Location Module
-import addressRouter from "./modules/location/routes/address.route";
-import estateAddressRouter from "./modules/estate/routes/address.route";
-
-// Mobile Module
-import mobileRouter from "./modules/mobile/routes/mobile.route";
-
-// Admin Module
-import adminRouter from "./modules/admin/routes/admin.route";
-import roleRouter from "./modules/admin/routes/role.router";
-import permissionRouter from "./modules/admin/routes/permission.route";
-import apiKeyRouter from "./modules/admin/routes/api-key.route";
-import configRouter from "./modules/admin/routes/config.route";
-import userRoleRouter from "./modules/admin/routes/user-role.route";
-
-// Legal Module
-import legalRouter from "./modules/legal/routes/legal.route";
 import workerRouter from "./modules/communication/routes/worker.route";
-
-// Bills Module
-import billsRouter from "./modules/bills/routes/bills.route";
-
-// Wallet Module
-import walletRouter from "./modules/wallet/routes/wallet.route";
-
-// Kuda Module
-import kudaRouter from "./modules/kuda/routes/kuda.route";
-
-// Internal Module (periscope service-to-service)
 import internalRouter from "./modules/internal/routes/internal.route";
 
 const router = Router();
@@ -137,9 +78,9 @@ router.use('/notifications', notificationRouter);
 router.use('/push', webPushRouter);
 router.use('/chat', chatRouter);
 router.use('/emergency', emergencyRouter);
-router.use('/community', communityRouter);
 
 // Community Routes
+router.use('/community', communityRouter);
 router.use('/community', communityBoardRouter);
 router.use('/faqs', faqRouter);
 
@@ -153,13 +94,11 @@ router.use('/monitoring', monitoringRouter);
 router.use('/upload', uploadRouter);
 router.use('/bulk-upload', bulkUploadRouter);
 
-// Electricity Routes
+// Electricity & Collections
 router.use('/electricity', electricityRouter);
-
-// Collections Routes
 router.use('/collections', collectionsRouter);
 
-// Location Routes
+// Location + Estate Address Routes
 router.use('/address', addressRouter);
 router.use('/address', estateAddressRouter);
 

@@ -6,10 +6,10 @@ import {
   requireAdmin,
   requireManager,
   AuthRequest,
-} from "../middleware/auth.middleware";
-import { rateLimiters } from "../middleware/rate-limit.middleware";
-import { auditLogger } from "../middleware/audit.middleware";
-import { analyticsMiddleware } from "../middleware/analytics.middleware";
+} from "../../../shared/middleware/auth.middleware";
+import { rateLimiters } from "../../../shared/middleware/rate-limit.middleware";
+import { auditLogger } from "../../../shared/middleware/audit.middleware";
+import { analyticsMiddleware } from "../../../shared/middleware/analytics.middleware";
 
 const userRouter = Router();
 

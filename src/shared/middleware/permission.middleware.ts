@@ -1,5 +1,5 @@
 import { Response, NextFunction } from 'express';
-import { UserRole, Permission, Resource, hasPermission } from '../../../shared/constants/permissions';
+import { UserRole, Permission, Resource, hasPermission } from '../constants/permissions';
 import { AuthRequest } from './auth.middleware';
 
 export const requirePermission = (resource: Resource, permission: Permission) => {

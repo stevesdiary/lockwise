@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { PushSubscription } from 'web-push';
 import webPushService from '../services/web-push.service';
-import { authenticateToken } from '../../auth/middleware/auth.middleware';
+import { authenticateToken } from '../../../shared/middleware/auth.middleware';
 
 const webPushRouter = Router();
 

@@ -106,7 +106,7 @@ export const registerUser = async (userData: {
           where: { estate_id: estateId, status: 'active' } as any,
           include: [{ model: Role, as: 'role', where: { role: 'manager' }, required: true }],
         });
-        const { pushNotificationService } = await import('../../communication/services/push-notification.service');
+        const pushNotificationService = (await import('../../communication/services/push.notification.service')).default;
         for (const manager of managers) {
           pushNotificationService.sendToUser(
             manager.id,
@@ -224,7 +224,7 @@ export const linkUserToEstate = async (userId: string, estateCode: string, unitI
       include: [{ model: Role, as: 'role', where: { role: 'manager' }, required: true }],
     });
 
-    const { pushNotificationService } = await import('../../communication/services/push-notification.service');
+    const pushNotificationService = (await import('../../communication/services/push.notification.service')).default;
     for (const manager of managers) {
       pushNotificationService.sendToUser(
         manager.id,
@@ -352,7 +352,7 @@ export const rejectJoinRequest = async (targetUserId: string, approverId: string
       await Resident.destroy({ where: { user_id: targetUserId } as any, transaction: t });
     });
 
-    const { pushNotificationService } = await import('../../communication/services/push-notification.service');
+    const pushNotificationService = (await import('../../communication/services/push.notification.service')).default;
     pushNotificationService.sendToUser(
       targetUserId,
       'Join Request Declined',

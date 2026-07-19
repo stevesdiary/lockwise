@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { kudaWebhookController } from '../controllers/kuda-webhook.controller';
 import { estateWalletController } from '../controllers/estate-wallet.controller';
-import { authenticateToken, requireManager } from '../../auth/middleware/auth.middleware';
+import { authenticateToken, requireManager } from '../../../shared/middleware/auth.middleware';
 
 const router = Router();
 

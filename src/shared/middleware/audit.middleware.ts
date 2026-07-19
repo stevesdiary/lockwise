@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import sequelize from '../../../shared/core/database';
+import sequelize from '../core/database';
 import { QueryTypes } from 'sequelize';
-import { AuthRequest } from '../../auth/middleware/auth.middleware';
+import { AuthRequest } from './auth.middleware';
 
 interface AuditRequest extends AuthRequest {
   startTime?: number;

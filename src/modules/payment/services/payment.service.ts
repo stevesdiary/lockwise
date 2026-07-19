@@ -185,7 +185,15 @@ class PaymentService {
     }
 
     await subscription.update(
-      { status: 'active', start_date: new Date(), end_date: endDate, paid_on: new Date() },
+      {
+        status: 'active',
+        subscription_state: 'ACTIVE',
+        start_date: new Date(),
+        end_date: endDate,
+        paid_on: new Date(),
+        grace_period_end_date: null,
+        lapsed_start_date: null,
+      },
       { transaction: t },
     );
   }

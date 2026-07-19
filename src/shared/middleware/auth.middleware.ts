@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyAccessToken, isTokenRevoked, areUserTokensRevoked } from '../../../shared/utils/jwtUtils';
-import sessionService from '../../auth/services/session.service';
-import { UserRole } from '../../auth/types/user.types';
+import { verifyAccessToken, isTokenRevoked, areUserTokensRevoked } from '../utils/jwt-utils';
+import sessionService from '../../modules/auth/services/session.service';
+import { UserRole } from '../../modules/auth/types/user.types';
 
 interface AuthRequest extends Request {
   user?: {

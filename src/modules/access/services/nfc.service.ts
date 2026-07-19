@@ -1,5 +1,5 @@
 import { nfcRepository } from '../../access/repositories/nfc.repository';
-import { pushNotificationService } from '../../communication/services/push-notification.service';
+import pushNotificationService from '../../communication/services/push.notification.service';
 
 export const nfcService = {
   async validateAccess(cardUID: string, accessPoint: string, accessType: 'entry' | 'exit') {

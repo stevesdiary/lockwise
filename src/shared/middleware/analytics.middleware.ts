@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { analyticsService } from '../services/analytics.service';
-import { AuthRequest } from '../../auth/middleware/auth.middleware';
+import { analyticsService } from '../../modules/analytics/services/analytics.service';
+import { AuthRequest } from './auth.middleware';
 
 interface AnalyticsRequest extends AuthRequest {
   startTime?: number;

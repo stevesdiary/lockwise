@@ -83,7 +83,7 @@ export const twoFactorController = {
       const { User } = await import('../models/user.model');
       const { Role } = await import('../models/role.model');
       const { Estate } = await import('../../estate/models/estate.model');
-      const { createAccessToken, createRefreshToken } = await import('../../../shared/utils/jwtUtils');
+      const { createAccessToken, createRefreshToken } = await import('../../../shared/utils/jwt-utils');
       const sessionService = (await import('../services/session.service')).default;
 
       const user = await User.findByPk(userId, {

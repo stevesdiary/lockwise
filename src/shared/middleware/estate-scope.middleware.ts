@@ -1,5 +1,5 @@
 import { Response, NextFunction } from 'express';
-import { AuthRequest } from '../../modules/auth/middleware/auth.middleware';
+import { AuthRequest } from './auth.middleware';
 
 /**
  * Ensures user is associated with an estate
@@ -247,7 +247,7 @@ export const scopeQueryToEstate = (req: AuthRequest, res: Response, next: NextFu
 };
 
 // Extend AuthRequest interface
-declare module '../../modules/auth/middleware/auth.middleware' {
+declare module './auth.middleware' {
   interface AuthRequest {
     resource?: any;
   }

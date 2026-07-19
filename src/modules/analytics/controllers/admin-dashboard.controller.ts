@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { adminDashboardService } from '../services/admin-dashboard.service';
-import { AuthRequest } from '../../auth/middleware/auth.middleware';
+import { AuthRequest } from '../../../shared/middleware/auth.middleware';
 
 export const adminDashboardController = {
   async getDashboard(req: AuthRequest, res: Response) {

@@ -1,5 +1,3 @@
-// import { webSocketService } from '../../../shared/core';
-
 interface NotificationData {
   id: string;
   title: string;
@@ -9,13 +7,13 @@ interface NotificationData {
   metadata?: any;
 }
 
-class RealTimeNotificationService {
+class RealtimeNotificationService {
   private webSocketService: any = null;
 
   setWebSocketService(service: any) {
     this.webSocketService = service;
   }
-  
+
   async sendNotification(notification: NotificationData) {
     try {
       if (!this.webSocketService) {
@@ -58,4 +56,4 @@ class RealTimeNotificationService {
   }
 }
 
-export default new RealTimeNotificationService();
+export default new RealtimeNotificationService();

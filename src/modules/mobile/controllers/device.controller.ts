@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { AuthRequest } from '../../auth/middleware/auth.middleware';
+import { AuthRequest } from '../../../shared/middleware/auth.middleware';
 import UserDevice from '../models/user-device.model';
 
 export const deviceController = {

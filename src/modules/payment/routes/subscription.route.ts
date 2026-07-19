@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import subscriptionController from '../controllers/subscription.controller';
-import { authenticateToken } from '../../auth/middleware/auth.middleware';
+import { authenticateToken } from '../../../shared/middleware/auth.middleware';
 
 const router = Router();
 

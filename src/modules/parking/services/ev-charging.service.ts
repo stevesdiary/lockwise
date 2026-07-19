@@ -1,5 +1,5 @@
 import { parkingRepository } from '../../parking/repositories/parking.repository';
-import { pushNotificationService } from '../../communication/services/push-notification.service';
+import pushNotificationService from '../../communication/services/push.notification.service';
 import { paymentService } from '../../payment/services/payment.service';
 
 export const evChargingService = {

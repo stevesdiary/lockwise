@@ -2,7 +2,7 @@ import { Router } from "express";
 import multer from "multer";
 import { uploadController } from "../controllers/upload.controller";
 import { serveFile } from "../controllers/file.controller";
-import { authenticateToken } from "../../auth/middleware/auth.middleware";
+import { authenticateToken } from "../../../shared/middleware/auth.middleware";
 
 const router = Router();
 const upload = multer({

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { collectionsController } from '../controllers/collections.controller';
-import { authenticateToken, requireManager, requireResident } from '../../auth/middleware/auth.middleware';
+import { authenticateToken, requireManager, requireResident } from '../../../shared/middleware/auth.middleware';
 
 const router = Router();
 

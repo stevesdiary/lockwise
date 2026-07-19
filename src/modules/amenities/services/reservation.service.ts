@@ -1,6 +1,6 @@
 import { reservationRepository } from '../../amenities/repositories/reservation.repository';
 import { amenityRepository } from '../../amenities/repositories/amenity.repository';
-import { pushNotificationService } from '../../communication/services/push-notification.service';
+import pushNotificationService from '../../communication/services/push.notification.service';
 
 export const reservationService = {
   async createReservation(userId: string, data: { amenity_id: string; start_time: Date; end_time: Date; guests_count?: number; notes?: string }) {

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { passwordResetController } from '../controllers/password-reset.controller';
-import { authenticateToken } from '../middleware/auth.middleware';
+import { authenticateToken } from '../../../shared/middleware/auth.middleware';
 
 const router = Router();
 

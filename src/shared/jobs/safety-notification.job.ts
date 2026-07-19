@@ -1,7 +1,7 @@
 import cron from 'node-cron';
 import { QueryTypes } from 'sequelize';
 import sequelize from '../core/database';
-import { pushNotificationService } from '../../modules/communication/services/push-notification.service';
+import pushNotificationService from '../../modules/communication/services/push.notification.service';
 import { getFromRedis, saveToRedis } from '../core/redis';
 import logger from '../utils/logger';
 

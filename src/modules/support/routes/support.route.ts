@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { supportController } from '../controllers/support.controller';
-import { authenticateToken } from '../../auth/middleware/auth.middleware';
-import { requirePermission } from '../../auth/middleware/permission.middleware';
-import { rateLimiters } from '../../admin/middleware/rate-limit.middleware';
+import { authenticateToken } from '../../../shared/middleware/auth.middleware';
+import { requirePermission } from '../../../shared/middleware/permission.middleware';
+import { rateLimiters } from '../../../shared/middleware/rate-limit.middleware';
 import { Resource, Permission } from '../../../shared/constants/permissions';
 
 const router = Router();

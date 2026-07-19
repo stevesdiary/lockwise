@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { Op } from 'sequelize';
-import { AuthRequest } from '../../auth/middleware/auth.middleware';
+import { AuthRequest } from '../../../shared/middleware/auth.middleware';
 import { createEstateSchema } from '../../../shared/utils/validator';
 import estateService from '../../estate/services/estate.service';
 import gateService from '../services/gate.service';
