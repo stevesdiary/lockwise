@@ -310,6 +310,21 @@ export const approveJoinRequest = async (targetUserId: string, approverId: strin
       enhancedSubscriptionService.updateResidentCount(target.estate_id).catch(() => {});
     }
 
+    // Generate invoices for all active estate fees so the new resident
+    // immediately appears in the dues ledger (findOrCreate is idempotent)
+    if (target.estate_id) {
+      (async () => {
+        try {
+          const { collectionsService } = await import('../../collections/services/collections.service');
+          const { EstateFee } = await import('../../collections/models/collections.model');
+          const fees = await EstateFee.findAll({ where: { estate_id: target.estate_id, is_active: true } as any });
+          for (const fee of fees) {
+            await collectionsService.generateInvoices(target.estate_id!, fee.id);
+          }
+        } catch { /* non-critical */ }
+      })();
+    }
+
     const { pushNotificationService } = await import('../../communication/services/push-notification.service');
     pushNotificationService.sendToUser(
       targetUserId,
