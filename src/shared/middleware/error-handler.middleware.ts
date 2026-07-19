@@ -9,12 +9,14 @@ export class AppError extends Error {
   public statusCode: number;
   public isOperational: boolean;
   public code?: string;
+  public data?: Record<string, any>;
 
-  constructor(message: string, statusCode: number = 500, code?: string) {
+  constructor(message: string, statusCode: number = 500, code?: string, data?: Record<string, any>) {
     super(message);
     this.statusCode = statusCode;
     this.isOperational = true;
     this.code = code;
+    this.data = data;
     Error.captureStackTrace(this, this.constructor);
   }
 }
@@ -62,12 +64,13 @@ const ERROR_MESSAGES: Record<string, { status: number; message: string }> = {
 /**
  * Get safe error message for client
  */
-function getSafeErrorMessage(error: any): { status: number; message: string; code?: string } {
+function getSafeErrorMessage(error: any): { status: number; message: string; code?: string; data?: Record<string, any> } {
   // AppError with known code
   if (error instanceof AppError && error.code && ERROR_MESSAGES[error.code]) {
     return {
       ...ERROR_MESSAGES[error.code],
       code: error.code,
+      data: error.data,
     };
   }
 
@@ -77,6 +80,7 @@ function getSafeErrorMessage(error: any): { status: number; message: string; cod
       status: error.statusCode,
       message: error.message,
       code: error.code,
+      data: error.data,
     };
   }
 
@@ -139,7 +143,7 @@ export function errorHandler(
   });
 
   // Get safe error message for client
-  const { status, message, code } = getSafeErrorMessage(err);
+  const { status, message, code, data } = getSafeErrorMessage(err);
 
   // Notify Slack for server errors (5xx only — 4xx are client errors)
   if (status >= 500) {
@@ -163,6 +167,11 @@ export function errorHandler(
   // Add error code if available
   if (code) {
     response.code = code;
+  }
+
+  // Add extra data if available
+  if (data) {
+    response.data = data;
   }
 
   // Add validation errors in development
@@ -245,7 +254,7 @@ export function notFoundError(resource: string = 'Resource') {
  * Handle controller errors consistently
  */
 export function handleControllerError(error: any, res: Response) {
-  const { status, message, code } = getSafeErrorMessage(error);
+  const { status, message, code, data } = getSafeErrorMessage(error);
 
   secureLogger.error('Controller error', error);
 
@@ -265,7 +274,8 @@ export function handleControllerError(error: any, res: Response) {
     statusCode: status,
     status: 'error',
     message,
-    ...(code && { code })
+    ...(code && { code }),
+    ...(data && { data }),
   });
 }
 

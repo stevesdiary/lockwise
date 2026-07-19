@@ -2,6 +2,7 @@ import AccessLog from '../models/access-log.model';
 import AccessEntry from '../models/access-entry.model';
 import sequelize from '../../../shared/core/database';
 import { Gate } from '../../estate/models/gate.model';
+import { AppError } from '../../../shared/middleware/error-handler.middleware';
 
 class AccessCodeService {
   async generateCode(data: {
@@ -40,27 +41,27 @@ class AccessCodeService {
     if (estateId) where.estate_id = estateId;
 
     const accessLog = await AccessLog.findOne({ where });
-    if (!accessLog) throw new Error('Invalid access code');
+    if (!accessLog) throw new AppError('Invalid access code', 404);
 
     const validStatuses = ['active', 'pending', 'approved'];
     if (!validStatuses.includes(accessLog.status)) {
-      throw new Error(`Access code is ${accessLog.status}`);
+      throw new AppError(`Access code is ${accessLog.status}`, 400);
     }
 
     const now = new Date();
 
     if (accessLog.valid_from && now < new Date(accessLog.valid_from)) {
-      throw new Error('Access code is not yet valid');
+      throw new AppError('Access code is not yet valid', 400, undefined, { valid_from: accessLog.valid_from });
     }
 
     if (accessLog.valid_until && now > new Date(accessLog.valid_until)) {
       await accessLog.update({ status: 'expired' });
-      throw new Error('Access code has expired');
+      throw new AppError('Access code has expired', 400);
     }
 
     const direction = accessLog.access_direction || 'entry';
     if (scanType === 'entry' && direction === 'exit') {
-      throw new Error('This code is for exit only and cannot be used for entry');
+      throw new AppError('This code is for exit only and cannot be used for entry', 403);
     }
 
     if (accessLog.is_multi_entry) {
@@ -71,7 +72,7 @@ class AccessCodeService {
         if (accessLog.max_entries !== null && accessLog.max_entries !== undefined) {
           if (accessLog.used_entries > accessLog.max_entries) {
             await accessLog.decrement('used_entries', { transaction: t });
-            throw new Error('Maximum entries reached for this access code');
+            throw new AppError('Maximum entries reached for this access code', 400);
           }
           if (accessLog.used_entries >= accessLog.max_entries) {
             await accessLog.update({ status: 'used', scanned_by: scannedBy }, { transaction: t });

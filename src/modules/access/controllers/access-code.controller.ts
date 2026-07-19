@@ -148,12 +148,20 @@ export const accessCodeController = {
       if (!code) return res.status(400).json({ message: 'Code is required' });
 
       const accessLog = await AccessLog.findOne({
-        where: { access_code: code, status: 'active' },
+        where: { access_code: code },
         include: [{ model: User, as: 'user', attributes: ['id', 'first_name', 'last_name', 'phone'] }],
       });
 
       if (!accessLog) {
-        return res.status(404).json({ success: false, message: 'Invalid or expired access code' });
+        return res.status(404).json({ success: false, message: 'Invalid access code' });
+      }
+
+      if (accessLog.status === 'expired' || accessLog.status === 'used') {
+        return res.status(400).json({ success: false, message: 'Access code has expired' });
+      }
+
+      if (accessLog.status !== 'active') {
+        return res.status(400).json({ success: false, message: `Access code is ${accessLog.status}` });
       }
 
       if (req.user?.estate_id && (accessLog as any).estate_id !== req.user.estate_id) {
@@ -163,7 +171,7 @@ export const accessCodeController = {
       const now = new Date();
 
       if (accessLog.valid_from && now < new Date(accessLog.valid_from)) {
-        return res.status(400).json({ success: false, message: 'Access code is not yet valid' });
+        return res.status(400).json({ success: false, message: 'Access code is not yet valid', valid_from: accessLog.valid_from });
       }
 
       if (accessLog.valid_until && now > new Date(accessLog.valid_until)) {
