@@ -1,0 +1,339 @@
+{
+  "info": {
+    "name": "Lockwise API",
+    "description": "Lockwise Estate Access Management — complete Postman collection. Base URL variable: {{base_url}} = https://lockwise.onrender.com/api/v1. Set {{token}} after login.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "https://lockwise.onrender.com/api/v1", "type": "string" },
+    { "key": "token", "value": "", "type": "string" },
+    { "key": "estate_id", "value": "", "type": "string" },
+    { "key": "street_id", "value": "", "type": "string" },
+    { "key": "unit_id", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login",
+          "event": [{ "listen": "test", "script": { "exec": ["if (pm.response.code === 200) { const r = pm.response.json(); pm.collectionVariables.set('token', r.data?.token || ''); }"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"stephenoyeyemi@gmail.com\",\n  \"password\": \"yourpassword\"\n}" },
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"first_name\": \"Test\",\n  \"last_name\": \"Manager\",\n  \"email\": \"manager@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"phone\": \"08065876770\",\n  \"user_type\": \"manager\"\n}" },
+            "url": { "raw": "{{base_url}}/user/register", "host": ["{{base_url}}"], "path": ["user", "register"] }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/auth/logout", "host": ["{{base_url}}"], "path": ["auth", "logout"] }
+          }
+        },
+        {
+          "name": "Request Password Reset",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"user@example.com\"\n}" },
+            "url": { "raw": "{{base_url}}/auth/password/request", "host": ["{{base_url}}"], "path": ["auth", "password", "request"] }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"current_password\": \"OldPass123!\",\n  \"new_password\": \"NewPass456!\"\n}" },
+            "url": { "raw": "{{base_url}}/auth/password/change", "host": ["{{base_url}}"], "path": ["auth", "password", "change"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Estates",
+      "item": [
+        {
+          "name": "Search Estate by Code",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/estate/search/EST-ABCD1234", "host": ["{{base_url}}"], "path": ["estate", "search", "EST-ABCD1234"] }
+          }
+        },
+        {
+          "name": "Create Estate",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Greenfield Estate\",\n  \"type\": \"residential\",\n  \"address\": {\n    \"street\": \"Palm Avenue\",\n    \"city\": \"Lekki\",\n    \"country\": \"Nigeria\"\n  },\n  \"state\": \"Lagos\",\n  \"country\": \"Nigeria\",\n  \"contact_phone\": \"08012345678\",\n  \"contact_email\": \"manager@greenfield.com\"\n}" },
+            "url": { "raw": "{{base_url}}/estate/register", "host": ["{{base_url}}"], "path": ["estate", "register"] }
+          }
+        },
+        {
+          "name": "Get Estate by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/estate/one/{{estate_id}}", "host": ["{{base_url}}"], "path": ["estate", "one", "{{estate_id}}"] }
+          }
+        },
+        {
+          "name": "Update Onboarding Step",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"step\": 2\n}" },
+            "url": { "raw": "{{base_url}}/estate/{{estate_id}}/onboarding-step", "host": ["{{base_url}}"], "path": ["estate", "{{estate_id}}", "onboarding-step"] }
+          }
+        },
+        {
+          "name": "Submit Estate for Review (Step 3)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"step\": 3,\n  \"status\": \"pending\"\n}" },
+            "url": { "raw": "{{base_url}}/estate/{{estate_id}}/onboarding-step", "host": ["{{base_url}}"], "path": ["estate", "{{estate_id}}", "onboarding-step"] }
+          }
+        },
+        {
+          "name": "Update Setup Checklist",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"gates_configured\": true\n}" },
+            "url": { "raw": "{{base_url}}/estate/{{estate_id}}/setup-checklist", "host": ["{{base_url}}"], "path": ["estate", "{{estate_id}}", "setup-checklist"] }
+          }
+        },
+        {
+          "name": "Link User to Estate",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"estate_code\": \"EST-ABCD1234\"\n}" },
+            "url": { "raw": "{{base_url}}/user/link-estate", "host": ["{{base_url}}"], "path": ["user", "link-estate"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Gates",
+      "item": [
+        {
+          "name": "List Gates",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/estate/{{estate_id}}/gates", "host": ["{{base_url}}"], "path": ["estate", "{{estate_id}}", "gates"] }
+          }
+        },
+        {
+          "name": "Create Gate",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"gate_name\": \"Main Entrance\",\n  \"gate_type\": \"main\",\n  \"access_control_type\": \"qr_code\",\n  \"is_active\": true\n}" },
+            "url": { "raw": "{{base_url}}/estate/{{estate_id}}/gates", "host": ["{{base_url}}"], "path": ["estate", "{{estate_id}}", "gates"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Streets & Units",
+      "item": [
+        {
+          "name": "List Streets (all)",
+          "event": [{ "listen": "test", "script": { "exec": ["if (pm.response.code === 200) { const d = pm.response.json().data; if (d && d[0]) pm.collectionVariables.set('street_id', d[0].id || d[0].street_id); }"], "type": "text/javascript" } }],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/address/estates/{{estate_id}}/streets", "host": ["{{base_url}}"], "path": ["address", "estates", "{{estate_id}}", "streets"] }
+          }
+        },
+        {
+          "name": "Search Streets",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/address/estates/{{estate_id}}/streets?search=Main", "host": ["{{base_url}}"], "path": ["address", "estates", "{{estate_id}}", "streets"], "query": [{ "key": "search", "value": "Main" }] }
+          }
+        },
+        {
+          "name": "Create Street",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Acacia Avenue\"\n}" },
+            "url": { "raw": "{{base_url}}/address/estates/{{estate_id}}/streets", "host": ["{{base_url}}"], "path": ["address", "estates", "{{estate_id}}", "streets"] }
+          }
+        },
+        {
+          "name": "List Units on Street",
+          "event": [{ "listen": "test", "script": { "exec": ["if (pm.response.code === 200) { const d = pm.response.json().data; if (d && d[0]) pm.collectionVariables.set('unit_id', d[0].id); }"], "type": "text/javascript" } }],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/address/streets/{{street_id}}/units", "host": ["{{base_url}}"], "path": ["address", "streets", "{{street_id}}", "units"] }
+          }
+        },
+        {
+          "name": "Create Unit",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"unit_identifier\": \"A101\",\n  \"block\": \"A\",\n  \"floor\": 1,\n  \"unit_type\": \"flat\"\n}" },
+            "url": { "raw": "{{base_url}}/address/streets/{{street_id}}/units", "host": ["{{base_url}}"], "path": ["address", "streets", "{{street_id}}", "units"] }
+          }
+        },
+        {
+          "name": "Search Units (estate-wide)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/address/estates/{{estate_id}}/units?search=A1", "host": ["{{base_url}}"], "path": ["address", "estates", "{{estate_id}}", "units"], "query": [{ "key": "search", "value": "A1" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bulk Upload",
+      "item": [
+        {
+          "name": "Get Template — streets-units",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/bulk-upload/template/streets-units", "host": ["{{base_url}}"], "path": ["bulk-upload", "template", "streets-units"] }
+          }
+        },
+        {
+          "name": "Bulk Upload Streets & Units",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": "/path/to/streets-units.csv", "description": "CSV or Excel file" },
+                { "key": "estateId", "value": "{{estate_id}}", "type": "text" }
+              ]
+            },
+            "url": { "raw": "{{base_url}}/bulk-upload/streets-units", "host": ["{{base_url}}"], "path": ["bulk-upload", "streets-units"] }
+          }
+        },
+        {
+          "name": "Get Template — residents",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/bulk-upload/template/residents", "host": ["{{base_url}}"], "path": ["bulk-upload", "template", "residents"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Access Control",
+      "item": [
+        {
+          "name": "Create Access Code",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"access_code\": \"Dog47\",\n  \"date_in\": \"2026-04-20\",\n  \"access_type\": \"guest\",\n  \"is_multi_entry\": false,\n  \"access_direction\": \"entry\"\n}" },
+            "url": { "raw": "{{base_url}}/access", "host": ["{{base_url}}"], "path": ["access"] }
+          }
+        },
+        {
+          "name": "Scan Access Code",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"code\": \"Dog47\",\n  \"gate_id\": null\n}" },
+            "url": { "raw": "{{base_url}}/access/scan", "host": ["{{base_url}}"], "path": ["access", "scan"] }
+          }
+        },
+        {
+          "name": "Get My Access Codes",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/access", "host": ["{{base_url}}"], "path": ["access"] }
+          }
+        },
+        {
+          "name": "Get Active Access Records",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/access/active", "host": ["{{base_url}}"], "path": ["access", "active"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "Get All Plans",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/plan", "host": ["{{base_url}}"], "path": ["plan"] }
+          }
+        },
+        {
+          "name": "Initiate Subscription",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"plan_id\": \"<plan-uuid>\",\n  \"paymentMethod\": \"card\"\n}" },
+            "url": { "raw": "{{base_url}}/payment/subscription", "host": ["{{base_url}}"], "path": ["payment", "subscription"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Resident Approvals",
+      "item": [
+        {
+          "name": "Get Pending Approvals",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/estate/residents/approvals", "host": ["{{base_url}}"], "path": ["estate", "residents", "approvals"] }
+          }
+        },
+        {
+          "name": "Approve Resident",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/estate/residents/approvals/<residentId>/approve", "host": ["{{base_url}}"], "path": ["estate", "residents", "approvals", "<residentId>", "approve"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/health", "host": ["{{base_url}}"], "path": ["health"] }
+          }
+        }
+      ]
+    }
+  ]
+}
