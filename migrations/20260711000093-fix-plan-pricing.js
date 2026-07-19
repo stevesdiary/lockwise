@@ -99,15 +99,9 @@ module.exports = {
     const now = new Date();
     await queryInterface.bulkInsert('plans', PLANS.map(p => ({
       ...p,
-      is_active: true,
       created_at: now,
       updated_at: now,
     })));
-
-    // Re-add NOT NULL constraint on plan_id
-    await queryInterface.sequelize.query(
-      'ALTER TABLE subscriptions ALTER COLUMN plan_id SET NOT NULL'
-    );
   },
 
   async down(queryInterface, Sequelize) {
