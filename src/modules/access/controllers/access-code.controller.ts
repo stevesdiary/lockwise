@@ -6,21 +6,33 @@ import accessCodeService from '../services/access-code.service';
 import AccessLog from '../models/access-log.model';
 import { User } from '../../auth/models/user.model';
 import logger from '../../../shared/utils/logger';
-import { formatAccessCodeMessage, buildGoogleMapsSearchUrl } from '../../../shared/utils/address.util';
+import {
+  formatAccessCodeMessage,
+  buildGoogleMapsSearchUrl,
+  buildGoogleMapsDirectionsUrl,
+  coordsToString,
+  getResidentFullAddress,
+  getResidentUnitCoordinates,
+} from '../../../shared/utils/address.util';
 import { getOrCreateShortUrl, nullifyShortUrlForLog } from '../../../shared/utils/url-shortener.util';
 import { Estate } from '../../estate/models/estate.model';
+import { Gate } from '../../estate/models/gate.model';
 import notificationService from '../../../shared/services/notification.service';
 import pushNotificationService from '../../communication/services/push.notification.service';
 import { UserRole } from '../../../shared/constants/permissions';
+
+const buildNavUrl = (logId: string): string | null => {
+  const base = process.env.WEB_PORTAL_URL?.replace(/\/$/, '');
+  return base ? `${base}/nav/${logId}` : null;
+};
+
+const UNLIMITED_ACCESS_TYPES = ['domestic_staff', 'service', 'maintenance'];
 
 export const accessCodeController = {
   async getAccessCodes(req: AuthRequest, res: Response) {
     try {
       const userId = req.user?.id;
-
-      if (!userId) {
-        return res.status(401).json({ message: 'Unauthorized' });
-      }
+      if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
       const userRole = (req.user!.role as string)?.toLowerCase() || '';
       const isManager = ['master', 'super_admin', 'admin', 'manager'].includes(userRole);
@@ -34,15 +46,15 @@ export const accessCodeController = {
         include: isManager
           ? [{ model: User, as: 'user', attributes: ['id', 'first_name', 'last_name'] }]
           : [],
-        order: [['created_at', 'DESC']]
+        order: [['created_at', 'DESC']],
       });
 
       return res.status(200).json({
         success: true,
-        data: accessCodes.map(code => {
+        data: accessCodes.map((code) => {
           const json = code.toJSON() as any;
           return { ...json, created_at: json.created_at ?? json.createdAt };
-        })
+        }),
       });
     } catch (error: any) {
       logger.error('Get access codes error:', error);
@@ -54,25 +66,25 @@ export const accessCodeController = {
     try {
       const userId = req.user?.id;
       const estateId = req.user?.estate_id;
-      const { visitor_name, valid_until, valid_from, visitor_phone, access_type, is_multi_entry, max_entries, access_direction, headshot_url } = req.body;
 
-      if (!userId) {
-        return res.status(401).json({ message: 'Unauthorized' });
-      }
+      if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
       if (req.user?.role === UserRole.SECURITY) {
         return res.status(403).json({
           success: false,
-          message: 'Security personnels are not allowed to create access codes'
+          message: 'Security personnel are not allowed to create access codes',
         });
       }
 
       if (!estateId) {
         return res.status(403).json({
           success: false,
-          message: "You haven't joined an estate yet. Search for your estate using its estate code, complete your profile setup, and get approved by your estate manager before generating access codes.",
+          message:
+            "You haven't joined an estate yet. Search for your estate using its estate code, complete your profile setup, and get approved by your estate manager before generating access codes.",
         });
       }
+
+      const { visitor_name, valid_until, valid_from, visitor_phone, access_type, is_multi_entry, max_entries, access_direction, headshot_url } = req.body;
 
       if (!visitor_name || !valid_until) {
         return res.status(400).json({ message: 'visitor_name and valid_until are required' });
@@ -81,13 +93,11 @@ export const accessCodeController = {
       const code = Math.floor(100000 + Math.random() * 900000).toString();
       const validFromDate = valid_from ? new Date(valid_from) : new Date();
       const validUntilDate = new Date(valid_until);
-      
-      // Use estate-level address (not resident unit) as the destination shown to guests
+
       const estate = await Estate.findByPk(estateId, { attributes: ['name', 'city', 'state'] });
       const estateAddress = [estate?.name, estate?.city, estate?.state].filter(Boolean).join(', ');
 
-      const unlimitedTypes = ['domestic_staff', 'service', 'maintenance'];
-      const shouldAllowUnlimited = unlimitedTypes.includes(access_type);
+      const isUnlimited = UNLIMITED_ACCESS_TYPES.includes(access_type);
 
       const accessCode = await accessCodeService.generateCode({
         user_id: userId,
@@ -98,13 +108,12 @@ export const accessCodeController = {
         access_type,
         valid_from: validFromDate,
         valid_until: validUntilDate,
-        is_multi_entry: shouldAllowUnlimited ? true : (is_multi_entry || false),
-        max_entries: shouldAllowUnlimited ? null : (max_entries ?? (is_multi_entry ? null : undefined)),
+        is_multi_entry: isUnlimited ? true : (is_multi_entry || false),
+        max_entries: isUnlimited ? null : (max_entries ?? (is_multi_entry ? null : undefined)),
         access_direction: access_direction ?? 'entry',
         headshot_url: headshot_url ?? null,
       });
 
-      // Share message without maps URL — URL is generated lazily when user taps Share
       const shareMessage = formatAccessCodeMessage(
         visitor_name,
         code,
@@ -123,8 +132,9 @@ export const accessCodeController = {
           accessLogId: codeJson.id,
           estateAddress,
           destinationAddress: estateAddress || null,
-          shareMessage
-        }
+          navUrl: buildNavUrl(codeJson.id),
+          shareMessage,
+        },
       });
     } catch (error: any) {
       logger.error('Generate access code error:', error);
@@ -135,14 +145,11 @@ export const accessCodeController = {
   async validateCode(req: AuthRequest, res: Response) {
     try {
       const { code, scan_type } = req.body;
-
-      if (!code) {
-        return res.status(400).json({ message: 'Code is required' });
-      }
+      if (!code) return res.status(400).json({ message: 'Code is required' });
 
       const accessLog = await AccessLog.findOne({
         where: { access_code: code, status: 'active' },
-        include: [{ model: User, as: 'user', attributes: ['id', 'first_name', 'last_name', 'phone'] }]
+        include: [{ model: User, as: 'user', attributes: ['id', 'first_name', 'last_name', 'phone'] }],
       });
 
       if (!accessLog) {
@@ -150,7 +157,7 @@ export const accessCodeController = {
       }
 
       if (req.user?.estate_id && (accessLog as any).estate_id !== req.user.estate_id) {
-        return res.status(403).json({ success: false, message: 'This access code was not generated for your estate. Please ensure the resident belongs to this estate.' });
+        return res.status(403).json({ success: false, message: 'This access code was not generated for your estate.' });
       }
 
       const now = new Date();
@@ -163,7 +170,6 @@ export const accessCodeController = {
         return res.status(400).json({ success: false, message: 'Access code expired' });
       }
 
-      // 'exit'-only codes cannot be used for entry
       const direction = (accessLog as any).access_direction || 'entry';
       if (scan_type === 'entry' && direction === 'exit') {
         return res.status(403).json({ success: false, message: 'This code is for exit only and cannot be used for entry' });
@@ -177,10 +183,7 @@ export const accessCodeController = {
       return res.status(200).json({
         success: true,
         message: 'Access code validated',
-        data: {
-          ...((accessLog as any).toJSON?.() ?? accessLog),
-          remaining_entries: remainingEntries,
-        },
+        data: { ...((accessLog as any).toJSON?.() ?? accessLog), remaining_entries: remainingEntries },
       });
     } catch (error: any) {
       logger.error('Validate access code error:', error);
@@ -193,9 +196,7 @@ export const accessCodeController = {
       const { code, gate_id } = req.body;
       const securityId = req.user?.id;
 
-      if (!code) {
-        return res.status(400).json({ success: false, message: 'Code is required' });
-      }
+      if (!code) return res.status(400).json({ success: false, message: 'Code is required' });
 
       if (req.user?.role === UserRole.SECURITY) {
         const securityUser = await User.findByPk(securityId, { attributes: ['status'] });
@@ -204,91 +205,34 @@ export const accessCodeController = {
         }
       }
 
-      const accessLog = await AccessLog.findOne({
-        where: { access_code: code, status: 'active' },
-        include: [{ model: User, as: 'user', attributes: ['id', 'phone'] }]
-      });
-
-      if (!accessLog) {
-        return res.status(404).json({ success: false, message: 'Access code not found' });
-      }
-
-      if (req.user?.estate_id && (accessLog as any).estate_id !== req.user.estate_id) {
-        return res.status(403).json({ success: false, message: 'This access code was not generated for your estate. Please ensure the resident belongs to this estate.' });
-      }
-
-      const direction = (accessLog as any).access_direction as 'entry' | 'exit' | 'both';
-      const now = new Date();
-
-      if ((accessLog as any).valid_from && now < new Date((accessLog as any).valid_from)) {
-        return res.status(400).json({ success: false, message: 'Access code is not yet valid' });
-      }
-
-      // For 'both' codes: first scan = entry (entry_time not set yet), second scan = exit
-      const isExitScan =
-        direction === 'exit' ||
-        (direction === 'both' && (accessLog as any).entry_time != null);
-
-      const timeField = isExitScan ? 'exit_time' : 'entry_time';
-      const eventType = isExitScan ? 'exit' : 'entry';
-
-      const updateFields: any = { [timeField]: now, scanned_by: securityId };
-      if (gate_id) updateFields.gate_id = gate_id;
-
-      if ((accessLog as any).is_multi_entry) {
-        // Multi-entry: atomically increment used_entries; only mark 'used' when all entries are exhausted
-        await sequelize.transaction(async (t) => {
-          await accessLog.increment('used_entries', { transaction: t });
-          await accessLog.reload({ transaction: t });
-
-          const maxEntries = (accessLog as any).max_entries as number | null;
-          const usedEntries = (accessLog as any).used_entries as number;
-
-          if (maxEntries !== null && maxEntries !== undefined && usedEntries > maxEntries) {
-            await accessLog.decrement('used_entries', { transaction: t });
-            throw new Error('Maximum entries reached for this access code');
-          }
-
-          const isExhausted = maxEntries !== null && maxEntries !== undefined && usedEntries >= maxEntries;
-
-          await accessLog.update({
-            ...updateFields,
-            status: isExhausted ? 'used' : 'active',
-          }, { transaction: t });
-        });
-      } else {
-        await accessLog.update({
-          ...updateFields,
-          status: 'approved',
-        });
-      }
+      const { accessLog, isExitScan } = await accessCodeService.approveCode(
+        code,
+        securityId!,
+        gate_id,
+        req.user?.estate_id
+      );
 
       const guestName = accessLog.guest_name || 'Guest';
       const notifTitle = isExitScan ? 'Guest Exit' : 'Guest Entry';
       const notifBody = isExitScan
         ? `${guestName} has exited the estate`
         : `${guestName} has entered the estate`;
+      const eventType = isExitScan ? 'exit' : 'entry';
 
       if (accessLog.user_id) {
-        pushNotificationService.sendToUser(
-          accessLog.user_id,
-          notifTitle,
-          notifBody,
-          { type: eventType, code, status: 'approved' }
-        ).catch(err => logger.error('Push notification error:', err));
-      } else if (accessLog.user?.phone) {
-        notificationService.sendEntryNotification(
-          accessLog.user.phone,
-          guestName,
-          code,
-          'approved'
-        ).catch(err => logger.error('Notification error:', err));
+        pushNotificationService
+          .sendToUser(accessLog.user_id, notifTitle, notifBody, { type: eventType, code, status: 'approved' })
+          .catch((err) => logger.error('Push notification error:', err));
+      } else if ((accessLog as any).user?.phone) {
+        notificationService
+          .sendEntryNotification((accessLog as any).user.phone, guestName, code, 'approved')
+          .catch((err) => logger.error('Notification error:', err));
       }
 
       return res.status(200).json({
         success: true,
         message: isExitScan ? 'Exit approved' : 'Access approved',
-        data: accessLog
+        data: accessLog,
       });
     } catch (error: any) {
       if (error.message === 'Maximum entries reached for this access code') {
@@ -299,28 +243,70 @@ export const accessCodeController = {
     }
   },
 
-  async revokeCode(req: AuthRequest, res: Response) {
+  async rejectAccess(req: AuthRequest, res: Response) {
     try {
-      const { code } = req.params;
-      const userId = req.user?.id;
+      const { code, reason, gate_id } = req.body;
+      const securityId = req.user?.id;
 
-      const accessLog = await AccessLog.findOne({
-        where: { access_code: code, user_id: userId, status: { [Op.in]: ['active', 'pending'] } }
-      });
+      if (!code) return res.status(400).json({ success: false, message: 'Code is required' });
 
-      if (!accessLog) {
-        return res.status(404).json({ success: false, message: 'Access code not found or cannot be revoked' });
+      if (req.user?.role === UserRole.SECURITY) {
+        const securityUser = await User.findByPk(securityId, { attributes: ['status'] });
+        if (!securityUser || (securityUser as any).status !== 'active') {
+          return res.status(403).json({ success: false, message: 'Your account is inactive. Contact your estate manager.' });
+        }
       }
 
-      await accessLog.update({ status: 'revoked' });
+      const accessLog = await accessCodeService.rejectCode(
+        code,
+        securityId!,
+        reason,
+        gate_id,
+        req.user?.estate_id
+      );
 
-      // Nullify the shared Maps short URL so the link in the guest's message stops working
+      const guestName = accessLog.guest_name || 'Guest';
+      const direction = (accessLog as any).access_direction as 'entry' | 'exit' | 'both';
+      const isExitReject = direction === 'exit';
+
+      if (accessLog.user_id) {
+        pushNotificationService
+          .sendToUser(
+            accessLog.user_id,
+            isExitReject ? 'Guest Exit Denied' : 'Guest Entry Denied',
+            isExitReject ? `${guestName}'s exit was rejected` : `${guestName}'s entry was rejected`,
+            { type: isExitReject ? 'exit' : 'entry', code, status: 'rejected' }
+          )
+          .catch((err) => logger.error('Push notification error:', err));
+      } else if ((accessLog as any).user?.phone) {
+        notificationService
+          .sendEntryNotification((accessLog as any).user.phone, guestName, code, 'rejected')
+          .catch((err) => logger.error('Notification error:', err));
+      }
+
+      return res.status(200).json({ success: true, message: 'Access rejected', data: accessLog });
+    } catch (error: any) {
+      logger.error('Reject access error:', error);
+      return res.status(500).json({ success: false, message: 'Failed to reject access' });
+    }
+  },
+
+  async revokeCode(req: AuthRequest, res: Response) {
+    try {
+      const code = Array.isArray(req.params.code) ? req.params.code[0] : req.params.code;
+      const userId = req.user?.id;
+
+      const accessLog = await accessCodeService.revokeCode(code, userId!);
+
       nullifyShortUrlForLog(accessLog.id).catch(() => {});
 
       return res.status(200).json({ success: true, message: 'Access code revoked', data: accessLog });
     } catch (error: any) {
       logger.error('Revoke access code error:', error);
-      return res.status(500).json({ success: false, message: 'Failed to revoke access code' });
+      return res.status(error.message.includes('not found') ? 404 : 500).json({
+        success: false,
+        message: error.message || 'Failed to revoke access code',
+      });
     }
   },
 
@@ -330,7 +316,7 @@ export const accessCodeController = {
       const userId = req.user?.id;
 
       const accessLog = await AccessLog.findOne({
-        where: { id: logId, user_id: userId, status: { [Op.in]: ['active', 'pending'] } }
+        where: { id: logId, user_id: userId, status: { [Op.in]: ['active', 'pending'] } },
       });
 
       if (!accessLog) {
@@ -339,13 +325,13 @@ export const accessCodeController = {
 
       const estate = await Estate.findByPk(accessLog.estate_id, { attributes: ['name', 'city', 'state'] });
       const estateAddress = [estate?.name, estate?.city, estate?.state].filter(Boolean).join(', ');
-      const longMapsUrl = buildGoogleMapsSearchUrl(estateAddress);
 
-      let shortUrl = longMapsUrl;
+      const longUrl = buildNavUrl(logId) || buildGoogleMapsSearchUrl(estateAddress);
+      let shortUrl = longUrl;
       try {
-        shortUrl = await getOrCreateShortUrl(longMapsUrl, logId);
+        shortUrl = await getOrCreateShortUrl(longUrl, logId);
       } catch {
-        shortUrl = longMapsUrl;
+        shortUrl = longUrl;
       }
 
       const shareMessage = formatAccessCodeMessage(
@@ -369,10 +355,7 @@ export const accessCodeController = {
       const { code } = req.params;
       const userId = req.user?.id;
 
-      const accessLog = await AccessLog.findOne({
-        where: { access_code: code, user_id: userId }
-      });
-
+      const accessLog = await AccessLog.findOne({ where: { access_code: code, user_id: userId } });
       if (!accessLog) {
         return res.status(404).json({ success: false, message: 'Access code not found' });
       }
@@ -380,12 +363,12 @@ export const accessCodeController = {
       await accessLog.update({ status: 'used' });
 
       if (accessLog.user_id) {
-        pushNotificationService.sendToUser(
-          accessLog.user_id,
-          'Guest Check-in',
-          `${accessLog.guest_name || 'Guest'} has checked-in`,
-          { type: 'checkin', code }
-        ).catch(err => logger.error('Push notification error:', err));
+        pushNotificationService
+          .sendToUser(accessLog.user_id, 'Guest Check-in', `${accessLog.guest_name || 'Guest'} has checked-in`, {
+            type: 'checkin',
+            code,
+          })
+          .catch((err) => logger.error('Push notification error:', err));
       }
 
       return res.status(200).json({ success: true, message: 'Access confirmed', data: accessLog });
@@ -395,74 +378,87 @@ export const accessCodeController = {
     }
   },
 
-  async rejectAccess(req: AuthRequest, res: Response) {
+  async getGuestNav(req: AuthRequest, res: Response) {
     try {
-      const { code, reason, gate_id } = req.body;
-      const securityId = req.user?.id;
+      const token = Array.isArray(req.params.token) ? req.params.token[0] : req.params.token;
 
-      if (!code) {
-        return res.status(400).json({ success: false, message: 'Code is required' });
+      const accessLog = await AccessLog.findByPk(token);
+      if (!accessLog) {
+        return res.status(404).json({
+          success: false,
+          message: 'This visit pass could not be found. Please ask your host to resend the link.',
+        });
       }
 
-      if (req.user?.role === UserRole.SECURITY) {
-        const securityUser = await User.findByPk(securityId, { attributes: ['status'] });
-        if (!securityUser || (securityUser as any).status !== 'active') {
-          return res.status(403).json({ success: false, message: 'Your account is inactive. Contact your estate manager.' });
+      const estate = await Estate.findByPk(accessLog.estate_id, {
+        attributes: ['name', 'city', 'state', 'location_details'],
+      });
+      const estateName = estate?.name || null;
+
+      const now = new Date();
+      const hasEntered =
+        (accessLog as any).entry_time != null ||
+        accessLog.status === 'approved' ||
+        accessLog.status === 'used';
+
+      let status = accessLog.status;
+      if (!hasEntered && status === 'active' && accessLog.valid_until && now > new Date(accessLog.valid_until)) {
+        status = 'expired';
+      }
+
+      const terminal = ['expired', 'revoked', 'rejected'].includes(status);
+      const revealed = hasEntered && !terminal;
+
+      let gate: { label: string; maps_url: string } | null = null;
+      if (!terminal) {
+        const mainGate = await Gate.findOne({
+          where: { estate_id: accessLog.estate_id, gate_type: 'main', is_active: true },
+        });
+        const estateAddress = [estate?.name, estate?.city, estate?.state].filter(Boolean).join(', ');
+        const gateDest =
+          coordsToString(mainGate?.coordinates) ||
+          coordsToString(estate?.location_details?.coordinates) ||
+          estateAddress;
+        if (gateDest) {
+          gate = {
+            label: estateName ? `${estateName} — main gate` : 'Estate gate',
+            maps_url: buildGoogleMapsDirectionsUrl(gateDest),
+          };
         }
       }
 
-      const accessLog = await AccessLog.findOne({
-        where: { access_code: code, status: 'active' },
-        include: [{ model: User, as: 'user', attributes: ['id', 'phone'] }]
-      });
-
-      if (!accessLog) {
-        return res.status(404).json({ success: false, message: 'Access code not found' });
-      }
-
-      if (req.user?.estate_id && (accessLog as any).estate_id !== req.user.estate_id) {
-        return res.status(403).json({ success: false, message: 'This access code was not generated for your estate. Please ensure the resident belongs to this estate.' });
-      }
-
-      await accessLog.update({
-        status: 'rejected',
-        scanned_by: securityId,
-        remark: reason,
-        ...(gate_id ? { gate_id } : {}),
-      });
-
-      const guestName = accessLog.guest_name || 'Guest';
-      const rejDirection = (accessLog as any).access_direction as 'entry' | 'exit' | 'both';
-      const isExitReject = rejDirection === 'exit';
-      const rejEventType = isExitReject ? 'exit' : 'entry';
-      const rejBody = isExitReject
-        ? `${guestName}'s exit was rejected`
-        : `${guestName}'s entry was rejected`;
-
-      if (accessLog.user_id) {
-        pushNotificationService.sendToUser(
-          accessLog.user_id,
-          isExitReject ? 'Guest Exit Denied' : 'Guest Entry Denied',
-          rejBody,
-          { type: rejEventType, code, status: 'rejected' }
-        ).catch(err => logger.error('Push notification error:', err));
-      } else if (accessLog.user?.phone) {
-        notificationService.sendEntryNotification(
-          accessLog.user.phone,
-          guestName,
-          code,
-          'rejected'
-        ).catch(err => logger.error('Notification error:', err));
+      let residence: { label: string; maps_url: string } | null = null;
+      if (revealed && accessLog.user_id) {
+        const [coords, addressText] = await Promise.all([
+          getResidentUnitCoordinates(accessLog.user_id),
+          getResidentFullAddress(accessLog.user_id),
+        ]);
+        const residenceDest = coordsToString(coords) || addressText;
+        if (residenceDest) {
+          residence = {
+            label: addressText || 'Residence',
+            maps_url: buildGoogleMapsDirectionsUrl(residenceDest),
+          };
+        }
       }
 
       return res.status(200).json({
         success: true,
-        message: 'Access rejected',
-        data: accessLog
+        data: {
+          guest_name: accessLog.guest_name || 'Guest',
+          estate_name: estateName,
+          code: accessLog.access_code || '',
+          status,
+          valid_from: accessLog.valid_from ?? null,
+          valid_until: accessLog.valid_until ?? null,
+          revealed,
+          gate,
+          residence,
+        },
       });
     } catch (error: any) {
-      logger.error('Reject access error:', error);
-      return res.status(500).json({ success: false, message: 'Failed to reject access' });
+      logger.error('Guest nav lookup error:', error);
+      return res.status(500).json({ success: false, message: 'Failed to load visit pass' });
     }
-  }
+  },
 };

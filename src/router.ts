@@ -1,8 +1,9 @@
 import { Router } from "express";
 
-// Auth Module — individual route imports (no barrel for auth routes)
+// Auth Module — individual route imports
 import userRouter from "./modules/auth/routes/user.route";
 import loginRouter from "./modules/auth/routes/login.route";
+import twoFactorRouter from "./modules/auth/routes/two-factor.route";
 import googleAuthRouter from "./modules/auth/routes/google-auth.route";
 import passwordResetRouter from "./modules/auth/routes/password-reset.route";
 import phoneVerificationRouter from "./modules/auth/routes/phone-verification.route";
@@ -17,7 +18,7 @@ import { parkingRouter, evChargingRouter } from "./modules/parking";
 import { supportRouter, adminSupportRouter } from "./modules/support";
 import { notificationRouter, chatRouter, emergencyRouter, webPushRouter } from "./modules/communication";
 import { communityRouter, communityBoardRouter, faqRouter } from "./modules/community";
-import { analyticsRouter, dashboardRouter, adminDashboardRouter, monitoringRouter } from "./modules/analytics";
+import { analyticsRouter, adminDashboardRouter, monitoringRouter } from "./modules/analytics";
 import { uploadRouter, bulkUploadRouter } from "./modules/upload";
 import { addressRouter } from "./modules/location";
 import { mobileRouter } from "./modules/mobile";
@@ -29,8 +30,10 @@ import { electricityRouter } from "./modules/electricity";
 import { kudaRouter } from "./modules/kuda";
 import { walletRouter } from "./modules/wallet";
 
-// Worker routes (direct import — no barrel needed for internal-only route)
+// Non-barrel imports (single-use or new modules)
+import managerDashboardRouter from "./modules/analytics/routes/manager-dashboard.route";
 import workerRouter from "./modules/communication/routes/worker.route";
+import internalRouter from "./modules/internal/routes/internal.route";
 
 const router = Router();
 
@@ -41,6 +44,7 @@ router.use('/auth/google', googleAuthRouter);
 router.use('/auth/password', passwordResetRouter);
 router.use('/auth/phone', phoneVerificationRouter);
 router.use('/auth/email', emailVerificationRouter);
+router.use('/auth/2fa', twoFactorRouter);
 
 // Estate Routes
 router.use('/estate', estateRouter);
@@ -75,15 +79,15 @@ router.use('/push', webPushRouter);
 router.use('/chat', chatRouter);
 router.use('/emergency', emergencyRouter);
 
-// Community Routes — single mount for all community sub-routes
+// Community Routes
 router.use('/community', communityRouter);
 router.use('/community', communityBoardRouter);
 router.use('/faqs', faqRouter);
 
 // Analytics Routes
 router.use('/analytics', analyticsRouter);
-router.use('/dashboard', dashboardRouter);
 router.use('/admin/dashboard', adminDashboardRouter);
+router.use('/manager/dashboard', managerDashboardRouter);
 router.use('/monitoring', monitoringRouter);
 
 // Upload Routes
@@ -123,5 +127,11 @@ router.use('/kuda', kudaRouter);
 
 // Worker Routes (QStash delivery endpoints)
 router.use('/workers', workerRouter);
+
+// Internal routes (periscope gateway — service-token auth, not user auth)
+router.use('/internal', internalRouter);
+
+// Legacy route for backward compatibility
+router.use("/log", loginRouter);
 
 export default router;

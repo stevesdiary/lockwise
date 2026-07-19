@@ -138,6 +138,25 @@ export class User extends Model<User> {
   })
   declare residentProfile: Resident;
 
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  })
+  declare two_factor_enabled: boolean;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  declare two_factor_secret: string | null;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+  })
+  declare two_factor_backup_codes: string | null;
+
   @HasMany(() => Payment)
   declare payments: Payment[];
 }

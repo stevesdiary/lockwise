@@ -165,12 +165,10 @@ export const communityController = {
         title: title?.trim() || null,
       });
 
-      pushNotificationService.sendToEstate(user.estate_id, {
-        title: `📢 ${title?.trim() || 'New Announcement'}`,
-        message: message.trim(),
-        type: 'system_alert',
-        data: { message_id: announcement.id, is_announcement: true },
-      }).catch(() => {});
+      pushNotificationService.sendEmergencyAlert(
+        user.estate_id,
+        `📢 ${title?.trim() || 'New Announcement'}: ${message.trim()}`
+      ).catch(() => {});
 
       res.json({ success: true, data: announcement });
     } catch (error) {

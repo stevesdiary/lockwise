@@ -7,7 +7,9 @@ import { Street } from "../../estate/models/street.model";
 import { Estate } from "../../estate/models/estate.model";
 import sessionService from "./session.service";
 import { createAccessToken, createRefreshToken } from "../../../shared/utils/jwt-utils";
+import jwt from 'jsonwebtoken';
 
+const TWO_FA_ROLES = ['admin', 'support', 'super_admin', 'manager'];
 const getBcrypt = async () => (await import('bcryptjs')).default;
 
 export const loginUser = async (email: string, password: string) => {
@@ -46,6 +48,30 @@ export const loginUser = async (email: string, password: string) => {
     if (!isValidPassword) {
       return { statusCode: 401, message: 'Invalid email or password' };
     }
+
+    const userRole = user.role?.role || 'resident';
+
+    // 2FA check — if enabled, return a short-lived 2FA token instead of full access
+    if (user.two_factor_enabled) {
+      const twoFactorToken = jwt.sign(
+        { userId: user.id, purpose: '2fa' },
+        process.env.JWT_SECRET || 'secret',
+        { expiresIn: '5m' }
+      );
+
+      return {
+        statusCode: 200,
+        message: 'Two-factor authentication required',
+        data: {
+          requires_2fa: true,
+          two_factor_token: twoFactorToken,
+          userId: user.id,
+        }
+      };
+    }
+
+    // Prompt flag — eligible roles without 2FA set up
+    const should_prompt_2fa = TWO_FA_ROLES.includes(userRole.toLowerCase()) && !user.two_factor_enabled;
 
     const sessionData = await sessionService.createSession(user.id, {
       userId: user.id,
@@ -100,7 +126,8 @@ export const loginUser = async (email: string, password: string) => {
           street_name: unit?.street?.name ?? null,
         },
         token
-      }
+      },
+      ...(should_prompt_2fa && { prompt_2fa_setup: true })
     };
   } catch (error) {
     throw error;

@@ -1,7 +1,7 @@
 import { EmergencyAlert } from "../models/emergency.model";
 import { User } from "../../auth/models/user.model";
 import { Resident } from "../../estate/models/resident.model";
-import pushNotificationService from "./push.notification.service";
+import pushNotificationService from './push.notification.service';
 import { saveToRedis } from "../../../shared/core/redis";
 
 class EmergencyNotificationService {
@@ -41,17 +41,12 @@ class EmergencyNotificationService {
     }
 
     const notificationPromises = users.map((user: any) =>
-      pushNotificationService.sendToUser(user.id, {
-        title: `🚨 EMERGENCY: ${alert.type.toUpperCase()}`,
-        message: `${alert.description} at ${alert.location}. Please stay safe and follow emergency procedures.`,
-        type: "system_alert",
-        data: {
-          alert_id: alert.id,
-          emergency_type: alert.type,
-          location: alert.location,
-          priority: "urgent",
-        },
-      })
+      pushNotificationService.sendToUser(
+        user.id,
+        `🚨 EMERGENCY: ${alert.type.toUpperCase()}`,
+        `${alert.description} at ${alert.location}. Please stay safe and follow emergency procedures.`,
+        { alert_id: alert.id, emergency_type: alert.type, location: alert.location, priority: 'urgent', type: 'emergency' }
+      )
     );
 
     await Promise.all(notificationPromises);
@@ -84,12 +79,12 @@ class EmergencyNotificationService {
         : `⚠️ Emergency status updated to: ${status}`;
 
     const notificationPromises = users.map((user: any) =>
-      pushNotificationService.sendToUser(user.id, {
-        title: "Emergency Update",
-        message: updateMessage,
-        type: "system_alert",
-        data: { alert_id: alertId, status },
-      })
+      pushNotificationService.sendToUser(
+        user.id,
+        'Emergency Update',
+        updateMessage,
+        { alert_id: alertId, status, type: 'emergency' }
+      )
     );
 
     await Promise.all(notificationPromises);
@@ -103,12 +98,12 @@ class EmergencyNotificationService {
     });
 
     const notificationPromises = users.map((user: any) =>
-      pushNotificationService.sendToUser(user.id, {
-        title: "🚨 CRITICAL ALERT",
+      pushNotificationService.sendToUser(
+        user.id,
+        '🚨 CRITICAL ALERT',
         message,
-        type: "system_alert",
-        data: { priority: "critical" },
-      })
+        { priority: 'critical', type: 'emergency' }
+      )
     );
 
     await Promise.all(notificationPromises);

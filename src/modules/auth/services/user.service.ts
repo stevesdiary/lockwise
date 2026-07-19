@@ -298,6 +298,18 @@ export const approveJoinRequest = async (targetUserId: string, approverId: strin
       await sessionService.updateEstateIdForUser(targetUserId, target.estate_id).catch(() => {});
     }
 
+    // Start 30-day trial on first resident approval; always sync resident count
+    if (target.estate_id) {
+      const { default: enhancedSubscriptionService } = await import('../../payment/services/enhanced-subscription.service');
+      const approvedCount = await User.count({
+        where: { estate_id: target.estate_id, user_type: 'resident', status: 'active' } as any,
+      });
+      if (approvedCount === 1) {
+        enhancedSubscriptionService.startTrialForEstate(target.estate_id).catch(() => {});
+      }
+      enhancedSubscriptionService.updateResidentCount(target.estate_id).catch(() => {});
+    }
+
     const pushNotificationService = (await import('../../communication/services/push.notification.service')).default;
     pushNotificationService.sendToUser(
       targetUserId,

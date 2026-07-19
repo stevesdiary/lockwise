@@ -82,6 +82,18 @@ class PushNotificationService {
     return await this.sendToUser(userId, notificationData);
   }
 
+  // Send emergency alert to all users in an estate
+  async sendEmergencyAlert(estateId: string, message: string) {
+    const users = await User.findAll({
+      where: { estate_id: estateId },
+      attributes: ['id']
+    });
+
+    await Promise.all(
+      users.map(user => this.sendToUser(user.id, 'Emergency Alert', message, { type: 'emergency' }))
+    );
+  }
+
   // Get user notifications
   async getUserNotifications(userId: string, limit: number = 20) {
     return await Notification.findAll({

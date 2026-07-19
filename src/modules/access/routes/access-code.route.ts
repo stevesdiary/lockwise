@@ -4,13 +4,19 @@ import { accessCodeController } from '../controllers/access-code.controller';
 
 const router = Router();
 
-router.post('/generate', authenticateToken, requireResident, accessCodeController.generateCode);
-router.post('/validate', authenticateToken, accessCodeController.validateCode);
-router.post('/approve', authenticateToken, accessCodeController.approveAccess);
-router.post('/reject', authenticateToken, accessCodeController.rejectAccess);
-router.get('/:logId/share-url', authenticateToken, requireResident, accessCodeController.getShareUrl);
-router.post('/:code/confirm', authenticateToken, accessCodeController.confirmAccess);
-router.post('/:code/revoke', authenticateToken, requireResident, accessCodeController.revokeCode);
-router.get('/', authenticateToken, accessCodeController.getAccessCodes);
+// Public — guest visit-pass page (keyed by unguessable AccessLog UUID)
+router.get('/nav/:token', accessCodeController.getGuestNav);
+
+// Authenticated routes
+router.use(authenticateToken);
+
+router.get('/', accessCodeController.getAccessCodes);
+router.post('/generate', accessCodeController.generateCode);
+router.post('/validate', accessCodeController.validateCode);
+router.post('/approve', accessCodeController.approveAccess);
+router.post('/reject', accessCodeController.rejectAccess);
+router.get('/:logId/share-url', accessCodeController.getShareUrl);
+router.post('/:code/confirm', accessCodeController.confirmAccess);
+router.post('/:code/revoke', accessCodeController.revokeCode);
 
 export default router;
