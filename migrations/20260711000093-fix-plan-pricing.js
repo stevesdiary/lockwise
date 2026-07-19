@@ -81,6 +81,11 @@ const PLANS = [
 
 module.exports = {
   async up(queryInterface, Sequelize) {
+    // Temporarily drop NOT NULL on plan_id so we can null out old references
+    await queryInterface.sequelize.query(
+      'ALTER TABLE subscriptions ALTER COLUMN plan_id DROP NOT NULL'
+    );
+
     // Null out plan references so FK constraints don't block the delete
     await queryInterface.sequelize.query(
       'UPDATE subscriptions SET plan_id = NULL WHERE plan_id IS NOT NULL'
@@ -98,6 +103,11 @@ module.exports = {
       created_at: now,
       updated_at: now,
     })));
+
+    // Re-add NOT NULL constraint on plan_id
+    await queryInterface.sequelize.query(
+      'ALTER TABLE subscriptions ALTER COLUMN plan_id SET NOT NULL'
+    );
   },
 
   async down(queryInterface, Sequelize) {
