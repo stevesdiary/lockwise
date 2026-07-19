@@ -2,7 +2,7 @@ import { Response } from 'express';
 import db from '../../../shared/core/database';
 import { QueryTypes } from 'sequelize';
 import { encryptionService } from '../../../shared/services/encryption.service';
-import { AuthRequest } from '../../auth/middleware/auth.middleware';
+import { AuthRequest } from '../../../shared/middleware/auth.middleware';
 
 export const apiKeyController = {
   async generateKey(req: AuthRequest, res: Response) {

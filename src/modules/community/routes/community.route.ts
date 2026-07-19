@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { communityController } from '../controllers/community.controller';
-import { authenticateToken } from '../../auth/middleware/auth.middleware';
+import { authenticateToken } from '../../../shared/middleware/auth.middleware';
 import fileUploadService from '../../upload/services/file-upload.service';
 
 const router = Router();

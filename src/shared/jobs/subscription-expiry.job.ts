@@ -3,7 +3,7 @@ import { Op } from 'sequelize';
 import { Subscription } from '../../modules/payment/models/subscription.model';
 import { User } from '../../modules/auth/models/user.model';
 import { brevoEmailService } from '../../modules/communication/services/brevo.email.service';
-import { pushNotificationService } from '../../modules/communication/services/push-notification.service';
+import pushNotificationService from '../../modules/communication/services/push.notification.service';
 import smsService from '../../modules/communication/services/sms.service';
 import subscriptionEventService from '../../modules/payment/services/subscription-event.service';
 import logger from '../utils/logger';

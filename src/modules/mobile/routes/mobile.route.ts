@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { authenticateToken } from '../../auth/middleware/auth.middleware';
+import { authenticateToken } from '../../../shared/middleware/auth.middleware';
 import { deviceController } from '../controllers/device.controller';
-import { AuthRequest } from '../../auth/middleware/auth.middleware';
-import { pushNotificationService } from '../../communication/services/push-notification.service';
+import { AuthRequest } from '../../../shared/middleware/auth.middleware';
+import pushNotificationService from '../../communication/services/push.notification.service';
 
 const router = Router();
 

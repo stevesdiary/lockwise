@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { authenticateToken, requireManager } from '../../auth/middleware/auth.middleware';
-import { requirePermission } from '../../auth/middleware/permission.middleware';
+import { authenticateToken, requireManager } from '../../../shared/middleware/auth.middleware';
+import { requirePermission } from '../../../shared/middleware/permission.middleware';
 import { Resource, Permission } from '../../../shared/constants/permissions';
 import { 
   createAccessRecord, 

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import emergencyController from '../controllers/emergency.controller';
-import { authenticateToken } from '../../auth/middleware/auth.middleware';
-import { requireAdmin } from '../../auth/middleware/auth.middleware';
+import { authenticateToken } from '../../../shared/middleware/auth.middleware';
+import { requireAdmin } from '../../../shared/middleware/auth.middleware';
 
 const router = Router();
 

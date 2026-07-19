@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import billsController from '../controllers/bills.controller';
-import { authenticateToken } from '../../auth/middleware/auth.middleware';
+import { authenticateToken } from '../../../shared/middleware/auth.middleware';
 
 const router = Router();
 

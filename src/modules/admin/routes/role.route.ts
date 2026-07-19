@@ -1,6 +1,6 @@
 import { Router, Request as ExpressRequest, Response } from "express";
 import roleController from "../controllers/role.controller";
-import { authenticateToken, requireAdmin } from "../../auth/middleware/auth.middleware";
+import { authenticateToken, requireAdmin } from "../../../shared/middleware/auth.middleware";
 import { verifyCsrfToken } from "../../../shared/middleware/csrf.middleware";
 
 const roleRouter = Router();

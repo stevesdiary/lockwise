@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { Op } from 'sequelize';
-import { AuthRequest } from '../../auth/middleware/auth.middleware';
+import { AuthRequest } from '../../../shared/middleware/auth.middleware';
 import sequelize from '../../../shared/core/database';
 import accessCodeService from '../services/access-code.service';
 import AccessLog from '../models/access-log.model';
@@ -10,7 +10,7 @@ import { formatAccessCodeMessage, buildGoogleMapsSearchUrl } from '../../../shar
 import { getOrCreateShortUrl, nullifyShortUrlForLog } from '../../../shared/utils/url-shortener.util';
 import { Estate } from '../../estate/models/estate.model';
 import notificationService from '../../../shared/services/notification.service';
-import { pushNotificationService } from '../../communication/services/push-notification.service';
+import pushNotificationService from '../../communication/services/push.notification.service';
 import { UserRole } from '../../../shared/constants/permissions';
 
 export const accessCodeController = {
@@ -153,7 +153,13 @@ export const accessCodeController = {
         return res.status(403).json({ success: false, message: 'This access code was not generated for your estate. Please ensure the resident belongs to this estate.' });
       }
 
-      if (accessLog.valid_until && new Date() > new Date(accessLog.valid_until)) {
+      const now = new Date();
+
+      if (accessLog.valid_from && now < new Date(accessLog.valid_from)) {
+        return res.status(400).json({ success: false, message: 'Access code is not yet valid' });
+      }
+
+      if (accessLog.valid_until && now > new Date(accessLog.valid_until)) {
         return res.status(400).json({ success: false, message: 'Access code expired' });
       }
 
@@ -213,6 +219,10 @@ export const accessCodeController = {
 
       const direction = (accessLog as any).access_direction as 'entry' | 'exit' | 'both';
       const now = new Date();
+
+      if ((accessLog as any).valid_from && now < new Date((accessLog as any).valid_from)) {
+        return res.status(400).json({ success: false, message: 'Access code is not yet valid' });
+      }
 
       // For 'both' codes: first scan = entry (entry_time not set yet), second scan = exit
       const isExitScan =

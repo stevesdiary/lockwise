@@ -10,8 +10,8 @@ export * from './services/password-reset.service';
 export * from './services/session.service';
 export * from './services/verify.service';
 
-export * from './middleware/auth.middleware';
-export * from './middleware/permission.middleware';
+export * from '../../shared/middleware/auth.middleware';
+export * from '../../shared/middleware/permission.middleware';
 
 export * from './models/user.model';
 export * from './models/role.model';

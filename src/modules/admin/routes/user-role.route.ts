@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { authenticateToken } from '../../auth/middleware/auth.middleware';
-import { requirePermission } from '../../auth/middleware/permission.middleware';
+import { authenticateToken } from '../../../shared/middleware/auth.middleware';
+import { requirePermission } from '../../../shared/middleware/permission.middleware';
 import { Resource, Permission } from '../../../shared/constants/permissions';
 import { updateUserRole } from '../controllers/user-role.controller';
 

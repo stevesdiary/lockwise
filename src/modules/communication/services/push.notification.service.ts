@@ -17,7 +17,14 @@ class PushNotificationService {
   }
 
   // Send push notification to specific user
-  async sendToUser(userId: string, notificationData: PushNotificationData) {
+  // Supports both (userId, PushNotificationData) and (userId, title, body, data?) overloads
+  async sendToUser(userId: string, notificationData: PushNotificationData): Promise<any>;
+  async sendToUser(userId: string, title: string, body: string, data?: any): Promise<any>;
+  async sendToUser(userId: string, titleOrData: string | PushNotificationData, body?: string, data?: any): Promise<any> {
+    const notificationData: PushNotificationData = typeof titleOrData === 'string'
+      ? { title: titleOrData, message: body || '', type: data?.type ?? 'system_alert', data }
+      : titleOrData;
+
     try {
       // Save to database
       const notification = await Notification.create({

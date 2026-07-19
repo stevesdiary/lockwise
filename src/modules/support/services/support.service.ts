@@ -3,7 +3,7 @@ import { User } from '../../auth/models/user.model';
 import { Role } from '../../auth/models/role.model';
 import { Estate } from '../../estate/models/estate.model';
 import notificationService from '../../communication/services/notification.service';
-import { pushNotificationService } from '../../communication/services/push-notification.service';
+import pushNotificationService from '../../communication/services/push.notification.service';
 
 export const supportService = {
   async getSupportInfo(estateId?: string) {

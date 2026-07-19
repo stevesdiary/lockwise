@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import adminSupportController from '../controllers/admin.support.controller';
-import { authenticateToken } from '../../auth/middleware/auth.middleware';
-import { authorizeRoles } from '../../auth/middleware/permission.middleware';
+import { authenticateToken } from '../../../shared/middleware/auth.middleware';
+import { authorizeRoles } from '../../../shared/middleware/permission.middleware';
 
 const router = Router();
 

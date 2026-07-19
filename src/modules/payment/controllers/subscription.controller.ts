@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { AuthRequest } from '../../auth/middleware/auth.middleware';
+import { AuthRequest } from '../../../shared/middleware/auth.middleware';
 import enhancedSubscriptionService from '../services/enhanced-subscription.service';
 import { Plan } from '../models/plan.model';
 

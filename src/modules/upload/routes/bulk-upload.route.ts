@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import bulkUploadController from '../controllers/bulk-upload.controller';
 import fileUploadService from '../services/file-upload.service';
-import { authenticateToken, requireAdmin, requireManager } from '../../auth/middleware/auth.middleware';
+import { authenticateToken, requireAdmin, requireManager } from '../../../shared/middleware/auth.middleware';
 
 const bulkUploadRouter = Router();
 

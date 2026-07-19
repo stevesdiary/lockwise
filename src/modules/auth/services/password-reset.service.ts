@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { User } from '../../auth/models/user.model';
 import notificationService from '../../communication/services/notification.service';
-import { pushNotificationService } from '../../communication/services/push-notification.service';
+import pushNotificationService from '../../communication/services/push.notification.service';
 import { deepLinkService } from '../../mobile/services/deep-link.service';
 
 const getBcrypt = async () => (await import('bcryptjs')).default;

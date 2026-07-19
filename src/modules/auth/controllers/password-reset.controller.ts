@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { passwordResetService } from '../services/password-reset.service';
-import { AuthRequest } from '../middleware/auth.middleware';
+import { AuthRequest } from '../../../shared/middleware/auth.middleware';
 import { User } from '../models/user.model';
 
 const getBcrypt = async () => (await import('bcryptjs')).default;

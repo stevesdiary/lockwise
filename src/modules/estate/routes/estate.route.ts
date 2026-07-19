@@ -1,6 +1,6 @@
 import { Router, Request as ExpressRequest, Response } from 'express';
 import estateController from '../controllers/estate.controller';
-import { authenticateToken, requireManager, requireAdmin } from '../../auth/middleware/auth.middleware';
+import { authenticateToken, requireManager, requireAdmin } from '../../../shared/middleware/auth.middleware';
 import { verifyUser } from '../../../shared/middleware/verify-user.middleware';
 import estateInvitationService from '../services/estate-invitation.service';
 import { asString } from '../../../shared/utils/param.util';

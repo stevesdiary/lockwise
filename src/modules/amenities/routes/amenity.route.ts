@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { amenityController } from '../controllers/amenity.controller';
-import { authenticateToken, requireRole } from '../../auth/middleware/auth.middleware';
-import { rateLimiters } from '../../admin/middleware/rate-limit.middleware';
+import { authenticateToken, requireRole } from '../../../shared/middleware/auth.middleware';
+import { rateLimiters } from '../../../shared/middleware/rate-limit.middleware';
 import { UserRole } from '../../auth/types/user.types';
 
 const router = Router();

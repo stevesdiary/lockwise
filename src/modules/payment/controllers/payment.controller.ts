@@ -63,10 +63,13 @@ const paymentController = {
       }
       
       // Send real-time notification
-      await realTimeNotificationService.sendNotification(
-        req.user.id,
-        `Payment of ${paymentData.amount} ${paymentData.currency} initiated` // message
-      );
+      await realTimeNotificationService.sendNotification({
+        id: `payment_${Date.now()}`,
+        title: 'Payment Initiated',
+        message: `Payment of ${paymentData.amount} ${paymentData.currency} initiated`,
+        type: 'info',
+        userId: req.user.id
+      });
       
       return res.status(paymentResult.statusCode).json(paymentResult);
     } catch (error) {

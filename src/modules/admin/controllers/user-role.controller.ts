@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { User } from '../../auth/models/user.model';
 import { Role } from '../../auth/models/role.model';
 import { asString } from '../../../shared/utils/param.util';
-import { AuthRequest } from '../../auth/middleware/auth.middleware';
+import { AuthRequest } from '../../../shared/middleware/auth.middleware';
 
 export const updateUserRole = async (req: AuthRequest, res: Response) => {
   try {

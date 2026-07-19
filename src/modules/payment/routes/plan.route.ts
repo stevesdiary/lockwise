@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { PlanController } from '../controllers/plan.controller';
 import { asyncHandler } from '../../../shared/middleware/error-handler.middleware';
-import { authenticateToken, requireAdmin } from '../../auth/middleware/auth.middleware';
+import { authenticateToken, requireAdmin } from '../../../shared/middleware/auth.middleware';
 
 const planRouter = Router();
 
