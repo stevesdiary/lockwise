@@ -8,8 +8,8 @@ export const collectionsController = {
     try {
       const user = req.user!;
       if (!user.estate_id) return res.status(400).json({ error: 'No estate linked' });
-      const fee = await collectionsService.createFee(user.estate_id, user.id, req.body);
-      res.status(201).json({ success: true, data: fee });
+      const { fee, invoices_created } = await collectionsService.createFee(user.estate_id, user.id, req.body);
+      res.status(201).json({ success: true, data: { ...fee.toJSON(), invoices_created } });
     } catch (error) { res.status(500).json({ error: (error as Error).message }); }
   },
 

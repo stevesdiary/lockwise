@@ -28,13 +28,15 @@ class CollectionsService {
       penalty_amount: data.penalty_amount ?? 0,
     } as any);
 
+    let invoicesCreated = 0;
     try {
-      await this.generateInvoices(estateId, fee.id);
+      invoicesCreated = await this.generateInvoices(estateId, fee.id);
+      logger.info(`[collections] Generated ${invoicesCreated} invoice(s) for fee "${fee.name}"`);
     } catch (error) {
       logger.error('[collections] Failed to generate invoices for new fee:', error);
     }
 
-    return fee;
+    return { fee, invoices_created: invoicesCreated };
   }
 
   async updateFee(feeId: string, estateId: string, data: Partial<{
