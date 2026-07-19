@@ -325,7 +325,7 @@ export const approveJoinRequest = async (targetUserId: string, approverId: strin
       })();
     }
 
-    const { pushNotificationService } = await import('../../communication/services/push-notification.service');
+    const pushNotificationService = (await import('../../communication/services/push.notification.service')).default;
     pushNotificationService.sendToUser(
       targetUserId,
       'Join Request Approved',
