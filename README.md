@@ -31,5 +31,3 @@ Lockwise is a property access management platform for residential estates. It ce
 4. Security validates the visitor at the gate, records entry and exit, and the system updates access status and logs in real time.
 5. Residents use amenities, parking, EV charging, and community features; payments and subscriptions are managed through the platform.
 6. Support handles tickets and chat requests while admins monitor dashboards, analytics, referrals, and emergency alerts.
-
-~/Documents/Github/lockwise/src/modules/mobile/models/user-device.model.ts

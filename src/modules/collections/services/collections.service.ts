@@ -6,6 +6,7 @@ import { User } from '../../auth/models/user.model';
 import walletService from '../../wallet/services/wallet.service';
 import { estateWalletService } from '../../kuda/services/estate-wallet.service';
 import NotificationService from '../../communication/services/notification.service';
+import logger from '../../../shared/utils/logger';
 
 class CollectionsService {
   // ─── Fee CRUD ───
@@ -14,7 +15,7 @@ class CollectionsService {
     name: string; description?: string; amount: number; frequency: string;
     due_day?: number; is_mandatory?: boolean; grace_period_days?: number; penalty_amount?: number;
   }) {
-    return EstateFee.create({
+    const fee = await EstateFee.create({
       estate_id: estateId,
       created_by: createdBy,
       name: data.name,
@@ -26,6 +27,14 @@ class CollectionsService {
       grace_period_days: data.grace_period_days ?? 7,
       penalty_amount: data.penalty_amount ?? 0,
     } as any);
+
+    try {
+      await this.generateInvoices(estateId, fee.id);
+    } catch (error) {
+      logger.error('[collections] Failed to generate invoices for new fee:', error);
+    }
+
+    return fee;
   }
 
   async updateFee(feeId: string, estateId: string, data: Partial<{
@@ -50,7 +59,7 @@ class CollectionsService {
 
   // ─── Invoice Generation ───
 
-  async generateInvoices(estateId: string, feeId: string, billingPeriod: string): Promise<number> {
+  async generateInvoices(estateId: string, feeId: string, billingPeriod?: string): Promise<number> {
     const fee = await EstateFee.findOne({ where: { id: feeId, estate_id: estateId, is_active: true } });
     if (!fee) throw new Error('Fee not found or inactive');
 
@@ -60,10 +69,12 @@ class CollectionsService {
     const dueDate = new Date(now.getFullYear(), now.getMonth(), fee.due_day);
     if (dueDate < now) dueDate.setMonth(dueDate.getMonth() + 1);
 
+    const period = billingPeriod || `${dueDate.getFullYear()}-${String(dueDate.getMonth() + 1).padStart(2, '0')}`;
+
     let created = 0;
     for (const resident of residents) {
       const [, wasCreated] = await EstateInvoice.findOrCreate({
-        where: { estate_id: estateId, fee_id: feeId, user_id: resident.id, billing_period: billingPeriod },
+        where: { estate_id: estateId, fee_id: feeId, user_id: resident.id, billing_period: period },
         defaults: {
           estate_id: estateId,
           fee_id: feeId,
@@ -71,7 +82,7 @@ class CollectionsService {
           amount: fee.amount,
           due_date: dueDate.toISOString().split('T')[0],
           status: 'pending',
-          billing_period: billingPeriod,
+          billing_period: period,
         } as any,
       });
       if (wasCreated) created++;
