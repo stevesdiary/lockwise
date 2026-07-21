@@ -16,7 +16,7 @@ import { paymentRouter, planRouter, referralRouter, webhookRouter, subscriptionR
 import { amenityRouter, reservationRouter } from "./modules/amenities";
 import { parkingRouter, evChargingRouter } from "./modules/parking";
 import { supportRouter, adminSupportRouter } from "./modules/support";
-import { notificationRouter, chatRouter, emergencyRouter, webPushRouter } from "./modules/communication";
+import { notificationRouter, chatRouter, emergencyRouter, webPushRouter, newsletterRouter, demoRequestRouter } from "./modules/communication";
 import { communityRouter, communityBoardRouter, faqRouter } from "./modules/community";
 import { analyticsRouter, adminDashboardRouter, monitoringRouter } from "./modules/analytics";
 import { uploadRouter, bulkUploadRouter } from "./modules/upload";
@@ -78,6 +78,8 @@ router.use('/notifications', notificationRouter);
 router.use('/push', webPushRouter);
 router.use('/chat', chatRouter);
 router.use('/emergency', emergencyRouter);
+router.use('/newsletter', newsletterRouter);
+router.use('/demo-request', demoRequestRouter);
 
 // Community Routes
 router.use('/community', communityRouter);
