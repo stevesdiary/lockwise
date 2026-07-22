@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { AuthRequest } from '../../../shared/middleware/auth.middleware';
+import { AuthRequest, requireAdmin } from '../../../shared/middleware/auth.middleware';
 import enhancedSubscriptionService from '../services/enhanced-subscription.service';
 import { Plan } from '../models/plan.model';
 
@@ -171,6 +171,21 @@ class SubscriptionController {
         statusCode: 500,
         status: 'error',
         message: error.message || 'Failed to get available plans',
+      });
+    }
+  }
+
+  async deleteSubscription(req: AuthRequest, res: Response) {
+    try {
+      const estateId = Array.isArray(req.params.estateId) ? req.params.estateId[0] : req.params.estateId;
+      const result = await enhancedSubscriptionService.deleteSubscription(estateId);
+      return res.status(result.statusCode).json(result);
+    } catch (error: any) {
+      console.error('Delete subscription error:', error);
+      return res.status(500).json({
+        statusCode: 500,
+        status: 'error',
+        message: error.message || 'Failed to delete subscription',
       });
     }
   }

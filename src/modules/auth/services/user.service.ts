@@ -6,6 +6,7 @@ import emailVerificationService from './email-verification.service';
 import sessionService from './session.service';
 import { Estate } from '../../estate/models/estate.model';
 import { Resident } from '../../estate/models/resident.model';
+import logger from '../../../shared/utils/logger';
 
 const userRepository = new UserRepository();
 const getBcrypt = async () => (await import('bcryptjs')).default;
@@ -321,7 +322,9 @@ export const approveJoinRequest = async (targetUserId: string, approverId: strin
           for (const fee of fees) {
             await collectionsService.generateInvoices(target.estate_id!, fee.id);
           }
-        } catch { /* non-critical */ }
+        } catch (error) {
+          logger.error('[auth] Failed to generate invoices after resident approval:', error);
+        }
       })();
     }
 
