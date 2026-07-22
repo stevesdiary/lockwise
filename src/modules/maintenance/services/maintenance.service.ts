@@ -1,11 +1,13 @@
 import { MaintenanceRequest, MaintenanceComment } from '../models/maintenance.model';
 import { User } from '../../auth/models/user.model';
 import { Role } from '../../auth/models/role.model';
-import { Op } from 'sequelize';
 import pushNotificationService from '../../communication/services/push.notification.service';
 import { CreateMaintenanceRequest, MaintenanceStatus } from '../types/maintenance.types';
 
 const MANAGER_ROLES = ['master', 'super_admin', 'admin', 'manager'];
+const VALID_STATUSES: MaintenanceStatus[] = ['open', 'in_progress', 'resolved', 'closed'];
+const MAX_LIST_LIMIT = 50;
+const DEFAULT_LIST_LIMIT = 20;
 
 export const maintenanceService = {
   async submitRequest(userId: string, estateId: string, data: CreateMaintenanceRequest) {
@@ -30,7 +32,7 @@ export const maintenanceService = {
         pushNotificationService.sendToUser(
           manager.id,
           'New Issue Reported',
-          `New issue reported: ${data.title}`,
+          'New issue reported: ' + data.title,
           { type: 'maintenance_request', request_id: request.id }
         ).catch(() => {});
       }
@@ -39,7 +41,7 @@ export const maintenanceService = {
     return request;
   },
 
-  async listRequests(userId: string, estateId: string, role: string, statusFilter?: MaintenanceStatus) {
+  async listRequests(userId: string, estateId: string, role: string, statusFilter?: MaintenanceStatus, limit?: number, offset?: number) {
     const where: any = {};
 
     if (statusFilter) {
@@ -59,17 +61,32 @@ export const maintenanceService = {
       delete where.submitted_by;
     }
 
-    return MaintenanceRequest.findAll({
+    const safeLimit = Math.min(Math.max(Number(limit) || DEFAULT_LIST_LIMIT, 1), MAX_LIST_LIMIT);
+    const safeOffset = Math.max(Number(offset) || 0, 0);
+
+    const { rows, count } = await MaintenanceRequest.findAndCountAll({
       where,
       include: [
         { model: User, as: 'submitter', attributes: ['id', 'first_name', 'last_name'] },
       ],
       order: [['created_at', 'DESC']],
+      limit: safeLimit,
+      offset: safeOffset,
     });
+
+    return { requests: rows, total: count, limit: safeLimit, offset: safeOffset };
   },
 
-  async getRequestWithComments(requestId: string, userId: string, role: string) {
-    const request = await MaintenanceRequest.findByPk(requestId, {
+  async getRequestWithComments(requestId: string, userId: string, role: string, estateId?: string) {
+    const where: any = { id: requestId };
+
+    // Estate-scope for managers; non-managers are checked by ownership below
+    if (MANAGER_ROLES.includes(role) && estateId) {
+      where.estate_id = estateId;
+    }
+
+    const request = await MaintenanceRequest.findOne({
+      where,
       include: [
         { model: User, as: 'submitter', attributes: ['id', 'first_name', 'last_name'] },
         {
@@ -83,7 +100,7 @@ export const maintenanceService = {
 
     if (!request) throw new Error('Request not found');
 
-    // Enforce ownership for non-managers
+    // Non-managers must be the submitter
     if (!MANAGER_ROLES.includes(role) && request.submitted_by !== userId) {
       throw new Error('Forbidden');
     }
@@ -91,8 +108,14 @@ export const maintenanceService = {
     return request;
   },
 
-  async updateStatus(requestId: string, newStatus: MaintenanceStatus, managerId: string) {
-    const request = await MaintenanceRequest.findByPk(requestId);
+  async updateStatus(requestId: string, newStatus: MaintenanceStatus, managerId: string, estateId: string) {
+    if (!VALID_STATUSES.includes(newStatus)) {
+      throw new Error('Invalid status');
+    }
+
+    const request = await MaintenanceRequest.findOne({
+      where: { id: requestId, estate_id: estateId },
+    });
     if (!request) throw new Error('Request not found');
 
     const updateData: any = { status: newStatus };
@@ -106,7 +129,7 @@ export const maintenanceService = {
     await MaintenanceComment.create({
       request_id: requestId,
       author_id: managerId,
-      message: `Status changed to ${newStatus}`,
+      message: 'Status changed to ' + newStatus,
       is_status_change: true,
       new_status: newStatus,
     });
@@ -115,16 +138,28 @@ export const maintenanceService = {
     pushNotificationService.sendToUser(
       request.submitted_by,
       'Issue Updated',
-      `Your issue '${request.title}' is now ${newStatus}`,
+      'Your issue is now ' + newStatus,
       { type: 'maintenance_request', request_id: requestId }
     ).catch(() => {});
 
     return request;
   },
 
-  async addComment(requestId: string, authorId: string, message: string) {
-    const request = await MaintenanceRequest.findByPk(requestId);
+  async addComment(requestId: string, authorId: string, message: string, role: string, estateId?: string) {
+    const where: any = { id: requestId };
+
+    // Estate-scope for managers; ownership check for non-managers
+    if (MANAGER_ROLES.includes(role) && estateId) {
+      where.estate_id = estateId;
+    }
+
+    const request = await MaintenanceRequest.findOne({ where });
     if (!request) throw new Error('Request not found');
+
+    // Non-managers must be the submitter
+    if (!MANAGER_ROLES.includes(role) && request.submitted_by !== authorId) {
+      throw new Error('Forbidden');
+    }
 
     const comment = await MaintenanceComment.create({
       request_id: requestId,
@@ -145,7 +180,7 @@ export const maintenanceService = {
           pushNotificationService.sendToUser(
             manager.id,
             'Update on Issue',
-            `Update on issue '${request.title}'`,
+            'Update on issue',
             { type: 'maintenance_request', request_id: requestId }
           ).catch(() => {});
         }
@@ -155,7 +190,7 @@ export const maintenanceService = {
       pushNotificationService.sendToUser(
         request.submitted_by,
         'Manager Reply',
-        `Manager replied to your issue '${request.title}'`,
+        'Manager replied to your issue',
         { type: 'maintenance_request', request_id: requestId }
       ).catch(() => {});
     }
@@ -163,8 +198,10 @@ export const maintenanceService = {
     return comment;
   },
 
-  async deleteRequest(requestId: string) {
-    const request = await MaintenanceRequest.findByPk(requestId);
+  async deleteRequest(requestId: string, estateId: string) {
+    const request = await MaintenanceRequest.findOne({
+      where: { id: requestId, estate_id: estateId },
+    });
     if (!request) throw new Error('Request not found');
     await request.destroy();
     return true;
