@@ -356,7 +356,7 @@ class EnhancedSubscriptionService {
           banner_type: bannerType,
           banner_message: bannerMessage,
           resident_count: residentCount,
-          resident_cap: subscription.resident_cap,
+          resident_cap: subscription.plan?.resident_cap ?? subscription.resident_cap,
           auto_renew: subscription.auto_renew,
         },
       };
@@ -409,6 +409,22 @@ class EnhancedSubscriptionService {
         message: error.message,
       };
     }
+  }
+
+  // Delete (soft-delete) subscription for estate — admin only
+  async deleteSubscription(estateId: string) {
+    const subscription = await Subscription.findOne({
+      where: { estate_id: estateId },
+      order: [['created_at', 'DESC']],
+    });
+
+    if (!subscription) {
+      return { statusCode: 404, status: 'error', message: 'No subscription found for this estate' };
+    }
+
+    await subscription.destroy();
+
+    return { statusCode: 200, status: 'success', message: 'Subscription deleted' };
   }
 
   // Update resident count

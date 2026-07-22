@@ -377,5 +377,56 @@ The Lockwise Team`
       </div>
     `),
     text: `New estate "${data.estate_name}" submitted for approval. Please review in the admin panel.`
+  }),
+
+  newsletterWelcome: (data: any) => ({
+    subject: 'Welcome to the Lockwise Newsletter',
+    html: baseTemplate(`
+      <div class="content">
+        <h2>You're in!</h2>
+        <p>Hello ${data.name || 'there'},</p>
+        <p>Thank you for subscribing to the Lockwise newsletter. You'll be the first to know about product updates, new features, and tips for managing your estate more effectively.</p>
+        <p>If you ever want to unsubscribe, click the link at the bottom of any newsletter email.</p>
+        <p>Best regards,<br>The Lockwise Team</p>
+      </div>
+    `),
+    text: `Welcome to the Lockwise Newsletter!\n\nThank you for subscribing. You'll receive product updates and estate management tips.\n\nBest regards,\nThe Lockwise Team`
+  }),
+
+  demoRequestConfirmation: (data: any) => ({
+    subject: 'Your Demo Request - Lockwise',
+    html: baseTemplate(`
+      <div class="content">
+        <h2>Demo Request Received</h2>
+        <p>Hello ${data.name || 'there'},</p>
+        <p>Thank you for your interest in Lockwise! We've received your demo request and our team will reach out to you within 24 hours to schedule a walkthrough.</p>
+        <p>In the meantime, feel free to explore our <a href="https://lockwise-landing-page.onrender.com/how-it-works/managers" style="color:#667eea;">manager guide</a> to see how Lockwise works.</p>
+        <p>Best regards,<br>The Lockwise Team</p>
+      </div>
+    `),
+    text: `Demo Request Received\n\nThank you for your interest in Lockwise! Our team will reach out within 24 hours to schedule a walkthrough.\n\nBest regards,\nThe Lockwise Team`
+  }),
+
+  demoRequestAdminNotification: (data: any) => ({
+    subject: `New Demo Request from ${data.requester_name}`,
+    html: baseTemplate(`
+      <div class="content">
+        <h2>New Demo Request</h2>
+        <p>A new demo request has been submitted through the landing page.</p>
+        <div class="code-box">
+          <table style="width:100%; border-collapse:collapse;">
+            <tr><td style="padding:8px 0; border-bottom:1px solid #eee;"><strong>Name</strong></td><td style="padding:8px 0; border-bottom:1px solid #eee;">${data.requester_name}</td></tr>
+            <tr><td style="padding:8px 0; border-bottom:1px solid #eee;"><strong>Email</strong></td><td style="padding:8px 0; border-bottom:1px solid #eee;">${data.requester_email}</td></tr>
+            <tr><td style="padding:8px 0; border-bottom:1px solid #eee;"><strong>Phone</strong></td><td style="padding:8px 0; border-bottom:1px solid #eee;">${data.requester_phone}</td></tr>
+            <tr><td style="padding:8px 0; border-bottom:1px solid #eee;"><strong>Company/Estate</strong></td><td style="padding:8px 0; border-bottom:1px solid #eee;">${data.company}</td></tr>
+            <tr><td style="padding:8px 0; border-bottom:1px solid #eee;"><strong>Estate Size</strong></td><td style="padding:8px 0; border-bottom:1px solid #eee;">${data.estate_size}</td></tr>
+            <tr><td style="padding:8px 0;"><strong>Message</strong></td><td style="padding:8px 0;">${data.message}</td></tr>
+          </table>
+        </div>
+        <p>Please follow up with this lead promptly.</p>
+        <p>Best regards,<br>Lockwise Landing Page</p>
+      </div>
+    `),
+    text: `New Demo Request\nName: ${data.requester_name}\nEmail: ${data.requester_email}\nPhone: ${data.requester_phone}\nCompany: ${data.company}\nEstate Size: ${data.estate_size}\nMessage: ${data.message}`
   })
 };

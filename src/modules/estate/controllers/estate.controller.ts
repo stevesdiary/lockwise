@@ -15,6 +15,7 @@ import { Unit } from '../models/unit.model';
 import { Street } from '../models/street.model';
 import fileUploadService from '../../upload/services/file-upload.service';
 import { Estate } from '../models/estate.model';
+import logger from '../../../shared/utils/logger';
 
 class EstateController {
   async createEstate(req: AuthRequest, res: Response) {
@@ -529,6 +530,21 @@ class EstateController {
       // Link user to estate
       const userId = req.user!.id;
       await User.update({ estate_id: validation.estate_id }, { where: { id: userId } });
+
+      // Generate invoices for all active estate fees so the new resident
+      // immediately appears in the dues ledger (findOrCreate is idempotent)
+      (async () => {
+        try {
+          const { collectionsService } = await import('../../collections/services/collections.service');
+          const { EstateFee } = await import('../../collections/models/collections.model');
+          const fees = await EstateFee.findAll({ where: { estate_id: validation.estate_id, is_active: true } as any });
+          for (const fee of fees) {
+            await collectionsService.generateInvoices(validation.estate_id!, fee.id);
+          }
+        } catch (error) {
+          logger.error('[estate] Failed to generate invoices after invitation join:', error);
+        }
+      })();
 
       return res.status(200).json({
         success: true,

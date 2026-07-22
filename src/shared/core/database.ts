@@ -29,6 +29,7 @@ import { Plan }            from '../../modules/payment/models/plan.model';
 import { Referrer }        from '../../modules/payment/models/referrer.model';
 import { ReferralBonus }   from '../../modules/payment/models/referral.bonus.model';
 import { Subscription }    from '../../modules/payment/models/subscription.model';
+import { SubscriptionEvent } from '../../modules/payment/models/subscription-event.model';
 
 import { CommunityMessage } from '../../modules/community/models/community-message.model';
 import { MessageReaction }  from '../../modules/community/models/message-reaction.model';
@@ -175,7 +176,7 @@ const sequelizeOptions: SequelizeOptions = {
     User, Role, Permission, RolePermission,
     Estate, Resident, Street, Unit, Gate,
     Address,
-    Payment, Plan, Referrer, ReferralBonus, Subscription,
+    Payment, Plan, Referrer, ReferralBonus, Subscription, SubscriptionEvent,
     CommunityMessage, MessageReaction, Notification, EmergencyAlert, EmergencyContact,
     EmergencyContactCategory, Country, State, City, LocationEmergencyContact,
     NFCCard, NFCAccessLog,
