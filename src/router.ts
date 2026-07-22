@@ -29,6 +29,7 @@ import { collectionsRouter } from "./modules/collections";
 import { electricityRouter } from "./modules/electricity";
 import { kudaRouter } from "./modules/kuda";
 import { walletRouter } from "./modules/wallet";
+import { maintenanceRouter } from "./modules/maintenance";
 
 // Non-barrel imports (single-use or new modules)
 import managerDashboardRouter from "./modules/analytics/routes/manager-dashboard.route";
@@ -123,6 +124,9 @@ router.use('/bills', billsRouter);
 
 // Wallet Routes
 router.use('/wallet', walletRouter);
+
+// Maintenance Routes
+router.use('/maintenance', maintenanceRouter);
 
 // Kuda Routes
 router.use('/kuda', kudaRouter);
