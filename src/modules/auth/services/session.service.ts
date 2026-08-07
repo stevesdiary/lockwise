@@ -66,6 +66,34 @@ class SessionService {
     await deleteFromRedis(`session:${sessionId}`);
   }
 
+  async revokeOtherSessions(userId: string, keepSessionId?: string): Promise<void> {
+    const sessions = await getFromRedis<string[]>(`user_sessions:${userId}`);
+    if (!sessions?.length) return;
+
+    const keep = keepSessionId ? new Set([keepSessionId]) : new Set<string>();
+    const remaining: string[] = [];
+
+    await Promise.all(
+      sessions.map(async (sessionId) => {
+        if (keep.has(sessionId)) {
+          remaining.push(sessionId);
+          return;
+        }
+        const session = await getFromRedis<SessionData>(`session:${sessionId}`);
+        if (session?.refreshToken) {
+          await deleteFromRedis(`refresh:${session.refreshToken}`);
+        }
+        await deleteFromRedis(`session:${sessionId}`);
+      })
+    );
+
+    if (remaining.length > 0) {
+      await saveToRedis(`user_sessions:${userId}`, remaining, this.SESSION_TIMEOUT);
+    } else {
+      await deleteFromRedis(`user_sessions:${userId}`);
+    }
+  }
+
   async deleteSession(sessionId: string): Promise<void> {
     return this.destroySession(sessionId);
   }

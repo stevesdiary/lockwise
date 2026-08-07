@@ -124,6 +124,7 @@ export const loginUser = async (email: string, password: string) => {
           unit_number: unit?.unit_identifier ?? null,
           block: unit?.block ?? null,
           street_name: unit?.street?.name ?? null,
+          two_factor_enabled: user.two_factor_enabled,
         },
         token
       },

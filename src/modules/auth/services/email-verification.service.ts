@@ -43,6 +43,41 @@ class EmailVerificationService {
     }
   }
 
+  async sendRecoveryCode(email: string, name?: string): Promise<{ success: boolean; message: string }> {
+    try {
+      const rateLimitKey = `two_fa_recovery_rate:${email}`;
+      const existingRateLimit = await getFromRedis<string>(rateLimitKey);
+
+      if (existingRateLimit) {
+        return { success: false, message: 'Please wait before requesting another code' };
+      }
+
+      const code = this.generateCode();
+      const redisKey = `two_fa_recovery:${email}`;
+
+      await saveToRedis(redisKey, code, 600); // 10 minutes
+      await saveToRedis(rateLimitKey, '1', 60); // 1 minute rate limit
+      await emailService.sendTwoFactorRecoveryEmail(email, name || 'there', code);
+
+      return { success: true, message: 'Recovery code sent to your email' };
+    } catch (error: any) {
+      console.error('Send 2FA recovery code error:', error);
+      return { success: false, message: 'Failed to send recovery code' };
+    }
+  }
+
+  async verifyRecoveryCode(email: string, code: string): Promise<boolean> {
+    const redisKey = `two_fa_recovery:${email}`;
+    const storedCode = await getFromRedis<string>(redisKey);
+
+    if (!storedCode || String(storedCode) !== code) {
+      return false;
+    }
+
+    await deleteFromRedis(redisKey);
+    return true;
+  }
+
   async verifyCode(email: string, code: string): Promise<{ success: boolean; message: string; data?: { user: any; token: string } }> {
     try {
       const user = await User.findOne({ where: { email }, include: ['role'] });

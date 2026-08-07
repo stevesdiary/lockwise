@@ -138,9 +138,94 @@ export const twoFactorController = {
             user_type: user.user_type,
             estate_id: user.estate_id,
             estate_name: user.estate?.name ?? null,
+            two_factor_enabled: user.two_factor_enabled,
           },
           token: accessToken,
         },
+      });
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  },
+
+  async sendRecoveryCode(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id;
+      const role = (req as any).user?.role;
+
+      if (!twoFactorService.isEligibleRole(role)) {
+        return res.status(403).json({ status: 'error', message: '2FA is not available for your role' });
+      }
+
+      const { User } = await import('../models/user.model');
+      const user = await User.findByPk(userId, {
+        attributes: ['id', 'email', 'first_name', 'two_factor_enabled'],
+      });
+      if (!user) return res.status(404).json({ status: 'error', message: 'User not found' });
+      if (!user.two_factor_enabled) {
+        return res.status(400).json({ status: 'error', message: '2FA is not enabled' });
+      }
+
+      const emailVerificationService = (await import('../services/email-verification.service')).default;
+      const result = await emailVerificationService.sendRecoveryCode(user.email, user.first_name);
+
+      return res.status(result.success ? 200 : 400).json(result);
+    } catch (error) {
+      return handleControllerError(error, res);
+    }
+  },
+
+  async reactivate(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id;
+      const role = (req as any).user?.role;
+      const sessionId = (req as any).user?.sessionId;
+      const { password, code } = req.body;
+
+      if (!password || !code) {
+        return res.status(400).json({ status: 'error', message: 'Password and recovery code are required' });
+      }
+
+      if (!twoFactorService.isEligibleRole(role)) {
+        return res.status(403).json({ status: 'error', message: '2FA is not available for your role' });
+      }
+
+      const { User } = await import('../models/user.model');
+      const user = await User.findByPk(userId, {
+        attributes: ['id', 'email', 'first_name', 'password', 'two_factor_enabled'],
+      });
+      if (!user) return res.status(404).json({ status: 'error', message: 'User not found' });
+      if (!user.two_factor_enabled) {
+        return res.status(400).json({ status: 'error', message: '2FA is not enabled' });
+      }
+
+      const bcrypt = (await import('bcryptjs')).default;
+      const passwordValid = await bcrypt.compare(password, user.password);
+      if (!passwordValid) {
+        return res.status(401).json({ status: 'error', message: 'Invalid password' });
+      }
+
+      const emailVerificationService = (await import('../services/email-verification.service')).default;
+      const codeValid = await emailVerificationService.verifyRecoveryCode(user.email, code);
+      if (!codeValid) {
+        return res.status(401).json({ status: 'error', message: 'Invalid or expired recovery code' });
+      }
+
+      await twoFactorService.disable(userId);
+
+      // Revoke all other sessions so re-enrollment happens only on this device
+      const sessionService = (await import('../services/session.service')).default;
+      await sessionService.revokeOtherSessions(userId, sessionId);
+
+      // Security alert — confirms the reset and flags unauthorized requests
+      const emailService = (await import('../../communication/services/email.service')).default;
+      emailService
+        .sendTwoFactorResetAlertEmail(user.email, user.first_name || 'there')
+        .catch(() => {});
+
+      return res.json({
+        status: 'success',
+        message: '2FA has been reset. Set it up again on your new device via /auth/2fa/setup.',
       });
     } catch (error) {
       return handleControllerError(error, res);

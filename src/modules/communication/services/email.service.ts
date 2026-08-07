@@ -229,6 +229,29 @@ class EmailService {
     });
   }
 
+  async sendTwoFactorRecoveryEmail(
+    to: string,
+    name: string,
+    code: string
+  ): Promise<boolean> {
+    return this.sendEmail({
+      to,
+      template: 'twoFactorRecovery',
+      data: { name, code },
+    });
+  }
+
+  async sendTwoFactorResetAlertEmail(
+    to: string,
+    name: string
+  ): Promise<boolean> {
+    return this.sendEmail({
+      to,
+      template: 'twoFactorResetAlert',
+      data: { name },
+    });
+  }
+
   async sendAccessCodeEmail(
     to: string,
     name: string,

@@ -96,6 +96,66 @@ Best regards,
 The Lockwise Team`
   }),
   
+  twoFactorRecovery: (data: any) => ({
+    subject: 'Reactivate Two-Factor Authentication - Lockwise',
+    html: baseTemplate(`
+      <div class="content">
+        <h2>2FA Reactivation</h2>
+        <p>Hello ${data.name || 'there'},</p>
+        <p>We received a request to reactivate two-factor authentication for your Lockwise account (lost or changed device).</p>
+        <p>Use the code below to confirm this request:</p>
+        <div class="code-box">
+          <div class="code">${data.code || data}</div>
+        </div>
+        <p>This code will expire in 10 minutes for security reasons.</p>
+        <p>If you didn't request this, please contact support immediately — your account security may be at risk.</p>
+        <p>Best regards,<br>The Lockwise Team</p>
+      </div>
+    `),
+    text: `Reactivate Two-Factor Authentication - Lockwise
+
+Hello ${data.name || 'there'},
+
+We received a request to reactivate two-factor authentication for your Lockwise account (lost or changed device).
+
+Use the code below to confirm this request:
+
+${data.code || data}
+
+This code will expire in 10 minutes for security reasons.
+
+If you didn't request this, please contact support immediately — your account security may be at risk.
+
+Best regards,
+The Lockwise Team`
+  }),
+
+  twoFactorResetAlert: (data: any) => ({
+    subject: 'Your Lockwise 2FA Was Reset',
+    html: baseTemplate(`
+      <div class="content">
+        <h2>Two-Factor Authentication Reset</h2>
+        <p>Hello ${data.name || 'there'},</p>
+        <p>Your two-factor authentication was just reset so you can set it up again on a new device.</p>
+        <p>If you initiated this, no further action is needed — sign in and re-enable 2FA as soon as possible.</p>
+        <p>If you did <strong>not</strong> initiate this, your account may be at risk. Contact support immediately and change your password.</p>
+        <p>Best regards,<br>The Lockwise Team</p>
+      </div>
+    `),
+    text: `Your Lockwise 2FA Was Reset
+
+Hello ${data.name || 'there'},
+
+Your two-factor authentication was just reset so you can set it up again on a new device.
+
+If you initiated this, no further action is needed — sign in and re-enable 2FA as soon as possible.
+
+If you did NOT initiate this, your account may be at risk. Contact support immediately and change your password.
+
+Best regards,
+The Lockwise Team`
+  }),
+
   welcome: (data: any) => ({
     subject: data.estate_name ? `Welcome to ${data.estate_name} – Lockwise` : 'Welcome to Lockwise',
     html: baseTemplate(`
