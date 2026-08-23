@@ -1,7 +1,7 @@
 # Opright Estates
 Opright Estate Management System
 
-Lockwise is aestate/gated community access management platform for residential estates. It centralizes visitor access, security operations, resident services, payments, and community engagement in one system.
+Opright Estate is aestate/gated community access management platform for residential estates. It centralizes visitor access, security operations, resident services, payments, and community engagement in one system.
 
 **DB ER Diagram**
 - https://www.mermaidchart.com/raw/11773fd7-7e7a-4771-b43b-5964d891496f?theme=light&version=v0.1&format=svg
